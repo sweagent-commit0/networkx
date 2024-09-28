@@ -1,10 +1,8 @@
 """Generators of  x-y pairs of node data."""
 import networkx as nx
+__all__ = ['node_attribute_xy', 'node_degree_xy']
 
-__all__ = ["node_attribute_xy", "node_degree_xy"]
-
-
-@nx._dispatchable(node_attrs="attribute")
+@nx._dispatchable(node_attrs='attribute')
 def node_attribute_xy(G, attribute, nodes=None):
     """Returns iterator of node-attribute pairs for all edges in G.
 
@@ -39,28 +37,10 @@ def node_attribute_xy(G, attribute, nodes=None):
     representation (u, v) and (v, u), with the exception of self-loop edges
     which only appear once.
     """
-    if nodes is None:
-        nodes = set(G)
-    else:
-        nodes = set(nodes)
-    Gnodes = G.nodes
-    for u, nbrsdict in G.adjacency():
-        if u not in nodes:
-            continue
-        uattr = Gnodes[u].get(attribute, None)
-        if G.is_multigraph():
-            for v, keys in nbrsdict.items():
-                vattr = Gnodes[v].get(attribute, None)
-                for _ in keys:
-                    yield (uattr, vattr)
-        else:
-            for v in nbrsdict:
-                vattr = Gnodes[v].get(attribute, None)
-                yield (uattr, vattr)
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
-def node_degree_xy(G, x="out", y="in", weight=None, nodes=None):
+@nx._dispatchable(edge_attrs='weight')
+def node_degree_xy(G, x='out', y='in', weight=None, nodes=None):
     """Generate node degree-degree pairs for edges in G.
 
     Parameters
@@ -103,16 +83,4 @@ def node_degree_xy(G, x="out", y="in", weight=None, nodes=None):
     representation (u, v) and (v, u), with the exception of self-loop edges
     which only appear once.
     """
-    nodes = set(G) if nodes is None else set(nodes)
-    if G.is_directed():
-        direction = {"out": G.out_degree, "in": G.in_degree}
-        xdeg = direction[x]
-        ydeg = direction[y]
-    else:
-        xdeg = ydeg = G.degree
-
-    for u, degu in xdeg(nodes, weight=weight):
-        # use G.edges to treat multigraphs correctly
-        neighbors = (nbr for _, nbr in G.edges(u) if nbr in nodes)
-        for _, degv in ydeg(neighbors, weight=weight):
-            yield degu, degv
+    pass

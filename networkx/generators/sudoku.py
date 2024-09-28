@@ -40,12 +40,9 @@ References
 .. [3] Wikipedia contributors. "Glossary of Sudoku." Wikipedia, The Free
     Encyclopedia, 3 Dec. 2019. Web. 22 Dec. 2019.
 """
-
 import networkx as nx
 from networkx.exception import NetworkXError
-
-__all__ = ["sudoku_graph"]
-
+__all__ = ['sudoku_graph']
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def sudoku_graph(n=3):
@@ -90,42 +87,4 @@ def sudoku_graph(n=3):
     .. [3] Wikipedia contributors. "Glossary of Sudoku." Wikipedia, The Free
        Encyclopedia, 3 Dec. 2019. Web. 22 Dec. 2019.
     """
-
-    if n < 0:
-        raise NetworkXError("The order must be greater than or equal to zero.")
-
-    n2 = n * n
-    n3 = n2 * n
-    n4 = n3 * n
-
-    # Construct an empty graph with n^4 nodes
-    G = nx.empty_graph(n4)
-
-    # A Sudoku graph of order 0 or 1 has no edges
-    if n < 2:
-        return G
-
-    # Add edges for cells in the same row
-    for row_no in range(n2):
-        row_start = row_no * n2
-        for j in range(1, n2):
-            for i in range(j):
-                G.add_edge(row_start + i, row_start + j)
-
-    # Add edges for cells in the same column
-    for col_no in range(n2):
-        for j in range(col_no, n4, n2):
-            for i in range(col_no, j, n2):
-                G.add_edge(i, j)
-
-    # Add edges for cells in the same box
-    for band_no in range(n):
-        for stack_no in range(n):
-            box_start = n3 * band_no + n * stack_no
-            for j in range(1, n2):
-                for i in range(j):
-                    u = box_start + (i % n) + n2 * (i // n)
-                    v = box_start + (j % n) + n2 * (j // n)
-                    G.add_edge(u, v)
-
-    return G
+    pass

@@ -1,11 +1,8 @@
 """Functions for computing measures of structural holes."""
-
 import networkx as nx
+__all__ = ['constraint', 'local_constraint', 'effective_size']
 
-__all__ = ["constraint", "local_constraint", "effective_size"]
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def mutual_weight(G, u, v, weight=None):
     """Returns the sum of the weights of the edge from `u` to `v` and
     the edge from `v` to `u` in `G`.
@@ -17,18 +14,9 @@ def mutual_weight(G, u, v, weight=None):
     Pre-conditions: `u` and `v` must both be in `G`.
 
     """
-    try:
-        a_uv = G[u][v].get(weight, 1)
-    except KeyError:
-        a_uv = 0
-    try:
-        a_vu = G[v][u].get(weight, 1)
-    except KeyError:
-        a_vu = 0
-    return a_uv + a_vu
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def normalized_mutual_weight(G, u, v, norm=sum, weight=None):
     """Returns normalized mutual weight of the edges from `u` to `v`
     with respect to the mutual weights of the neighbors of `u` in `G`.
@@ -45,13 +33,11 @@ def normalized_mutual_weight(G, u, v, norm=sum, weight=None):
     attribute used as weight.
 
     """
-    scale = norm(mutual_weight(G, u, w, weight) for w in set(nx.all_neighbors(G, u)))
-    return 0 if scale == 0 else mutual_weight(G, u, v, weight) / scale
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def effective_size(G, nodes=None, weight=None):
-    r"""Returns the effective size of all nodes in the graph ``G``.
+    """Returns the effective size of all nodes in the graph ``G``.
 
     The *effective size* of a node's ego network is based on the concept
     of redundancy. A person's ego network has redundancy to the extent
@@ -62,8 +48,8 @@ def effective_size(G, nodes=None, weight=None):
 
     .. math::
 
-       e(u) = \sum_{v \in N(u) \setminus \{u\}}
-       \left(1 - \sum_{w \in N(v)} p_{uw} m_{vw}\right)
+       e(u) = \\sum_{v \\in N(u) \\setminus \\{u\\}}
+       \\left(1 - \\sum_{w \\in N(v)} p_{uw} m_{vw}\\right)
 
     where $N(u)$ is the set of neighbors of $u$ and $p_{uw}$ is the
     normalized mutual weight of the (directed or undirected) edges
@@ -78,7 +64,7 @@ def effective_size(G, nodes=None, weight=None):
 
     .. math::
 
-       e(u) = n - \frac{2t}{n}
+       e(u) = n - \\frac{2t}{n}
 
     where `t` is the number of ties in the ego network (not including
     ties to ego) and `n` is the number of nodes (excluding ego).
@@ -129,42 +115,11 @@ def effective_size(G, nodes=None, weight=None):
            http://www.analytictech.com/connections/v20(1)/holes.htm
 
     """
+    pass
 
-    def redundancy(G, u, v, weight=None):
-        nmw = normalized_mutual_weight
-        r = sum(
-            nmw(G, u, w, weight=weight) * nmw(G, v, w, norm=max, weight=weight)
-            for w in set(nx.all_neighbors(G, u))
-        )
-        return 1 - r
-
-    effective_size = {}
-    if nodes is None:
-        nodes = G
-    # Use Borgatti's simplified formula for unweighted and undirected graphs
-    if not G.is_directed() and weight is None:
-        for v in nodes:
-            # Effective size is not defined for isolated nodes
-            if len(G[v]) == 0:
-                effective_size[v] = float("nan")
-                continue
-            E = nx.ego_graph(G, v, center=False, undirected=True)
-            effective_size[v] = len(E) - (2 * E.size()) / len(E)
-    else:
-        for v in nodes:
-            # Effective size is not defined for isolated nodes
-            if len(G[v]) == 0:
-                effective_size[v] = float("nan")
-                continue
-            effective_size[v] = sum(
-                redundancy(G, v, u, weight) for u in set(nx.all_neighbors(G, v))
-            )
-    return effective_size
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def constraint(G, nodes=None, weight=None):
-    r"""Returns the constraint on all nodes in the graph ``G``.
+    """Returns the constraint on all nodes in the graph ``G``.
 
     The *constraint* is a measure of the extent to which a node *v* is
     invested in those nodes that are themselves invested in the
@@ -173,10 +128,10 @@ def constraint(G, nodes=None, weight=None):
 
     .. math::
 
-       c(v) = \sum_{w \in N(v) \setminus \{v\}} \ell(v, w)
+       c(v) = \\sum_{w \\in N(v) \\setminus \\{v\\}} \\ell(v, w)
 
     where $N(v)$ is the subset of the neighbors of `v` that are either
-    predecessors or successors of `v` and $\ell(v, w)$ is the local
+    predecessors or successors of `v` and $\\ell(v, w)$ is the local
     constraint on `v` with respect to `w` [1]_. For the definition of local
     constraint, see :func:`local_constraint`.
 
@@ -209,31 +164,19 @@ def constraint(G, nodes=None, weight=None):
            American Journal of Sociology (110): 349–399.
 
     """
-    if nodes is None:
-        nodes = G
-    constraint = {}
-    for v in nodes:
-        # Constraint is not defined for isolated nodes
-        if len(G[v]) == 0:
-            constraint[v] = float("nan")
-            continue
-        constraint[v] = sum(
-            local_constraint(G, v, n, weight) for n in set(nx.all_neighbors(G, v))
-        )
-    return constraint
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def local_constraint(G, u, v, weight=None):
-    r"""Returns the local constraint on the node ``u`` with respect to
+    """Returns the local constraint on the node ``u`` with respect to
     the node ``v`` in the graph ``G``.
 
     Formally, the *local constraint on u with respect to v*, denoted
-    $\ell(u, v)$, is defined by
+    $\\ell(u, v)$, is defined by
 
     .. math::
 
-       \ell(u, v) = \left(p_{uv} + \sum_{w \in N(v)} p_{uw} p_{wv}\right)^2,
+       \\ell(u, v) = \\left(p_{uv} + \\sum_{w \\in N(v)} p_{uw} p_{wv}\\right)^2,
 
     where $N(v)$ is the set of neighbors of $v$ and $p_{uv}$ is the
     normalized mutual weight of the (directed or undirected) edges
@@ -274,10 +217,4 @@ def local_constraint(G, u, v, weight=None):
            American Journal of Sociology (110): 349–399.
 
     """
-    nmw = normalized_mutual_weight
-    direct = nmw(G, u, v, weight=weight)
-    indirect = sum(
-        nmw(G, u, w, weight=weight) * nmw(G, w, v, weight=weight)
-        for w in set(nx.all_neighbors(G, u))
-    )
-    return (direct + indirect) ** 2
+    pass

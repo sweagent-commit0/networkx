@@ -1,38 +1,14 @@
 """Current-flow betweenness centrality measures."""
 import networkx as nx
-from networkx.algorithms.centrality.flow_matrix import (
-    CGInverseLaplacian,
-    FullInverseLaplacian,
-    SuperLUInverseLaplacian,
-    flow_matrix_row,
-)
-from networkx.utils import (
-    not_implemented_for,
-    py_random_state,
-    reverse_cuthill_mckee_ordering,
-)
+from networkx.algorithms.centrality.flow_matrix import CGInverseLaplacian, FullInverseLaplacian, SuperLUInverseLaplacian, flow_matrix_row
+from networkx.utils import not_implemented_for, py_random_state, reverse_cuthill_mckee_ordering
+__all__ = ['current_flow_betweenness_centrality', 'approximate_current_flow_betweenness_centrality', 'edge_current_flow_betweenness_centrality']
 
-__all__ = [
-    "current_flow_betweenness_centrality",
-    "approximate_current_flow_betweenness_centrality",
-    "edge_current_flow_betweenness_centrality",
-]
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @py_random_state(7)
-@nx._dispatchable(edge_attrs="weight")
-def approximate_current_flow_betweenness_centrality(
-    G,
-    normalized=True,
-    weight=None,
-    dtype=float,
-    solver="full",
-    epsilon=0.5,
-    kmax=10000,
-    seed=None,
-):
-    r"""Compute the approximate current-flow betweenness centrality for nodes.
+@nx._dispatchable(edge_attrs='weight')
+def approximate_current_flow_betweenness_centrality(G, normalized=True, weight=None, dtype=float, solver='full', epsilon=0.5, kmax=10000, seed=None):
+    """Compute the approximate current-flow betweenness centrality for nodes.
 
     Approximates the current-flow betweenness centrality within absolute
     error of epsilon with high probability [1]_.
@@ -83,7 +59,7 @@ def approximate_current_flow_betweenness_centrality(
 
     Notes
     -----
-    The running time is $O((1/\epsilon^2)m{\sqrt k} \log n)$
+    The running time is $O((1/\\epsilon^2)m{\\sqrt k} \\log n)$
     and the space required is $O(m)$ for $n$ nodes and $m$ edges.
 
     If the edges have a 'weight' attribute they will be used as
@@ -97,58 +73,12 @@ def approximate_current_flow_betweenness_centrality(
        LNCS 3404, pp. 533-544. Springer-Verlag, 2005.
        https://doi.org/10.1007/978-3-540-31856-9_44
     """
-    import numpy as np
+    pass
 
-    if not nx.is_connected(G):
-        raise nx.NetworkXError("Graph not connected.")
-    solvername = {
-        "full": FullInverseLaplacian,
-        "lu": SuperLUInverseLaplacian,
-        "cg": CGInverseLaplacian,
-    }
-    n = G.number_of_nodes()
-    ordering = list(reverse_cuthill_mckee_ordering(G))
-    # make a copy with integer labels according to rcm ordering
-    # this could be done without a copy if we really wanted to
-    H = nx.relabel_nodes(G, dict(zip(ordering, range(n))))
-    L = nx.laplacian_matrix(H, nodelist=range(n), weight=weight).asformat("csc")
-    L = L.astype(dtype)
-    C = solvername[solver](L, dtype=dtype)  # initialize solver
-    betweenness = dict.fromkeys(H, 0.0)
-    nb = (n - 1.0) * (n - 2.0)  # normalization factor
-    cstar = n * (n - 1) / nb
-    l = 1  # parameter in approximation, adjustable
-    k = l * int(np.ceil((cstar / epsilon) ** 2 * np.log(n)))
-    if k > kmax:
-        msg = f"Number random pairs k>kmax ({k}>{kmax}) "
-        raise nx.NetworkXError(msg, "Increase kmax or epsilon")
-    cstar2k = cstar / (2 * k)
-    for _ in range(k):
-        s, t = pair = seed.sample(range(n), 2)
-        b = np.zeros(n, dtype=dtype)
-        b[s] = 1
-        b[t] = -1
-        p = C.solve(b)
-        for v in H:
-            if v in pair:
-                continue
-            for nbr in H[v]:
-                w = H[v][nbr].get(weight, 1.0)
-                betweenness[v] += float(w * np.abs(p[v] - p[nbr]) * cstar2k)
-    if normalized:
-        factor = 1.0
-    else:
-        factor = nb / 2.0
-    # remap to original node names and "unnormalize" if required
-    return {ordering[k]: v * factor for k, v in betweenness.items()}
-
-
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
-def current_flow_betweenness_centrality(
-    G, normalized=True, weight=None, dtype=float, solver="full"
-):
-    r"""Compute current-flow betweenness centrality for nodes.
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
+def current_flow_betweenness_centrality(G, normalized=True, weight=None, dtype=float, solver='full'):
+    """Compute current-flow betweenness centrality for nodes.
 
     Current-flow betweenness centrality uses an electrical current
     model for information spreading in contrast to betweenness
@@ -195,10 +125,10 @@ def current_flow_betweenness_centrality(
 
     Notes
     -----
-    Current-flow betweenness can be computed in  $O(I(n-1)+mn \log n)$
+    Current-flow betweenness can be computed in  $O(I(n-1)+mn \\log n)$
     time [1]_, where $I(n-1)$ is the time needed to compute the
     inverse Laplacian.  For a full matrix this is $O(n^3)$ but using
-    sparse methods you can achieve $O(nm{\sqrt k})$ where $k$ is the
+    sparse methods you can achieve $O(nm{\\sqrt k})$ where $k$ is the
     Laplacian matrix condition number.
 
     The space required is $O(nw)$ where $w$ is the width of the sparse
@@ -218,32 +148,12 @@ def current_flow_betweenness_centrality(
     .. [2] A measure of betweenness centrality based on random walks,
        M. E. J. Newman, Social Networks 27, 39-54 (2005).
     """
-    if not nx.is_connected(G):
-        raise nx.NetworkXError("Graph not connected.")
-    N = G.number_of_nodes()
-    ordering = list(reverse_cuthill_mckee_ordering(G))
-    # make a copy with integer labels according to rcm ordering
-    # this could be done without a copy if we really wanted to
-    H = nx.relabel_nodes(G, dict(zip(ordering, range(N))))
-    betweenness = dict.fromkeys(H, 0.0)  # b[n]=0 for n in H
-    for row, (s, t) in flow_matrix_row(H, weight=weight, dtype=dtype, solver=solver):
-        pos = dict(zip(row.argsort()[::-1], range(N)))
-        for i in range(N):
-            betweenness[s] += (i - pos[i]) * row.item(i)
-            betweenness[t] += (N - i - 1 - pos[i]) * row.item(i)
-    if normalized:
-        nb = (N - 1.0) * (N - 2.0)  # normalization factor
-    else:
-        nb = 2.0
-    return {ordering[n]: (b - n) * 2.0 / nb for n, b in betweenness.items()}
+    pass
 
-
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
-def edge_current_flow_betweenness_centrality(
-    G, normalized=True, weight=None, dtype=float, solver="full"
-):
-    r"""Compute current-flow betweenness centrality for edges.
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
+def edge_current_flow_betweenness_centrality(G, normalized=True, weight=None, dtype=float, solver='full'):
+    """Compute current-flow betweenness centrality for edges.
 
     Current-flow betweenness centrality uses an electrical current
     model for information spreading in contrast to betweenness
@@ -296,10 +206,10 @@ def edge_current_flow_betweenness_centrality(
 
     Notes
     -----
-    Current-flow betweenness can be computed in $O(I(n-1)+mn \log n)$
+    Current-flow betweenness can be computed in $O(I(n-1)+mn \\log n)$
     time [1]_, where $I(n-1)$ is the time needed to compute the
     inverse Laplacian.  For a full matrix this is $O(n^3)$ but using
-    sparse methods you can achieve $O(nm{\sqrt k})$ where $k$ is the
+    sparse methods you can achieve $O(nm{\\sqrt k})$ where $k$ is the
     Laplacian matrix condition number.
 
     The space required is $O(nw)$ where $w$ is the width of the sparse
@@ -319,23 +229,4 @@ def edge_current_flow_betweenness_centrality(
     .. [2] A measure of betweenness centrality based on random walks,
        M. E. J. Newman, Social Networks 27, 39-54 (2005).
     """
-    if not nx.is_connected(G):
-        raise nx.NetworkXError("Graph not connected.")
-    N = G.number_of_nodes()
-    ordering = list(reverse_cuthill_mckee_ordering(G))
-    # make a copy with integer labels according to rcm ordering
-    # this could be done without a copy if we really wanted to
-    H = nx.relabel_nodes(G, dict(zip(ordering, range(N))))
-    edges = (tuple(sorted((u, v))) for u, v in H.edges())
-    betweenness = dict.fromkeys(edges, 0.0)
-    if normalized:
-        nb = (N - 1.0) * (N - 2.0)  # normalization factor
-    else:
-        nb = 2.0
-    for row, (e) in flow_matrix_row(H, weight=weight, dtype=dtype, solver=solver):
-        pos = dict(zip(row.argsort()[::-1], range(1, N + 1)))
-        for i in range(N):
-            betweenness[e] += (i + 1 - pos[i]) * row.item(i)
-            betweenness[e] += (N - i - pos[i]) * row.item(i)
-        betweenness[e] /= nb
-    return {(ordering[s], ordering[t]): b for (s, t), b in betweenness.items()}
+    pass

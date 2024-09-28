@@ -2,11 +2,9 @@
 Flow Hierarchy.
 """
 import networkx as nx
+__all__ = ['flow_hierarchy']
 
-__all__ = ["flow_hierarchy"]
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def flow_hierarchy(G, weight=None):
     """Returns the flow hierarchy of a directed network.
 
@@ -42,7 +40,4 @@ def flow_hierarchy(G, weight=None):
        DOI: 10.1002/cplx.20368
        http://web.mit.edu/~cmagee/www/documents/28-DetectingEvolvingPatterns_FlowHierarchy.pdf
     """
-    if not G.is_directed():
-        raise nx.NetworkXError("G must be a digraph in flow_hierarchy")
-    scc = nx.strongly_connected_components(G)
-    return 1 - sum(G.subgraph(c).size(weight) for c in scc) / G.size(weight)
+    pass

@@ -1,9 +1,7 @@
 """Degree centrality measures."""
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for
-
-__all__ = ["degree_centrality", "in_degree_centrality", "out_degree_centrality"]
-
+__all__ = ['degree_centrality', 'in_degree_centrality', 'out_degree_centrality']
 
 @nx._dispatchable
 def degree_centrality(G):
@@ -41,15 +39,9 @@ def degree_centrality(G):
     be higher than n-1 and values of degree centrality greater than 1
     are possible.
     """
-    if len(G) <= 1:
-        return {n: 1 for n in G}
+    pass
 
-    s = 1.0 / (len(G) - 1.0)
-    centrality = {n: d * s for n, d in G.degree()}
-    return centrality
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def in_degree_centrality(G):
     """Compute the in-degree centrality for nodes.
@@ -91,15 +83,9 @@ def in_degree_centrality(G):
     be higher than n-1 and values of degree centrality greater than 1
     are possible.
     """
-    if len(G) <= 1:
-        return {n: 1 for n in G}
+    pass
 
-    s = 1.0 / (len(G) - 1.0)
-    centrality = {n: d * s for n, d in G.in_degree()}
-    return centrality
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def out_degree_centrality(G):
     """Compute the out-degree centrality for nodes.
@@ -141,9 +127,4 @@ def out_degree_centrality(G):
     be higher than n-1 and values of degree centrality greater than 1
     are possible.
     """
-    if len(G) <= 1:
-        return {n: 1 for n in G}
-
-    s = 1.0 / (len(G) - 1.0)
-    centrality = {n: d * s for n, d in G.out_degree()}
-    return centrality
+    pass

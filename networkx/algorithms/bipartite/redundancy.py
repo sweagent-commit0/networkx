@@ -1,15 +1,12 @@
 """Node redundancy for bipartite graphs."""
 from itertools import combinations
-
 import networkx as nx
 from networkx import NetworkXError
-
-__all__ = ["node_redundancy"]
-
+__all__ = ['node_redundancy']
 
 @nx._dispatchable
 def node_redundancy(G, nodes=None):
-    r"""Computes the node redundancy coefficients for the nodes in the bipartite
+    """Computes the node redundancy coefficients for the nodes in the bipartite
     graph `G`.
 
     The redundancy coefficient of a node `v` is the fraction of pairs of
@@ -22,9 +19,9 @@ def node_redundancy(G, nodes=None):
 
     .. math::
 
-        rc(v) = \frac{|\{\{u, w\} \subseteq N(v),
-        \: \exists v' \neq  v,\: (v',u) \in E\:
-        \mathrm{and}\: (v',w) \in E\}|}{ \frac{|N(v)|(|N(v)|-1)}{2}},
+        rc(v) = \\frac{|\\{\\{u, w\\} \\subseteq N(v),
+        \\: \\exists v' \\neq  v,\\: (v',u) \\in E\\:
+        \\mathrm{and}\\: (v',w) \\in E\\}|}{ \\frac{|N(v)|(|N(v)|-1)}{2}},
 
     where `N(v)` is the set of neighbors of `v` in `G`.
 
@@ -82,16 +79,7 @@ def node_redundancy(G, nodes=None):
        Social Networks 30(1), 31--48.
 
     """
-    if nodes is None:
-        nodes = G
-    if any(len(G[v]) < 2 for v in nodes):
-        raise NetworkXError(
-            "Cannot compute redundancy coefficient for a node"
-            " that has fewer than two neighbors."
-        )
-    # TODO This can be trivially parallelized.
-    return {v: _node_redundancy(G, v) for v in nodes}
-
+    pass
 
 def _node_redundancy(G, v):
     """Returns the redundancy of the node `v` in the bipartite graph `G`.
@@ -104,8 +92,4 @@ def _node_redundancy(G, v):
     `v` must have at least two neighbors in `G`.
 
     """
-    n = len(G[v])
-    overlap = sum(
-        1 for (u, w) in combinations(G[v], 2) if (set(G[u]) & set(G[w])) - {v}
-    )
-    return (2 * overlap) / (n * (n - 1))
+    pass

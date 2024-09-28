@@ -4,17 +4,9 @@ Mixing matrices for node attributes and degree.
 import networkx as nx
 from networkx.algorithms.assortativity.pairs import node_attribute_xy, node_degree_xy
 from networkx.utils import dict_to_numpy_array
+__all__ = ['attribute_mixing_matrix', 'attribute_mixing_dict', 'degree_mixing_matrix', 'degree_mixing_dict', 'mixing_dict']
 
-__all__ = [
-    "attribute_mixing_matrix",
-    "attribute_mixing_dict",
-    "degree_mixing_matrix",
-    "degree_mixing_dict",
-    "mixing_dict",
-]
-
-
-@nx._dispatchable(node_attrs="attribute")
+@nx._dispatchable(node_attrs='attribute')
 def attribute_mixing_dict(G, attribute, nodes=None, normalized=False):
     """Returns dictionary representation of mixing matrix for attribute.
 
@@ -49,11 +41,9 @@ def attribute_mixing_dict(G, attribute, nodes=None, normalized=False):
     d : dictionary
        Counts or joint probability of occurrence of attribute pairs.
     """
-    xy_iter = node_attribute_xy(G, attribute, nodes)
-    return mixing_dict(xy_iter, normalized=normalized)
+    pass
 
-
-@nx._dispatchable(node_attrs="attribute")
+@nx._dispatchable(node_attrs='attribute')
 def attribute_mixing_matrix(G, attribute, nodes=None, mapping=None, normalized=True):
     """Returns mixing matrix for attribute.
 
@@ -106,15 +96,10 @@ def attribute_mixing_matrix(G, attribute, nodes=None, mapping=None, normalized=T
     array([[0.  , 0.25],
            [0.25, 0.5 ]])
     """
-    d = attribute_mixing_dict(G, attribute, nodes)
-    a = dict_to_numpy_array(d, mapping=mapping)
-    if normalized:
-        a = a / a.sum()
-    return a
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
-def degree_mixing_dict(G, x="out", y="in", weight=None, nodes=None, normalized=False):
+@nx._dispatchable(edge_attrs='weight')
+def degree_mixing_dict(G, x='out', y='in', weight=None, nodes=None, normalized=False):
     """Returns dictionary representation of mixing matrix for degree.
 
     Parameters
@@ -141,14 +126,10 @@ def degree_mixing_dict(G, x="out", y="in", weight=None, nodes=None, normalized=F
     d: dictionary
        Counts or joint probability of occurrence of degree pairs.
     """
-    xy_iter = node_degree_xy(G, x=x, y=y, nodes=nodes, weight=weight)
-    return mixing_dict(xy_iter, normalized=normalized)
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
-def degree_mixing_matrix(
-    G, x="out", y="in", weight=None, nodes=None, normalized=True, mapping=None
-):
+@nx._dispatchable(edge_attrs='weight')
+def degree_mixing_matrix(G, x='out', y='in', weight=None, nodes=None, normalized=True, mapping=None):
     """Returns mixing matrix for attribute.
 
     Parameters
@@ -210,12 +191,7 @@ def degree_mixing_matrix(
            [0. , 0. , 0. , 0. ],
            [0. , 0.5, 0. , 0. ]])
     """
-    d = degree_mixing_dict(G, x=x, y=y, nodes=nodes, weight=weight)
-    a = dict_to_numpy_array(d, mapping=mapping)
-    if normalized:
-        a = a / a.sum()
-    return a
-
+    pass
 
 def mixing_dict(xy, normalized=False):
     """Returns a dictionary representation of mixing matrix.
@@ -236,19 +212,4 @@ def mixing_dict(xy, normalized=False):
     d: dictionary
        Counts or Joint probability of occurrence of values in xy.
     """
-    d = {}
-    psum = 0.0
-    for x, y in xy:
-        if x not in d:
-            d[x] = {}
-        if y not in d:
-            d[y] = {}
-        v = d[x].get(y, 0)
-        d[x][y] = v + 1
-        psum += 1
-
-    if normalized:
-        for _, jdict in d.items():
-            for j in jdict:
-                jdict[j] /= psum
-    return d
+    pass

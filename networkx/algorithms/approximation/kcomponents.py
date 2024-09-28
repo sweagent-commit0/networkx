@@ -4,19 +4,16 @@ import itertools
 from collections import defaultdict
 from collections.abc import Mapping
 from functools import cached_property
-
 import networkx as nx
 from networkx.algorithms.approximation import local_node_connectivity
 from networkx.exception import NetworkXError
 from networkx.utils import not_implemented_for
+__all__ = ['k_components']
 
-__all__ = ["k_components"]
-
-
-@not_implemented_for("directed")
-@nx._dispatchable(name="approximate_k_components")
+@not_implemented_for('directed')
+@nx._dispatchable(name='approximate_k_components')
 def k_components(G, min_density=0.95):
-    r"""Returns the approximate k-component structure of a graph G.
+    """Returns the approximate k-component structure of a graph G.
 
     A `k`-component is a maximal subgraph of a graph G that has, at least,
     node connectivity `k`: we need to remove at least `k` nodes to break it
@@ -102,97 +99,7 @@ def k_components(G, min_density=0.95):
             https://doi.org/10.2307/3088904
 
     """
-    # Dictionary with connectivity level (k) as keys and a list of
-    # sets of nodes that form a k-component as values
-    k_components = defaultdict(list)
-    # make a few functions local for speed
-    node_connectivity = local_node_connectivity
-    k_core = nx.k_core
-    core_number = nx.core_number
-    biconnected_components = nx.biconnected_components
-    combinations = itertools.combinations
-    # Exact solution for k = {1,2}
-    # There is a linear time algorithm for triconnectivity, if we had an
-    # implementation available we could start from k = 4.
-    for component in nx.connected_components(G):
-        # isolated nodes have connectivity 0
-        comp = set(component)
-        if len(comp) > 1:
-            k_components[1].append(comp)
-    for bicomponent in nx.biconnected_components(G):
-        # avoid considering dyads as bicomponents
-        bicomp = set(bicomponent)
-        if len(bicomp) > 2:
-            k_components[2].append(bicomp)
-    # There is no k-component of k > maximum core number
-    # \kappa(G) <= \lambda(G) <= \delta(G)
-    g_cnumber = core_number(G)
-    max_core = max(g_cnumber.values())
-    for k in range(3, max_core + 1):
-        C = k_core(G, k, core_number=g_cnumber)
-        for nodes in biconnected_components(C):
-            # Build a subgraph SG induced by the nodes that are part of
-            # each biconnected component of the k-core subgraph C.
-            if len(nodes) < k:
-                continue
-            SG = G.subgraph(nodes)
-            # Build auxiliary graph
-            H = _AntiGraph()
-            H.add_nodes_from(SG.nodes())
-            for u, v in combinations(SG, 2):
-                K = node_connectivity(SG, u, v, cutoff=k)
-                if k > K:
-                    H.add_edge(u, v)
-            for h_nodes in biconnected_components(H):
-                if len(h_nodes) <= k:
-                    continue
-                SH = H.subgraph(h_nodes)
-                for Gc in _cliques_heuristic(SG, SH, k, min_density):
-                    for k_nodes in biconnected_components(Gc):
-                        Gk = nx.k_core(SG.subgraph(k_nodes), k)
-                        if len(Gk) <= k:
-                            continue
-                        k_components[k].append(set(Gk))
-    return k_components
-
-
-def _cliques_heuristic(G, H, k, min_density):
-    h_cnumber = nx.core_number(H)
-    for i, c_value in enumerate(sorted(set(h_cnumber.values()), reverse=True)):
-        cands = {n for n, c in h_cnumber.items() if c == c_value}
-        # Skip checking for overlap for the highest core value
-        if i == 0:
-            overlap = False
-        else:
-            overlap = set.intersection(
-                *[{x for x in H[n] if x not in cands} for n in cands]
-            )
-        if overlap and len(overlap) < k:
-            SH = H.subgraph(cands | overlap)
-        else:
-            SH = H.subgraph(cands)
-        sh_cnumber = nx.core_number(SH)
-        SG = nx.k_core(G.subgraph(SH), k)
-        while not (_same(sh_cnumber) and nx.density(SH) >= min_density):
-            # This subgraph must be writable => .copy()
-            SH = H.subgraph(SG).copy()
-            if len(SH) <= k:
-                break
-            sh_cnumber = nx.core_number(SH)
-            sh_deg = dict(SH.degree())
-            min_deg = min(sh_deg.values())
-            SH.remove_nodes_from(n for n, d in sh_deg.items() if d == min_deg)
-            SG = nx.k_core(G.subgraph(SH), k)
-        else:
-            yield SG
-
-
-def _same(measure, tol=0):
-    vals = set(measure.values())
-    if (max(vals) - min(vals)) <= tol:
-        return True
-    return False
-
+    pass
 
 class _AntiGraph(nx.Graph):
     """
@@ -207,13 +114,8 @@ class _AntiGraph(nx.Graph):
     an instance of this class with some of NetworkX functions. In this
     case we only use k-core, connected_components, and biconnected_components.
     """
-
-    all_edge_dict = {"weight": 1}
-
-    def single_edge_dict(self):
-        return self.all_edge_dict
-
-    edge_attr_dict_factory = single_edge_dict  # type: ignore[assignment]
+    all_edge_dict = {'weight': 1}
+    edge_attr_dict_factory = single_edge_dict
 
     def __getitem__(self, n):
         """Returns a dict of neighbors of node n in the dense graph.
@@ -230,18 +132,13 @@ class _AntiGraph(nx.Graph):
 
         """
         all_edge_dict = self.all_edge_dict
-        return {
-            node: all_edge_dict for node in set(self._adj) - set(self._adj[n]) - {n}
-        }
+        return {node: all_edge_dict for node in set(self._adj) - set(self._adj[n]) - {n}}
 
     def neighbors(self, n):
         """Returns an iterator over all neighbors of node n in the
         dense graph.
         """
-        try:
-            return iter(set(self._adj) - set(self._adj[n]) - {n})
-        except KeyError as err:
-            raise NetworkXError(f"The node {n} is not in the graph.") from err
+        pass
 
     class AntiAtlasView(Mapping):
         """An adjacency inner dict for AntiGraph"""
@@ -281,26 +178,12 @@ class _AntiGraph(nx.Graph):
                 raise KeyError(node)
             return self._graph.AntiAtlasView(self._graph, node)
 
-    @cached_property
-    def adj(self):
-        return self.AntiAdjacencyView(self)
-
     def subgraph(self, nodes):
         """This subgraph method returns a full AntiGraph. Not a View"""
-        nodes = set(nodes)
-        G = _AntiGraph()
-        G.add_nodes_from(nodes)
-        for n in G:
-            Gnbrs = G.adjlist_inner_dict_factory()
-            G._adj[n] = Gnbrs
-            for nbr, d in self._adj[n].items():
-                if nbr in G._adj:
-                    Gnbrs[nbr] = d
-                    G._adj[nbr][n] = d
-        G.graph = self.graph
-        return G
+        pass
 
     class AntiDegreeView(nx.reportviews.DegreeView):
+
         def __iter__(self):
             all_nodes = set(self._succ)
             for n in self._nodes:
@@ -309,7 +192,6 @@ class _AntiGraph(nx.Graph):
 
         def __getitem__(self, n):
             nbrs = set(self._succ) - set(self._succ[n]) - {n}
-            # AntiGraph is a ThinGraph so all edges have weight 1
             return len(nbrs) + (n in nbrs)
 
     @cached_property
@@ -349,7 +231,7 @@ class _AntiGraph(nx.Graph):
         [(0, 1), (1, 2)]
 
         """
-        return self.AntiDegreeView(self)
+        pass
 
     def adjacency(self):
         """Returns an iterator of (node, adjacency set) tuples for all nodes
@@ -365,5 +247,4 @@ class _AntiGraph(nx.Graph):
            the graph.
 
         """
-        for n in self._adj:
-            yield (n, set(self._adj) - set(self._adj[n]) - {n})
+        pass

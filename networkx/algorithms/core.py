@@ -21,27 +21,16 @@ D-cores: Measuring Collaboration of Directed Graphs Based on Degeneracy
 Christos Giatsidis, Dimitrios M. Thilikos, Michalis Vazirgiannis, ICDM 2011.
 http://www.graphdegeneracy.org/dcores_ICDM_2011.pdf
 
-Multi-scale structure and topological anomaly detection via a new network \
-statistic: The onion decomposition
+Multi-scale structure and topological anomaly detection via a new network statistic: The onion decomposition
 L. Hébert-Dufresne, J. A. Grochow, and A. Allard
 Scientific Reports 6, 31708 (2016)
 http://doi.org/10.1038/srep31708
 
 """
 import networkx as nx
+__all__ = ['core_number', 'k_core', 'k_shell', 'k_crust', 'k_corona', 'k_truss', 'onion_layers']
 
-__all__ = [
-    "core_number",
-    "k_core",
-    "k_shell",
-    "k_crust",
-    "k_corona",
-    "k_truss",
-    "onion_layers",
-]
-
-
-@nx.utils.not_implemented_for("multigraph")
+@nx.utils.not_implemented_for('multigraph')
 @nx._dispatchable
 def core_number(G):
     """Returns the core number for each node.
@@ -88,38 +77,7 @@ def core_number(G):
        Vladimir Batagelj and Matjaz Zaversnik, 2003.
        https://arxiv.org/abs/cs.DS/0310049
     """
-    if nx.number_of_selfloops(G) > 0:
-        msg = (
-            "Input graph has self loops which is not permitted; "
-            "Consider using G.remove_edges_from(nx.selfloop_edges(G))."
-        )
-        raise nx.NetworkXNotImplemented(msg)
-    degrees = dict(G.degree())
-    # Sort nodes by degree.
-    nodes = sorted(degrees, key=degrees.get)
-    bin_boundaries = [0]
-    curr_degree = 0
-    for i, v in enumerate(nodes):
-        if degrees[v] > curr_degree:
-            bin_boundaries.extend([i] * (degrees[v] - curr_degree))
-            curr_degree = degrees[v]
-    node_pos = {v: pos for pos, v in enumerate(nodes)}
-    # The initial guess for the core number of a node is its degree.
-    core = degrees
-    nbrs = {v: list(nx.all_neighbors(G, v)) for v in G}
-    for v in nodes:
-        for u in nbrs[v]:
-            if core[u] > core[v]:
-                nbrs[u].remove(v)
-                pos = node_pos[u]
-                bin_start = bin_boundaries[core[u]]
-                node_pos[u] = bin_start
-                node_pos[nodes[bin_start]] = pos
-                nodes[bin_start], nodes[pos] = nodes[pos], nodes[bin_start]
-                bin_boundaries[core[u]] += 1
-                core[u] -= 1
-    return core
-
+    pass
 
 def _core_subgraph(G, k_filter, k=None, core=None):
     """Returns the subgraph induced by nodes passing filter `k_filter`.
@@ -140,13 +98,7 @@ def _core_subgraph(G, k_filter, k=None, core=None):
       If not specified, the core numbers will be computed from `G`.
 
     """
-    if core is None:
-        core = core_number(G)
-    if k is None:
-        k = max(core.values())
-    nodes = (v for v in core if k_filter(v, k, core))
-    return G.subgraph(nodes).copy()
-
+    pass
 
 @nx._dispatchable(preserve_all_attrs=True, returns_graph=True)
 def k_core(G, k=None, core_number=None):
@@ -204,25 +156,7 @@ def k_core(G, k=None, core_number=None):
        Vladimir Batagelj and Matjaz Zaversnik,  2003.
        https://arxiv.org/abs/cs.DS/0310049
     """
-
-    import warnings
-
-    if G.is_multigraph():
-        warnings.warn(
-            (
-                "\n\n`k_core` will not accept `MultiGraph` objects in version 3.5.\n"
-                "Convert it to an undirected graph instead, using::\n\n"
-                "\tG = nx.Graph(G)\n"
-            ),
-            category=DeprecationWarning,
-            stacklevel=5,
-        )
-
-    def k_filter(v, k, c):
-        return c[v] >= k
-
-    return _core_subgraph(G, k_filter, k, core_number)
-
+    pass
 
 @nx._dispatchable(preserve_all_attrs=True, returns_graph=True)
 def k_shell(G, k=None, core_number=None):
@@ -286,25 +220,7 @@ def k_shell(G, k=None, core_number=None):
        and Eran Shir, PNAS  July 3, 2007   vol. 104  no. 27  11150-11154
        http://www.pnas.org/content/104/27/11150.full
     """
-
-    import warnings
-
-    if G.is_multigraph():
-        warnings.warn(
-            (
-                "\n\n`k_shell` will not accept `MultiGraph` objects in version 3.5.\n"
-                "Convert it to an undirected graph instead, using::\n\n"
-                "\tG = nx.Graph(G)\n"
-            ),
-            category=DeprecationWarning,
-            stacklevel=5,
-        )
-
-    def k_filter(v, k, c):
-        return c[v] == k
-
-    return _core_subgraph(G, k_filter, k, core_number)
-
+    pass
 
 @nx._dispatchable(preserve_all_attrs=True, returns_graph=True)
 def k_crust(G, k=None, core_number=None):
@@ -365,29 +281,7 @@ def k_crust(G, k=None, core_number=None):
        and Eran Shir, PNAS  July 3, 2007   vol. 104  no. 27  11150-11154
        http://www.pnas.org/content/104/27/11150.full
     """
-
-    import warnings
-
-    if G.is_multigraph():
-        warnings.warn(
-            (
-                "\n\n`k_crust` will not accept `MultiGraph` objects in version 3.5.\n"
-                "Convert it to an undirected graph instead, using::\n\n"
-                "\tG = nx.Graph(G)\n"
-            ),
-            category=DeprecationWarning,
-            stacklevel=5,
-        )
-
-    # Default for k is one less than in _core_subgraph, so just inline.
-    #    Filter is c[v] <= k
-    if core_number is None:
-        core_number = nx.core_number(G)
-    if k is None:
-        k = max(core_number.values()) - 1
-    nodes = (v for v in core_number if core_number[v] <= k)
-    return G.subgraph(nodes).copy()
-
+    pass
 
 @nx._dispatchable(preserve_all_attrs=True, returns_graph=True)
 def k_corona(G, k, core_number=None):
@@ -446,28 +340,10 @@ def k_corona(G, k, core_number=None):
        Phys. Rev. E 73, 056101 (2006)
        http://link.aps.org/doi/10.1103/PhysRevE.73.056101
     """
+    pass
 
-    import warnings
-
-    if G.is_multigraph():
-        warnings.warn(
-            (
-                "\n\n`k_corona` will not accept `MultiGraph` objects in version 3.5.\n"
-                "Convert it to an undirected graph instead, using::\n\n"
-                "\tG = nx.Graph(G)\n"
-            ),
-            category=DeprecationWarning,
-            stacklevel=5,
-        )
-
-    def func(v, k, c):
-        return c[v] == k and k == sum(1 for w in G[v] if c[w] >= k)
-
-    return _core_subgraph(G, func, k, core_number)
-
-
-@nx.utils.not_implemented_for("directed")
-@nx.utils.not_implemented_for("multigraph")
+@nx.utils.not_implemented_for('directed')
+@nx.utils.not_implemented_for('multigraph')
 @nx._dispatchable(preserve_all_attrs=True, returns_graph=True)
 def k_truss(G, k):
     """Returns the k-truss of `G`.
@@ -520,36 +396,10 @@ def k_truss(G, k):
     .. [2] Trusses: Cohesive Subgraphs for Social Network Analysis. Jonathan
        Cohen, 2005.
     """
-    if nx.number_of_selfloops(G) > 0:
-        msg = (
-            "Input graph has self loops which is not permitted; "
-            "Consider using G.remove_edges_from(nx.selfloop_edges(G))."
-        )
-        raise nx.NetworkXNotImplemented(msg)
+    pass
 
-    H = G.copy()
-
-    n_dropped = 1
-    while n_dropped > 0:
-        n_dropped = 0
-        to_drop = []
-        seen = set()
-        for u in H:
-            nbrs_u = set(H[u])
-            seen.add(u)
-            new_nbrs = [v for v in nbrs_u if v not in seen]
-            for v in new_nbrs:
-                if len(nbrs_u & set(H[v])) < (k - 2):
-                    to_drop.append((u, v))
-        H.remove_edges_from(to_drop)
-        n_dropped = len(to_drop)
-        H.remove_nodes_from(list(nx.isolates(H)))
-
-    return H
-
-
-@nx.utils.not_implemented_for("multigraph")
-@nx.utils.not_implemented_for("directed")
+@nx.utils.not_implemented_for('multigraph')
+@nx.utils.not_implemented_for('directed')
 @nx._dispatchable
 def onion_layers(G):
     """Returns the layer of each vertex in an onion decomposition of the graph.
@@ -599,50 +449,4 @@ def onion_layers(G):
        Physical Review X 9, 011023 (2019)
        http://doi.org/10.1103/PhysRevX.9.011023
     """
-    if nx.number_of_selfloops(G) > 0:
-        msg = (
-            "Input graph contains self loops which is not permitted; "
-            "Consider using G.remove_edges_from(nx.selfloop_edges(G))."
-        )
-        raise nx.NetworkXNotImplemented(msg)
-    # Dictionaries to register the k-core/onion decompositions.
-    od_layers = {}
-    # Adjacency list
-    neighbors = {v: list(nx.all_neighbors(G, v)) for v in G}
-    # Effective degree of nodes.
-    degrees = dict(G.degree())
-    # Performs the onion decomposition.
-    current_core = 1
-    current_layer = 1
-    # Sets vertices of degree 0 to layer 1, if any.
-    isolated_nodes = list(nx.isolates(G))
-    if len(isolated_nodes) > 0:
-        for v in isolated_nodes:
-            od_layers[v] = current_layer
-            degrees.pop(v)
-        current_layer = 2
-    # Finds the layer for the remaining nodes.
-    while len(degrees) > 0:
-        # Sets the order for looking at nodes.
-        nodes = sorted(degrees, key=degrees.get)
-        # Sets properly the current core.
-        min_degree = degrees[nodes[0]]
-        if min_degree > current_core:
-            current_core = min_degree
-        # Identifies vertices in the current layer.
-        this_layer = []
-        for n in nodes:
-            if degrees[n] > current_core:
-                break
-            this_layer.append(n)
-        # Identifies the core/layer of the vertices in the current layer.
-        for v in this_layer:
-            od_layers[v] = current_layer
-            for n in neighbors[v]:
-                neighbors[n].remove(v)
-                degrees[n] = degrees[n] - 1
-            degrees.pop(v)
-        # Updates the layer count.
-        current_layer = current_layer + 1
-    # Returns the dictionaries containing the onion layer of each vertices.
-    return od_layers
+    pass

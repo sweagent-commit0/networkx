@@ -2,18 +2,8 @@
 Operations on graphs including union, intersection, difference.
 """
 import networkx as nx
-
-__all__ = [
-    "union",
-    "compose",
-    "disjoint_union",
-    "intersection",
-    "difference",
-    "symmetric_difference",
-    "full_join",
-]
-_G_H = {"G": 0, "H": 1}
-
+__all__ = ['union', 'compose', 'disjoint_union', 'intersection', 'difference', 'symmetric_difference', 'full_join']
+_G_H = {'G': 0, 'H': 1}
 
 @nx._dispatchable(graphs=_G_H, preserve_all_attrs=True, returns_graph=True)
 def union(G, H, rename=()):
@@ -68,8 +58,7 @@ def union(G, H, rename=()):
 
 
     """
-    return nx.union_all([G, H], rename)
-
+    pass
 
 @nx._dispatchable(graphs=_G_H, preserve_all_attrs=True, returns_graph=True)
 def disjoint_union(G, H):
@@ -122,8 +111,7 @@ def disjoint_union(G, H):
     >>> U.edges
     EdgeView([(0, 1), (0, 2), (1, 2), (3, 4), (4, 6), (5, 6)])
     """
-    return nx.disjoint_union_all([G, H])
-
+    pass
 
 @nx._dispatchable(graphs=_G_H, returns_graph=True)
 def intersection(G, H):
@@ -167,8 +155,7 @@ def intersection(G, H):
     >>> R.edges
     EdgeView([(1, 2)])
     """
-    return nx.intersection_all([G, H])
-
+    pass
 
 @nx._dispatchable(graphs=_G_H, returns_graph=True)
 def difference(G, H):
@@ -207,23 +194,7 @@ def difference(G, H):
     >>> R.edges
     EdgeView([(0, 2), (1, 3)])
     """
-    # create new graph
-    if not G.is_multigraph() == H.is_multigraph():
-        raise nx.NetworkXError("G and H must both be graphs or multigraphs.")
-    R = nx.create_empty_copy(G, with_data=False)
-
-    if set(G) != set(H):
-        raise nx.NetworkXError("Node sets of graphs not equal")
-
-    if G.is_multigraph():
-        edges = G.edges(keys=True)
-    else:
-        edges = G.edges()
-    for e in edges:
-        if not H.has_edge(*e):
-            R.add_edge(*e)
-    return R
-
+    pass
 
 @nx._dispatchable(graphs=_G_H, returns_graph=True)
 def symmetric_difference(G, H):
@@ -255,38 +226,7 @@ def symmetric_difference(G, H):
     >>> R.edges
     EdgeView([(0, 2), (0, 3), (1, 3)])
     """
-    # create new graph
-    if not G.is_multigraph() == H.is_multigraph():
-        raise nx.NetworkXError("G and H must both be graphs or multigraphs.")
-    R = nx.create_empty_copy(G, with_data=False)
-
-    if set(G) != set(H):
-        raise nx.NetworkXError("Node sets of graphs not equal")
-
-    gnodes = set(G)  # set of nodes in G
-    hnodes = set(H)  # set of nodes in H
-    nodes = gnodes.symmetric_difference(hnodes)
-    R.add_nodes_from(nodes)
-
-    if G.is_multigraph():
-        edges = G.edges(keys=True)
-    else:
-        edges = G.edges()
-    # we could copy the data here but then this function doesn't
-    # match intersection and difference
-    for e in edges:
-        if not H.has_edge(*e):
-            R.add_edge(*e)
-
-    if H.is_multigraph():
-        edges = H.edges(keys=True)
-    else:
-        edges = H.edges()
-    for e in edges:
-        if not G.has_edge(*e):
-            R.add_edge(*e)
-    return R
-
+    pass
 
 @nx._dispatchable(graphs=_G_H, preserve_all_attrs=True, returns_graph=True)
 def compose(G, H):
@@ -366,8 +306,7 @@ def compose(G, H):
     >>> print(GcomposeH.edges[(3, 0)]["weight"])
     100.0
     """
-    return nx.compose_all([G, H])
-
+    pass
 
 @nx._dispatchable(graphs=_G_H, preserve_all_attrs=True, returns_graph=True)
 def full_join(G, H, rename=(None, None)):
@@ -423,26 +362,4 @@ def full_join(G, H, rename=(None, None)):
     union
     disjoint_union
     """
-    R = union(G, H, rename)
-
-    def add_prefix(graph, prefix):
-        if prefix is None:
-            return graph
-
-        def label(x):
-            return f"{prefix}{x}"
-
-        return nx.relabel_nodes(graph, label)
-
-    G = add_prefix(G, rename[0])
-    H = add_prefix(H, rename[1])
-
-    for i in G:
-        for j in H:
-            R.add_edge(i, j)
-    if R.is_directed():
-        for i in H:
-            for j in G:
-                R.add_edge(i, j)
-
-    return R
+    pass

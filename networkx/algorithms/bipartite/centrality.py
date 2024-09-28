@@ -1,11 +1,9 @@
 import networkx as nx
+__all__ = ['degree_centrality', 'betweenness_centrality', 'closeness_centrality']
 
-__all__ = ["degree_centrality", "betweenness_centrality", "closeness_centrality"]
-
-
-@nx._dispatchable(name="bipartite_degree_centrality")
+@nx._dispatchable(name='bipartite_degree_centrality')
 def degree_centrality(G, nodes):
-    r"""Compute the degree centrality for nodes in a bipartite network.
+    """Compute the degree centrality for nodes in a bipartite network.
 
     The degree centrality for a node `v` is the fraction of nodes
     connected to it.
@@ -55,9 +53,9 @@ def degree_centrality(G, nodes):
 
     .. math::
 
-        d_{v} = \frac{deg(v)}{m}, \mbox{for} v \in U ,
+        d_{v} = \\frac{deg(v)}{m}, \\mbox{for} v \\in U ,
 
-        d_{v} = \frac{deg(v)}{n}, \mbox{for} v \in V ,
+        d_{v} = \\frac{deg(v)}{n}, \\mbox{for} v \\in V ,
 
 
     where `deg(v)` is the degree of node `v`.
@@ -69,18 +67,11 @@ def degree_centrality(G, nodes):
         of Social Network Analysis. Sage Publications.
         https://dx.doi.org/10.4135/9781446294413.n28
     """
-    top = set(nodes)
-    bottom = set(G) - top
-    s = 1.0 / len(bottom)
-    centrality = {n: d * s for n, d in G.degree(top)}
-    s = 1.0 / len(top)
-    centrality.update({n: d * s for n, d in G.degree(bottom)})
-    return centrality
+    pass
 
-
-@nx._dispatchable(name="bipartite_betweenness_centrality")
+@nx._dispatchable(name='bipartite_betweenness_centrality')
 def betweenness_centrality(G, nodes):
-    r"""Compute betweenness centrality for nodes in a bipartite network.
+    """Compute betweenness centrality for nodes in a bipartite network.
 
     Betweenness centrality of a node `v` is the sum of the
     fraction of all-pairs shortest paths that pass through `v`.
@@ -95,25 +86,25 @@ def betweenness_centrality(G, nodes):
 
     .. math::
 
-       \frac{1}{2} [m^2 (s + 1)^2 + m (s + 1)(2t - s - 1) - t (2s - t + 3)] ,
+       \\frac{1}{2} [m^2 (s + 1)^2 + m (s + 1)(2t - s - 1) - t (2s - t + 3)] ,
 
     where
 
     .. math::
 
-        s = (n - 1) \div m , t = (n - 1) \mod m ,
+        s = (n - 1) \\div m , t = (n - 1) \\mod m ,
 
     and nodes in `V` are normalized by dividing by
 
     .. math::
 
-        \frac{1}{2} [n^2 (p + 1)^2 + n (p + 1)(2r - p - 1) - r (2p - r + 3)] ,
+        \\frac{1}{2} [n^2 (p + 1)^2 + n (p + 1)(2r - p - 1) - r (2p - r + 3)] ,
 
     where,
 
     .. math::
 
-        p = (m - 1) \div n , r = (m - 1) \mod n .
+        p = (m - 1) \\div n , r = (m - 1) \\mod n .
 
     Parameters
     ----------
@@ -158,33 +149,11 @@ def betweenness_centrality(G, nodes):
         of Social Network Analysis. Sage Publications.
         https://dx.doi.org/10.4135/9781446294413.n28
     """
-    top = set(nodes)
-    bottom = set(G) - top
-    n = len(top)
-    m = len(bottom)
-    s, t = divmod(n - 1, m)
-    bet_max_top = (
-        ((m**2) * ((s + 1) ** 2))
-        + (m * (s + 1) * (2 * t - s - 1))
-        - (t * ((2 * s) - t + 3))
-    ) / 2.0
-    p, r = divmod(m - 1, n)
-    bet_max_bot = (
-        ((n**2) * ((p + 1) ** 2))
-        + (n * (p + 1) * (2 * r - p - 1))
-        - (r * ((2 * p) - r + 3))
-    ) / 2.0
-    betweenness = nx.betweenness_centrality(G, normalized=False, weight=None)
-    for node in top:
-        betweenness[node] /= bet_max_top
-    for node in bottom:
-        betweenness[node] /= bet_max_bot
-    return betweenness
+    pass
 
-
-@nx._dispatchable(name="bipartite_closeness_centrality")
+@nx._dispatchable(name='bipartite_closeness_centrality')
 def closeness_centrality(G, nodes, normalized=True):
-    r"""Compute the closeness centrality for nodes in a bipartite network.
+    """Compute the closeness centrality for nodes in a bipartite network.
 
     The closeness of a node is the distance to all other nodes in the
     graph or in the case that the graph is not connected to all other nodes
@@ -238,9 +207,9 @@ def closeness_centrality(G, nodes, normalized=True):
 
     .. math::
 
-        c_{v} = \frac{m + 2(n - 1)}{d}, \mbox{for} v \in U,
+        c_{v} = \\frac{m + 2(n - 1)}{d}, \\mbox{for} v \\in U,
 
-        c_{v} = \frac{n + 2(m - 1)}{d}, \mbox{for} v \in V,
+        c_{v} = \\frac{n + 2(m - 1)}{d}, \\mbox{for} v \\in V,
 
     where `d` is the sum of the distances from `v` to all
     other nodes.
@@ -261,30 +230,4 @@ def closeness_centrality(G, nodes, normalized=True):
         of Social Network Analysis. Sage Publications.
         https://dx.doi.org/10.4135/9781446294413.n28
     """
-    closeness = {}
-    path_length = nx.single_source_shortest_path_length
-    top = set(nodes)
-    bottom = set(G) - top
-    n = len(top)
-    m = len(bottom)
-    for node in top:
-        sp = dict(path_length(G, node))
-        totsp = sum(sp.values())
-        if totsp > 0.0 and len(G) > 1:
-            closeness[node] = (m + 2 * (n - 1)) / totsp
-            if normalized:
-                s = (len(sp) - 1) / (len(G) - 1)
-                closeness[node] *= s
-        else:
-            closeness[node] = 0.0
-    for node in bottom:
-        sp = dict(path_length(G, node))
-        totsp = sum(sp.values())
-        if totsp > 0.0 and len(G) > 1:
-            closeness[node] = (n + 2 * (m - 1)) / totsp
-            if normalized:
-                s = (len(sp) - 1) / (len(G) - 1)
-                closeness[node] *= s
-        else:
-            closeness[node] = 0.0
-    return closeness
+    pass

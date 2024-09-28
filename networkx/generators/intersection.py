@@ -3,13 +3,7 @@ Generators for random intersection graphs.
 """
 import networkx as nx
 from networkx.utils import py_random_state
-
-__all__ = [
-    "uniform_random_intersection_graph",
-    "k_random_intersection_graph",
-    "general_random_intersection_graph",
-]
-
+__all__ = ['uniform_random_intersection_graph', 'k_random_intersection_graph', 'general_random_intersection_graph']
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -41,11 +35,7 @@ def uniform_random_intersection_graph(n, m, p, seed=None):
        An equivalence theorem relating the evolution of the g(n, m, p)
        and g(n, p) models. Random Struct. Algorithms 16, 2 (2000), 156–176.
     """
-    from networkx.algorithms import bipartite
-
-    G = bipartite.random_graph(n, m, p, seed)
-    return nx.projected_graph(G, range(n))
-
+    pass
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -75,13 +65,7 @@ def k_random_intersection_graph(n, m, k, seed=None):
        Two models of random intersection graphs and their applications.
        Electronic Notes in Discrete Mathematics 10 (2001), 129--132.
     """
-    G = nx.empty_graph(n + m)
-    mset = range(n, n + m)
-    for v in range(n):
-        targets = seed.sample(mset, k)
-        G.add_edges_from(zip([v] * len(targets), targets))
-    return nx.projected_graph(G, range(n))
-
+    pass
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -113,12 +97,4 @@ def general_random_intersection_graph(n, m, p, seed=None):
        J. Karhum¨aki, A. Lepist¨o, and D. Sannella, Eds., vol. 3142
        of Lecture Notes in Computer Science, Springer, pp. 1029–1040.
     """
-    if len(p) != m:
-        raise ValueError("Probability list p must have m elements.")
-    G = nx.empty_graph(n + m)
-    mset = range(n, n + m)
-    for u in range(n):
-        for v, q in zip(mset, p):
-            if seed.random() < q:
-                G.add_edge(u, v)
-    return nx.projected_graph(G, range(n))
+    pass

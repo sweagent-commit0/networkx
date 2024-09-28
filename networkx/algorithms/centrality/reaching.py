@@ -1,10 +1,7 @@
 """Functions for computing reaching centrality of a node or a graph."""
-
 import networkx as nx
 from networkx.utils import pairwise
-
-__all__ = ["global_reaching_centrality", "local_reaching_centrality"]
-
+__all__ = ['global_reaching_centrality', 'local_reaching_centrality']
 
 def _average_weight(G, path, weight=None):
     """Returns the average weight of an edge in a weighted path.
@@ -22,16 +19,9 @@ def _average_weight(G, path, weight=None):
       is assumed to be the multiplicative inverse of the length of the path.
       Otherwise holds the name of the edge attribute used as weight.
     """
-    path_length = len(path) - 1
-    if path_length <= 0:
-        return 0
-    if weight is None:
-        return 1 / path_length
-    total_weight = sum(G.edges[i, j][weight] for i, j in pairwise(path))
-    return total_weight / path_length
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def global_reaching_centrality(G, weight=None, normalized=True):
     """Returns the global reaching centrality of a directed graph.
 
@@ -84,42 +74,9 @@ def global_reaching_centrality(G, weight=None, normalized=True):
            *PLoS ONE* 7.3 (2012): e33799.
            https://doi.org/10.1371/journal.pone.0033799
     """
-    if nx.is_negatively_weighted(G, weight=weight):
-        raise nx.NetworkXError("edge weights must be positive")
-    total_weight = G.size(weight=weight)
-    if total_weight <= 0:
-        raise nx.NetworkXError("Size of G must be positive")
+    pass
 
-    # If provided, weights must be interpreted as connection strength
-    # (so higher weights are more likely to be chosen). However, the
-    # shortest path algorithms in NetworkX assume the provided "weight"
-    # is actually a distance (so edges with higher weight are less
-    # likely to be chosen). Therefore we need to invert the weights when
-    # computing shortest paths.
-    #
-    # If weight is None, we leave it as-is so that the shortest path
-    # algorithm can use a faster, unweighted algorithm.
-    if weight is not None:
-
-        def as_distance(u, v, d):
-            return total_weight / d.get(weight, 1)
-
-        shortest_paths = nx.shortest_path(G, weight=as_distance)
-    else:
-        shortest_paths = nx.shortest_path(G)
-
-    centrality = local_reaching_centrality
-    # TODO This can be trivially parallelized.
-    lrc = [
-        centrality(G, node, paths=paths, weight=weight, normalized=normalized)
-        for node, paths in shortest_paths.items()
-    ]
-
-    max_lrc = max(lrc)
-    return sum(max_lrc - c for c in lrc) / (len(G) - 1)
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def local_reaching_centrality(G, v, paths=None, weight=None, normalized=True):
     """Returns the local reaching centrality of a node in a directed
     graph.
@@ -178,29 +135,4 @@ def local_reaching_centrality(G, v, paths=None, weight=None, normalized=True):
            *PLoS ONE* 7.3 (2012): e33799.
            https://doi.org/10.1371/journal.pone.0033799
     """
-    if paths is None:
-        if nx.is_negatively_weighted(G, weight=weight):
-            raise nx.NetworkXError("edge weights must be positive")
-        total_weight = G.size(weight=weight)
-        if total_weight <= 0:
-            raise nx.NetworkXError("Size of G must be positive")
-        if weight is not None:
-            # Interpret weights as lengths.
-            def as_distance(u, v, d):
-                return total_weight / d.get(weight, 1)
-
-            paths = nx.shortest_path(G, source=v, weight=as_distance)
-        else:
-            paths = nx.shortest_path(G, source=v)
-    # If the graph is unweighted, simply return the proportion of nodes
-    # reachable from the source node ``v``.
-    if weight is None and G.is_directed():
-        return (len(paths) - 1) / (len(G) - 1)
-    if normalized and weight is not None:
-        norm = G.size(weight=weight) / G.size()
-    else:
-        norm = 1
-    # TODO This can be trivially parallelized.
-    avgw = (_average_weight(G, path, weight=weight) for path in paths.values())
-    sum_avg_weight = sum(avgw) / norm
-    return sum_avg_weight / (len(G) - 1)
+    pass

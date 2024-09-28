@@ -1,10 +1,8 @@
 """
 Ego graph.
 """
-__all__ = ["ego_graph"]
-
+__all__ = ['ego_graph']
 import networkx as nx
-
 
 @nx._dispatchable(preserve_all_attrs=True, returns_graph=True)
 def ego_graph(G, n, radius=1, center=True, undirected=False, distance=None):
@@ -42,24 +40,4 @@ def ego_graph(G, n, radius=1, center=True, undirected=False, distance=None):
 
     Node, edge, and graph attributes are copied to the returned subgraph.
     """
-    if undirected:
-        if distance is not None:
-            sp, _ = nx.single_source_dijkstra(
-                G.to_undirected(), n, cutoff=radius, weight=distance
-            )
-        else:
-            sp = dict(
-                nx.single_source_shortest_path_length(
-                    G.to_undirected(), n, cutoff=radius
-                )
-            )
-    else:
-        if distance is not None:
-            sp, _ = nx.single_source_dijkstra(G, n, cutoff=radius, weight=distance)
-        else:
-            sp = dict(nx.single_source_shortest_path_length(G, n, cutoff=radius))
-
-    H = G.subgraph(sp).copy()
-    if not center:
-        H.remove_node(n)
-    return H
+    pass

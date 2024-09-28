@@ -26,21 +26,11 @@ Arbitrary data::
 
  1 2 7 green
 """
-
-__all__ = [
-    "generate_edgelist",
-    "write_edgelist",
-    "parse_edgelist",
-    "read_edgelist",
-    "read_weighted_edgelist",
-    "write_weighted_edgelist",
-]
-
+__all__ = ['generate_edgelist', 'write_edgelist', 'parse_edgelist', 'read_edgelist', 'read_weighted_edgelist', 'write_weighted_edgelist']
 import networkx as nx
 from networkx.utils import open_file
 
-
-def generate_edgelist(G, delimiter=" ", data=True):
+def generate_edgelist(G, delimiter=' ', data=True):
     """Generate a single line of the graph G in edge list format.
 
     Parameters
@@ -105,26 +95,10 @@ def generate_edgelist(G, delimiter=" ", data=True):
     --------
     write_adjlist, read_adjlist
     """
-    if data is True:
-        for u, v, d in G.edges(data=True):
-            e = u, v, dict(d)
-            yield delimiter.join(map(str, e))
-    elif data is False:
-        for u, v in G.edges(data=False):
-            e = u, v
-            yield delimiter.join(map(str, e))
-    else:
-        for u, v, d in G.edges(data=True):
-            e = [u, v]
-            try:
-                e.extend(d[k] for k in data)
-            except KeyError:
-                pass  # missing data for this edge, should warn?
-            yield delimiter.join(map(str, e))
+    pass
 
-
-@open_file(1, mode="wb")
-def write_edgelist(G, path, comments="#", delimiter=" ", data=True, encoding="utf-8"):
+@open_file(1, mode='wb')
+def write_edgelist(G, path, comments='#', delimiter=' ', data=True, encoding='utf-8'):
     """Write graph as a list of edges.
 
     Parameters
@@ -167,16 +141,10 @@ def write_edgelist(G, path, comments="#", delimiter=" ", data=True, encoding="ut
     read_edgelist
     write_weighted_edgelist
     """
-
-    for line in generate_edgelist(G, delimiter, data):
-        line += "\n"
-        path.write(line.encode(encoding))
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
-def parse_edgelist(
-    lines, comments="#", delimiter=None, create_using=None, nodetype=None, data=True
-):
+def parse_edgelist(lines, comments='#', delimiter=None, create_using=None, nodetype=None, data=True):
     """Parse lines of an edge list representation of a graph.
 
     Parameters
@@ -236,79 +204,11 @@ def parse_edgelist(
     --------
     read_weighted_edgelist
     """
-    from ast import literal_eval
+    pass
 
-    G = nx.empty_graph(0, create_using)
-    for line in lines:
-        if comments is not None:
-            p = line.find(comments)
-            if p >= 0:
-                line = line[:p]
-            if not line:
-                continue
-        # split line, should have 2 or more
-        s = line.strip().split(delimiter)
-        if len(s) < 2:
-            continue
-        u = s.pop(0)
-        v = s.pop(0)
-        d = s
-        if nodetype is not None:
-            try:
-                u = nodetype(u)
-                v = nodetype(v)
-            except Exception as err:
-                raise TypeError(
-                    f"Failed to convert nodes {u},{v} to type {nodetype}."
-                ) from err
-
-        if len(d) == 0 or data is False:
-            # no data or data type specified
-            edgedata = {}
-        elif data is True:
-            # no edge types specified
-            try:  # try to evaluate as dictionary
-                if delimiter == ",":
-                    edgedata_str = ",".join(d)
-                else:
-                    edgedata_str = " ".join(d)
-                edgedata = dict(literal_eval(edgedata_str.strip()))
-            except Exception as err:
-                raise TypeError(
-                    f"Failed to convert edge data ({d}) to dictionary."
-                ) from err
-        else:
-            # convert edge data to dictionary with specified keys and type
-            if len(d) != len(data):
-                raise IndexError(
-                    f"Edge data {d} and data_keys {data} are not the same length"
-                )
-            edgedata = {}
-            for (edge_key, edge_type), edge_value in zip(data, d):
-                try:
-                    edge_value = edge_type(edge_value)
-                except Exception as err:
-                    raise TypeError(
-                        f"Failed to convert {edge_key} data {edge_value} "
-                        f"to type {edge_type}."
-                    ) from err
-                edgedata.update({edge_key: edge_value})
-        G.add_edge(u, v, **edgedata)
-    return G
-
-
-@open_file(0, mode="rb")
+@open_file(0, mode='rb')
 @nx._dispatchable(graphs=None, returns_graph=True)
-def read_edgelist(
-    path,
-    comments="#",
-    delimiter=None,
-    create_using=None,
-    nodetype=None,
-    data=True,
-    edgetype=None,
-    encoding="utf-8",
-):
+def read_edgelist(path, comments='#', delimiter=None, create_using=None, nodetype=None, data=True, edgetype=None, encoding='utf-8'):
     """Read a graph from a list of edges.
 
     Parameters
@@ -374,18 +274,9 @@ def read_edgelist(
     Since nodes must be hashable, the function nodetype must return hashable
     types (e.g. int, float, str, frozenset - or tuples of those, etc.)
     """
-    lines = (line if isinstance(line, str) else line.decode(encoding) for line in path)
-    return parse_edgelist(
-        lines,
-        comments=comments,
-        delimiter=delimiter,
-        create_using=create_using,
-        nodetype=nodetype,
-        data=data,
-    )
+    pass
 
-
-def write_weighted_edgelist(G, path, comments="#", delimiter=" ", encoding="utf-8"):
+def write_weighted_edgelist(G, path, comments='#', delimiter=' ', encoding='utf-8'):
     """Write graph G as a list of edges with numeric weights.
 
     Parameters
@@ -415,25 +306,10 @@ def write_weighted_edgelist(G, path, comments="#", delimiter=" ", encoding="utf-
     write_edgelist
     read_weighted_edgelist
     """
-    write_edgelist(
-        G,
-        path,
-        comments=comments,
-        delimiter=delimiter,
-        data=("weight",),
-        encoding=encoding,
-    )
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
-def read_weighted_edgelist(
-    path,
-    comments="#",
-    delimiter=None,
-    create_using=None,
-    nodetype=None,
-    encoding="utf-8",
-):
+def read_weighted_edgelist(path, comments='#', delimiter=None, create_using=None, nodetype=None, encoding='utf-8'):
     """Read a graph as list of edges with numeric weights.
 
     Parameters
@@ -478,12 +354,4 @@ def read_weighted_edgelist(
     --------
     write_weighted_edgelist
     """
-    return read_edgelist(
-        path,
-        comments=comments,
-        delimiter=delimiter,
-        create_using=create_using,
-        nodetype=nodetype,
-        data=(("weight", float),),
-        encoding=encoding,
-    )
+    pass

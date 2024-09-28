@@ -59,13 +59,10 @@ For more information on graph summarization, see `Graph Summarization Methods
 and Applications: A Survey <https://dl.acm.org/doi/abs/10.1145/3186727>`_
 """
 from collections import Counter, defaultdict
-
 import networkx as nx
+__all__ = ['dedensify', 'snap_aggregation']
 
-__all__ = ["dedensify", "snap_aggregation"]
-
-
-@nx._dispatchable(mutates_input={"not copy": 3}, returns_graph=True)
+@nx._dispatchable(mutates_input={'not copy': 3}, returns_graph=True)
 def dedensify(G, threshold, prefix=None, copy=True):
     """Compresses neighborhoods around high-degree nodes
 
@@ -170,60 +167,9 @@ def dedensify(G, threshold, prefix=None, copy=True):
        Knowledge Discovery and Data Mining (pp. 1755-1764).
        http://www.cs.umd.edu/~abadi/papers/graph-dedense.pdf
     """
-    if threshold < 2:
-        raise nx.NetworkXError("The degree threshold must be >= 2")
+    pass
 
-    degrees = G.in_degree if G.is_directed() else G.degree
-    # Group nodes based on degree threshold
-    high_degree_nodes = {n for n, d in degrees if d > threshold}
-    low_degree_nodes = G.nodes() - high_degree_nodes
-
-    auxiliary = {}
-    for node in G:
-        high_degree_nbrs = frozenset(high_degree_nodes & set(G[node]))
-        if high_degree_nbrs:
-            if high_degree_nbrs in auxiliary:
-                auxiliary[high_degree_nbrs].add(node)
-            else:
-                auxiliary[high_degree_nbrs] = {node}
-
-    if copy:
-        G = G.copy()
-
-    compressor_nodes = set()
-    for index, (high_degree_nodes, low_degree_nodes) in enumerate(auxiliary.items()):
-        low_degree_node_count = len(low_degree_nodes)
-        high_degree_node_count = len(high_degree_nodes)
-        old_edges = high_degree_node_count * low_degree_node_count
-        new_edges = high_degree_node_count + low_degree_node_count
-        if old_edges <= new_edges:
-            continue
-        compression_node = "".join(str(node) for node in high_degree_nodes)
-        if prefix:
-            compression_node = str(prefix) + compression_node
-        for node in low_degree_nodes:
-            for high_node in high_degree_nodes:
-                if G.has_edge(node, high_node):
-                    G.remove_edge(node, high_node)
-
-            G.add_edge(node, compression_node)
-        for node in high_degree_nodes:
-            G.add_edge(compression_node, node)
-        compressor_nodes.add(compression_node)
-    return G, compressor_nodes
-
-
-def _snap_build_graph(
-    G,
-    groups,
-    node_attributes,
-    edge_attributes,
-    neighbor_info,
-    edge_types,
-    prefix,
-    supernode_attribute,
-    superedge_attribute,
-):
+def _snap_build_graph(G, groups, node_attributes, edge_attributes, neighbor_info, edge_types, prefix, supernode_attribute, superedge_attribute):
     """
     Build the summary graph from the data structures produced in the SNAP aggregation algorithm
 
@@ -259,49 +205,7 @@ def _snap_build_graph(
     -------
     summary graph: Networkx graph
     """
-    output = G.__class__()
-    node_label_lookup = {}
-    for index, group_id in enumerate(groups):
-        group_set = groups[group_id]
-        supernode = f"{prefix}{index}"
-        node_label_lookup[group_id] = supernode
-        supernode_attributes = {
-            attr: G.nodes[next(iter(group_set))][attr] for attr in node_attributes
-        }
-        supernode_attributes[supernode_attribute] = group_set
-        output.add_node(supernode, **supernode_attributes)
-
-    for group_id in groups:
-        group_set = groups[group_id]
-        source_supernode = node_label_lookup[group_id]
-        for other_group, group_edge_types in neighbor_info[
-            next(iter(group_set))
-        ].items():
-            if group_edge_types:
-                target_supernode = node_label_lookup[other_group]
-                summary_graph_edge = (source_supernode, target_supernode)
-
-                edge_types = [
-                    dict(zip(edge_attributes, edge_type))
-                    for edge_type in group_edge_types
-                ]
-
-                has_edge = output.has_edge(*summary_graph_edge)
-                if output.is_multigraph():
-                    if not has_edge:
-                        for edge_type in edge_types:
-                            output.add_edge(*summary_graph_edge, **edge_type)
-                    elif not output.is_directed():
-                        existing_edge_data = output.get_edge_data(*summary_graph_edge)
-                        for edge_type in edge_types:
-                            if edge_type not in existing_edge_data.values():
-                                output.add_edge(*summary_graph_edge, **edge_type)
-                else:
-                    superedge_attributes = {superedge_attribute: edge_types}
-                    output.add_edge(*summary_graph_edge, **superedge_attributes)
-
-    return output
-
+    pass
 
 def _snap_eligible_group(G, groups, group_lookup, edge_types):
     """
@@ -326,34 +230,7 @@ def _snap_eligible_group(G, groups, group_lookup, edge_types):
     -------
     tuple: group ID to split, and neighbor-groups participation_counts data structure
     """
-    nbr_info = {node: {gid: Counter() for gid in groups} for node in group_lookup}
-    for group_id in groups:
-        current_group = groups[group_id]
-
-        # build nbr_info for nodes in group
-        for node in current_group:
-            nbr_info[node] = {group_id: Counter() for group_id in groups}
-            edges = G.edges(node, keys=True) if G.is_multigraph() else G.edges(node)
-            for edge in edges:
-                neighbor = edge[1]
-                edge_type = edge_types[edge]
-                neighbor_group_id = group_lookup[neighbor]
-                nbr_info[node][neighbor_group_id][edge_type] += 1
-
-        # check if group_id is eligible to be split
-        group_size = len(current_group)
-        for other_group_id in groups:
-            edge_counts = Counter()
-            for node in current_group:
-                edge_counts.update(nbr_info[node][other_group_id].keys())
-
-            if not all(count == group_size for count in edge_counts.values()):
-                # only the nbr_info of the returned group_id is required for handling group splits
-                return group_id, nbr_info
-
-    # if no eligible groups, complete nbr_info is calculated
-    return None, nbr_info
-
+    pass
 
 def _snap_split(groups, neighbor_info, group_lookup, group_id):
     """
@@ -383,38 +260,10 @@ def _snap_split(groups, neighbor_info, group_lookup, group_id):
     dict
         The updated groups based on the split
     """
-    new_group_mappings = defaultdict(set)
-    for node in groups[group_id]:
-        signature = tuple(
-            frozenset(edge_types) for edge_types in neighbor_info[node].values()
-        )
-        new_group_mappings[signature].add(node)
+    pass
 
-    # leave the biggest new_group as the original group
-    new_groups = sorted(new_group_mappings.values(), key=len)
-    for new_group in new_groups[:-1]:
-        # Assign unused integer as the new_group_id
-        # ids are tuples, so will not interact with the original group_ids
-        new_group_id = len(groups)
-        groups[new_group_id] = new_group
-        groups[group_id] -= new_group
-        for node in new_group:
-            group_lookup[node] = new_group_id
-
-    return groups
-
-
-@nx._dispatchable(
-    node_attrs="[node_attributes]", edge_attrs="[edge_attributes]", returns_graph=True
-)
-def snap_aggregation(
-    G,
-    node_attributes,
-    edge_attributes=(),
-    prefix="Supernode-",
-    supernode_attribute="group",
-    superedge_attribute="types",
-):
+@nx._dispatchable(node_attrs='[node_attributes]', edge_attrs='[edge_attributes]', returns_graph=True)
+def snap_aggregation(G, node_attributes, edge_attributes=(), prefix='Supernode-', supernode_attribute='group', superedge_attribute='types'):
     """Creates a summary graph based on attributes and connectivity.
 
     This function uses the Summarization by Grouping Nodes on Attributes
@@ -521,43 +370,4 @@ def snap_aggregation(
        Management of Data (SIGMOD’08), pages 567–580, Vancouver, Canada,
        June 2008.
     """
-    edge_types = {
-        edge: tuple(attrs.get(attr) for attr in edge_attributes)
-        for edge, attrs in G.edges.items()
-    }
-    if not G.is_directed():
-        if G.is_multigraph():
-            # list is needed to avoid mutating while iterating
-            edges = [((v, u, k), etype) for (u, v, k), etype in edge_types.items()]
-        else:
-            # list is needed to avoid mutating while iterating
-            edges = [((v, u), etype) for (u, v), etype in edge_types.items()]
-        edge_types.update(edges)
-
-    group_lookup = {
-        node: tuple(attrs[attr] for attr in node_attributes)
-        for node, attrs in G.nodes.items()
-    }
-    groups = defaultdict(set)
-    for node, node_type in group_lookup.items():
-        groups[node_type].add(node)
-
-    eligible_group_id, nbr_info = _snap_eligible_group(
-        G, groups, group_lookup, edge_types
-    )
-    while eligible_group_id:
-        groups = _snap_split(groups, nbr_info, group_lookup, eligible_group_id)
-        eligible_group_id, nbr_info = _snap_eligible_group(
-            G, groups, group_lookup, edge_types
-        )
-    return _snap_build_graph(
-        G,
-        groups,
-        node_attributes,
-        edge_attributes,
-        nbr_info,
-        edge_types,
-        prefix,
-        supernode_attribute,
-        superedge_attribute,
-    )
+    pass

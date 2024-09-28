@@ -1,16 +1,12 @@
 """
 Dominance algorithms.
 """
-
 from functools import reduce
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['immediate_dominators', 'dominance_frontiers']
 
-__all__ = ["immediate_dominators", "dominance_frontiers"]
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def immediate_dominators(G, start):
     """Returns the immediate dominators of all nodes of a directed graph.
@@ -54,35 +50,7 @@ def immediate_dominators(G, start):
            A simple, fast dominance algorithm.
            Software Practice & Experience, 4:110, 2001.
     """
-    if start not in G:
-        raise nx.NetworkXError("start is not in G")
-
-    idom = {start: start}
-
-    order = list(nx.dfs_postorder_nodes(G, start))
-    dfn = {u: i for i, u in enumerate(order)}
-    order.pop()
-    order.reverse()
-
-    def intersect(u, v):
-        while u != v:
-            while dfn[u] < dfn[v]:
-                u = idom[u]
-            while dfn[u] > dfn[v]:
-                v = idom[v]
-        return u
-
-    changed = True
-    while changed:
-        changed = False
-        for u in order:
-            new_idom = reduce(intersect, (v for v in G.pred[u] if v in idom))
-            if u not in idom or idom[u] != new_idom:
-                idom[u] = new_idom
-                changed = True
-
-    return idom
-
+    pass
 
 @nx._dispatchable
 def dominance_frontiers(G, start):
@@ -122,14 +90,4 @@ def dominance_frontiers(G, start):
            A simple, fast dominance algorithm.
            Software Practice & Experience, 4:110, 2001.
     """
-    idom = nx.immediate_dominators(G, start)
-
-    df = {u: set() for u in idom}
-    for u in idom:
-        if len(G.pred[u]) >= 2:
-            for v in G.pred[u]:
-                if v in idom:
-                    while v != idom[u]:
-                        df[v].add(u)
-                        v = idom[v]
-    return df
+    pass

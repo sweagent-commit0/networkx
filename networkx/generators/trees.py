@@ -27,26 +27,12 @@ trees and forests uniformly at random. A rooted tree is a tree
 with a designated root node. A rooted forest is a disjoint union
 of rooted trees.
 """
-
 import warnings
 from collections import Counter, defaultdict
 from math import comb, factorial
-
 import networkx as nx
 from networkx.utils import py_random_state
-
-__all__ = [
-    "prefix_tree",
-    "prefix_tree_recursive",
-    "random_tree",
-    "random_labeled_tree",
-    "random_labeled_rooted_tree",
-    "random_labeled_rooted_forest",
-    "random_unlabeled_tree",
-    "random_unlabeled_rooted_tree",
-    "random_unlabeled_rooted_forest",
-]
-
+__all__ = ['prefix_tree', 'prefix_tree_recursive', 'random_tree', 'random_labeled_tree', 'random_labeled_rooted_tree', 'random_labeled_rooted_forest', 'random_unlabeled_tree', 'random_unlabeled_rooted_tree', 'random_unlabeled_rooted_forest']
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def prefix_tree(paths):
@@ -139,47 +125,7 @@ def prefix_tree(paths):
         >>> sorted(recovered)
         ['ab', 'abs', 'ad']
     """
-
-    def get_children(parent, paths):
-        children = defaultdict(list)
-        # Populate dictionary with key(s) as the child/children of the root and
-        # value(s) as the remaining paths of the corresponding child/children
-        for path in paths:
-            # If path is empty, we add an edge to the NIL node.
-            if not path:
-                tree.add_edge(parent, NIL)
-                continue
-            child, *rest = path
-            # `child` may exist as the head of more than one path in `paths`.
-            children[child].append(rest)
-        return children
-
-    # Initialize the prefix tree with a root node and a nil node.
-    tree = nx.DiGraph()
-    root = 0
-    tree.add_node(root, source=None)
-    NIL = -1
-    tree.add_node(NIL, source="NIL")
-    children = get_children(root, paths)
-    stack = [(root, iter(children.items()))]
-    while stack:
-        parent, remaining_children = stack[-1]
-        try:
-            child, remaining_paths = next(remaining_children)
-        # Pop item off stack if there are no remaining children
-        except StopIteration:
-            stack.pop()
-            continue
-        # We relabel each child with an unused name.
-        new_name = len(tree) - 1
-        # The "source" node attribute stores the original node name.
-        tree.add_node(new_name, source=child)
-        tree.add_edge(parent, new_name)
-        children = get_children(new_name, remaining_paths)
-        stack.append((new_name, iter(children.items())))
-
-    return tree
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def prefix_tree_recursive(paths):
@@ -275,53 +221,7 @@ def prefix_tree_recursive(paths):
         >>> sorted(recovered)
         ['ab', 'abs', 'ad']
     """
-
-    def _helper(paths, root, tree):
-        """Recursively create a trie from the given list of paths.
-
-        `paths` is a list of paths, each of which is itself a list of
-        nodes, relative to the given `root` (but not including it). This
-        list of paths will be interpreted as a tree-like structure, in
-        which two paths that share a prefix represent two branches of
-        the tree with the same initial segment.
-
-        `root` is the parent of the node at index 0 in each path.
-
-        `tree` is the "accumulator", the :class:`networkx.DiGraph`
-        representing the branching to which the new nodes and edges will
-        be added.
-
-        """
-        # For each path, remove the first node and make it a child of root.
-        # Any remaining paths then get processed recursively.
-        children = defaultdict(list)
-        for path in paths:
-            # If path is empty, we add an edge to the NIL node.
-            if not path:
-                tree.add_edge(root, NIL)
-                continue
-            child, *rest = path
-            # `child` may exist as the head of more than one path in `paths`.
-            children[child].append(rest)
-        # Add a node for each child, connect root, recurse to remaining paths
-        for child, remaining_paths in children.items():
-            # We relabel each child with an unused name.
-            new_name = len(tree) - 1
-            # The "source" node attribute stores the original node name.
-            tree.add_node(new_name, source=child)
-            tree.add_edge(root, new_name)
-            _helper(remaining_paths, new_name, tree)
-
-    # Initialize the prefix tree with a root node and a nil node.
-    tree = nx.DiGraph()
-    root = 0
-    tree.add_node(root, source=None)
-    NIL = -1
-    tree.add_node(NIL, source="NIL")
-    # Populate the tree.
-    _helper(paths, root, tree)
-    return tree
-
+    pass
 
 @py_random_state(1)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -391,41 +291,9 @@ def random_tree(n, seed=None, create_using=None):
             │           └─╼ 5
             └─╼ 9
     """
-    warnings.warn(
-        (
-            "\n\nrandom_tree is deprecated and will be removed in NX v3.4\n"
-            "Use random_labeled_tree instead."
-        ),
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    if n == 0:
-        raise nx.NetworkXPointlessConcept("the null graph is not a tree")
-    # Cannot create a Prüfer sequence unless `n` is at least two.
-    if n == 1:
-        utree = nx.empty_graph(1, create_using)
-    else:
-        sequence = [seed.choice(range(n)) for i in range(n - 2)]
-        utree = nx.from_prufer_sequence(sequence)
+    pass
 
-    if create_using is None:
-        tree = utree
-    else:
-        tree = nx.empty_graph(0, create_using)
-        if tree.is_directed():
-            # Use a arbitrary root node and dfs to define edge directions
-            edges = nx.dfs_edges(utree, source=0)
-        else:
-            edges = utree.edges
-
-        # Populate the specified graph type
-        tree.add_nodes_from(utree.nodes)
-        tree.add_edges_from(edges)
-
-    return tree
-
-
-@py_random_state("seed")
+@py_random_state('seed')
 @nx._dispatchable(graphs=None, returns_graph=True)
 def random_labeled_tree(n, *, seed=None):
     """Returns a labeled tree on `n` nodes chosen uniformly at random.
@@ -453,15 +321,9 @@ def random_labeled_tree(n, *, seed=None):
     NetworkXPointlessConcept
         If `n` is zero (because the null graph is not a tree).
     """
-    # Cannot create a Prüfer sequence unless `n` is at least two.
-    if n == 0:
-        raise nx.NetworkXPointlessConcept("the null graph is not a tree")
-    if n == 1:
-        return nx.empty_graph(1)
-    return nx.from_prufer_sequence([seed.choice(range(n)) for i in range(n - 2)])
+    pass
 
-
-@py_random_state("seed")
+@py_random_state('seed')
 @nx._dispatchable(graphs=None, returns_graph=True)
 def random_labeled_rooted_tree(n, *, seed=None):
     """Returns a labeled rooted tree with `n` nodes.
@@ -493,12 +355,9 @@ def random_labeled_rooted_tree(n, *, seed=None):
     NetworkXPointlessConcept
         If `n` is zero (because the null graph is not a tree).
     """
-    t = random_labeled_tree(n, seed=seed)
-    t.graph["root"] = seed.randint(0, n - 1)
-    return t
+    pass
 
-
-@py_random_state("seed")
+@py_random_state('seed')
 @nx._dispatchable(graphs=None, returns_graph=True)
 def random_labeled_rooted_forest(n, *, seed=None):
     """Returns a labeled rooted forest with `n` nodes.
@@ -529,58 +388,7 @@ def random_labeled_rooted_forest(n, *, seed=None):
         Naturwissenschaften an der Formal- und Naturwissenschaftlichen
         Fakultät der Universität Wien. Wien, May 2000.
     """
-
-    # Select the number of roots by iterating over the cumulative count of trees
-    # with at most k roots
-    def _select_k(n, seed):
-        r = seed.randint(0, (n + 1) ** (n - 1) - 1)
-        cum_sum = 0
-        for k in range(1, n):
-            cum_sum += (factorial(n - 1) * n ** (n - k)) // (
-                factorial(k - 1) * factorial(n - k)
-            )
-            if r < cum_sum:
-                return k
-
-        return n
-
-    F = nx.empty_graph(n)
-    if n == 0:
-        F.graph["roots"] = {}
-        return F
-    # Select the number of roots k
-    k = _select_k(n, seed)
-    if k == n:
-        F.graph["roots"] = set(range(n))
-        return F  # Nothing to do
-    # Select the roots
-    roots = seed.sample(range(n), k)
-    # Nonroots
-    p = set(range(n)).difference(roots)
-    # Coding sequence
-    N = [seed.randint(0, n - 1) for i in range(n - k - 1)]
-    # Multiset of elements in N also in p
-    degree = Counter([x for x in N if x in p])
-    # Iterator over the elements of p with degree zero
-    iterator = iter(x for x in p if degree[x] == 0)
-    u = last = next(iterator)
-    # This loop is identical to that for Prüfer sequences,
-    # except that we can draw nodes only from p
-    for v in N:
-        F.add_edge(u, v)
-        degree[v] -= 1
-        if v < last and degree[v] == 0:
-            u = v
-        else:
-            last = u = next(iterator)
-
-    F.add_edge(u, roots[0])
-    F.graph["roots"] = set(roots)
-    return F
-
-
-# The following functions support generation of unlabeled trees and forests.
-
+    pass
 
 def _to_nx(edges, n_nodes, root=None, roots=None):
     """
@@ -605,14 +413,7 @@ def _to_nx(edges, n_nodes, root=None, roots=None):
     :class:`networkx.Graph`
         The graph with `n_nodes` nodes and edges given by `edges`.
     """
-    G = nx.empty_graph(n_nodes)
-    G.add_edges_from(edges)
-    if root is not None:
-        G.graph["root"] = root
-    if roots is not None:
-        G.graph["roots"] = roots
-    return G
-
+    pass
 
 def _num_rooted_trees(n, cache_trees):
     """Returns the number of unlabeled rooted trees with `n` nodes.
@@ -632,19 +433,7 @@ def _num_rooted_trees(n, cache_trees):
     int
         The number of unlabeled rooted trees with `n` nodes.
     """
-    for n_i in range(len(cache_trees), n + 1):
-        cache_trees.append(
-            sum(
-                [
-                    d * cache_trees[n_i - j * d] * cache_trees[d]
-                    for d in range(1, n_i)
-                    for j in range(1, (n_i - 1) // d + 1)
-                ]
-            )
-            // (n_i - 1)
-        )
-    return cache_trees[n]
-
+    pass
 
 def _select_jd_trees(n, cache_trees, seed):
     """Returns a pair $(j,d)$ with a specific probability
@@ -674,18 +463,7 @@ def _select_jd_trees(n, cache_trees, seed):
         Academic Press, 1978.
         https://doi.org/10.1016/C2013-0-11243-3
     """
-    p = seed.randint(0, _num_rooted_trees(n, cache_trees) * (n - 1) - 1)
-    cumsum = 0
-    for d in range(n - 1, 0, -1):
-        for j in range(1, (n - 1) // d + 1):
-            cumsum += (
-                d
-                * _num_rooted_trees(n - j * d, cache_trees)
-                * _num_rooted_trees(d, cache_trees)
-            )
-            if p < cumsum:
-                return (j, d)
-
+    pass
 
 def _random_unlabeled_rooted_tree(n, cache_trees, seed):
     """Returns an unlabeled rooted tree with `n` nodes.
@@ -717,26 +495,9 @@ def _random_unlabeled_rooted_tree(n, cache_trees, seed):
         Academic Press, 1978.
         https://doi.org/10.1016/C2013-0-11243-3
     """
-    if n == 1:
-        edges, n_nodes = [], 1
-        return edges, n_nodes
-    if n == 2:
-        edges, n_nodes = [(0, 1)], 2
-        return edges, n_nodes
+    pass
 
-    j, d = _select_jd_trees(n, cache_trees, seed)
-    t1, t1_nodes = _random_unlabeled_rooted_tree(n - j * d, cache_trees, seed)
-    t2, t2_nodes = _random_unlabeled_rooted_tree(d, cache_trees, seed)
-    t12 = [(0, t2_nodes * i + t1_nodes) for i in range(j)]
-    t1.extend(t12)
-    for _ in range(j):
-        t1.extend((n1 + t1_nodes, n2 + t1_nodes) for n1, n2 in t2)
-        t1_nodes += t2_nodes
-
-    return t1, t1_nodes
-
-
-@py_random_state("seed")
+@py_random_state('seed')
 @nx._dispatchable(graphs=None, returns_graph=True)
 def random_unlabeled_rooted_tree(n, *, number_of_trees=None, seed=None):
     """Returns a number of unlabeled rooted trees uniformly at random
@@ -782,16 +543,7 @@ def random_unlabeled_rooted_tree(n, *, number_of_trees=None, seed=None):
         Academic Press, 1978.
         https://doi.org/10.1016/C2013-0-11243-3
     """
-    if n == 0:
-        raise nx.NetworkXPointlessConcept("the null graph is not a tree")
-    cache_trees = [0, 1]  # initial cache of number of rooted trees
-    if number_of_trees is None:
-        return _to_nx(*_random_unlabeled_rooted_tree(n, cache_trees, seed), root=0)
-    return [
-        _to_nx(*_random_unlabeled_rooted_tree(n, cache_trees, seed), root=0)
-        for i in range(number_of_trees)
-    ]
-
+    pass
 
 def _num_rooted_forests(n, q, cache_forests):
     """Returns the number of unlabeled rooted forests with `n` nodes, and with
@@ -822,21 +574,7 @@ def _num_rooted_forests(n, q, cache_forests):
         Journal of Algorithms 2.2 (1981): 204-207.
         https://doi.org/10.1016/0196-6774(81)90021-3
     """
-    for n_i in range(len(cache_forests), n + 1):
-        q_i = min(n_i, q)
-        cache_forests.append(
-            sum(
-                [
-                    d * cache_forests[n_i - j * d] * cache_forests[d - 1]
-                    for d in range(1, q_i + 1)
-                    for j in range(1, n_i // d + 1)
-                ]
-            )
-            // n_i
-        )
-
-    return cache_forests[n]
-
+    pass
 
 def _select_jd_forests(n, q, cache_forests, seed):
     """Given `n` and `q`, returns a pair of positive integers $(j,d)$
@@ -864,18 +602,7 @@ def _select_jd_forests(n, q, cache_forests, seed):
         Journal of Algorithms 2.2 (1981): 204-207.
         https://doi.org/10.1016/0196-6774(81)90021-3
     """
-    p = seed.randint(0, _num_rooted_forests(n, q, cache_forests) * n - 1)
-    cumsum = 0
-    for d in range(q, 0, -1):
-        for j in range(1, n // d + 1):
-            cumsum += (
-                d
-                * _num_rooted_forests(n - j * d, q, cache_forests)
-                * _num_rooted_forests(d - 1, q, cache_forests)
-            )
-            if p < cumsum:
-                return (j, d)
-
+    pass
 
 def _random_unlabeled_rooted_forest(n, q, cache_trees, cache_forests, seed):
     """Returns an unlabeled rooted forest with `n` nodes, and with no more
@@ -906,22 +633,9 @@ def _random_unlabeled_rooted_forest(n, q, cache_trees, cache_forests, seed):
         Journal of Algorithms 2.2 (1981): 204-207.
         https://doi.org/10.1016/0196-6774(81)90021-3
     """
-    if n == 0:
-        return ([], 0, [])
+    pass
 
-    j, d = _select_jd_forests(n, q, cache_forests, seed)
-    t1, t1_nodes, r1 = _random_unlabeled_rooted_forest(
-        n - j * d, q, cache_trees, cache_forests, seed
-    )
-    t2, t2_nodes = _random_unlabeled_rooted_tree(d, cache_trees, seed)
-    for _ in range(j):
-        r1.append(t1_nodes)
-        t1.extend((n1 + t1_nodes, n2 + t1_nodes) for n1, n2 in t2)
-        t1_nodes += t2_nodes
-    return t1, t1_nodes, r1
-
-
-@py_random_state("seed")
+@py_random_state('seed')
 @nx._dispatchable(graphs=None, returns_graph=True)
 def random_unlabeled_rooted_forest(n, *, q=None, number_of_forests=None, seed=None):
     """Returns a forest or list of forests selected at random.
@@ -970,28 +684,7 @@ def random_unlabeled_rooted_forest(n, *, q=None, number_of_forests=None, seed=No
         Journal of Algorithms 2.2 (1981): 204-207.
         https://doi.org/10.1016/0196-6774(81)90021-3
     """
-    if q is None:
-        q = n
-    if q == 0 and n != 0:
-        raise ValueError("q must be a positive integer if n is positive.")
-
-    cache_trees = [0, 1]  # initial cache of number of rooted trees
-    cache_forests = [1]  # initial cache of number of rooted forests
-
-    if number_of_forests is None:
-        g, nodes, rs = _random_unlabeled_rooted_forest(
-            n, q, cache_trees, cache_forests, seed
-        )
-        return _to_nx(g, nodes, roots=set(rs))
-
-    res = []
-    for i in range(number_of_forests):
-        g, nodes, rs = _random_unlabeled_rooted_forest(
-            n, q, cache_trees, cache_forests, seed
-        )
-        res.append(_to_nx(g, nodes, roots=set(rs)))
-    return res
-
+    pass
 
 def _num_trees(n, cache_trees):
     """Returns the number of unlabeled trees with `n` nodes.
@@ -1010,16 +703,7 @@ def _num_trees(n, cache_trees):
     int
         The number of unlabeled trees with `n` nodes.
     """
-    r = _num_rooted_trees(n, cache_trees) - sum(
-        [
-            _num_rooted_trees(j, cache_trees) * _num_rooted_trees(n - j, cache_trees)
-            for j in range(1, n // 2 + 1)
-        ]
-    )
-    if n % 2 == 0:
-        r += comb(_num_rooted_trees(n // 2, cache_trees) + 1, 2)
-    return r
-
+    pass
 
 def _bicenter(n, cache, seed):
     """Returns a bi-centroidal tree on `n` nodes drawn uniformly at random.
@@ -1046,15 +730,7 @@ def _bicenter(n, cache, seed):
         Journal of Algorithms 2.2 (1981): 204-207.
         https://doi.org/10.1016/0196-6774(81)90021-3
     """
-    t, t_nodes = _random_unlabeled_rooted_tree(n // 2, cache, seed)
-    if seed.randint(0, _num_rooted_trees(n // 2, cache)) == 0:
-        t2, t2_nodes = t, t_nodes
-    else:
-        t2, t2_nodes = _random_unlabeled_rooted_tree(n // 2, cache, seed)
-    t.extend([(n1 + (n // 2), n2 + (n // 2)) for n1, n2 in t2])
-    t.append((0, n // 2))
-    return t, t_nodes + t2_nodes
-
+    pass
 
 def _random_unlabeled_tree(n, cache_trees, cache_forests, seed):
     """Returns a tree on `n` nodes drawn uniformly at random.
@@ -1083,22 +759,9 @@ def _random_unlabeled_tree(n, cache_trees, cache_forests, seed):
         Journal of Algorithms 2.2 (1981): 204-207.
         https://doi.org/10.1016/0196-6774(81)90021-3
     """
-    if n % 2 == 1:
-        p = 0
-    else:
-        p = comb(_num_rooted_trees(n // 2, cache_trees) + 1, 2)
-    if seed.randint(0, _num_trees(n, cache_trees) - 1) < p:
-        return _bicenter(n, cache_trees, seed)
-    else:
-        f, n_f, r = _random_unlabeled_rooted_forest(
-            n - 1, (n - 1) // 2, cache_trees, cache_forests, seed
-        )
-        for i in r:
-            f.append((i, n_f))
-        return f, n_f + 1
+    pass
 
-
-@py_random_state("seed")
+@py_random_state('seed')
 @nx._dispatchable(graphs=None, returns_graph=True)
 def random_unlabeled_tree(n, *, number_of_trees=None, seed=None):
     """Returns a tree or list of trees chosen randomly.
@@ -1142,15 +805,4 @@ def random_unlabeled_tree(n, *, number_of_trees=None, seed=None):
         Journal of Algorithms 2.2 (1981): 204-207.
         https://doi.org/10.1016/0196-6774(81)90021-3
     """
-    if n == 0:
-        raise nx.NetworkXPointlessConcept("the null graph is not a tree")
-
-    cache_trees = [0, 1]  # initial cache of number of rooted trees
-    cache_forests = [1]  # initial cache of number of rooted forests
-    if number_of_trees is None:
-        return _to_nx(*_random_unlabeled_tree(n, cache_trees, cache_forests, seed))
-    else:
-        return [
-            _to_nx(*_random_unlabeled_tree(n, cache_trees, cache_forests, seed))
-            for i in range(number_of_trees)
-        ]
+    pass

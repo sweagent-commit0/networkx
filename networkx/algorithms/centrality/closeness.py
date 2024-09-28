@@ -2,24 +2,21 @@
 Closeness centrality measures.
 """
 import functools
-
 import networkx as nx
 from networkx.exception import NetworkXError
 from networkx.utils.decorators import not_implemented_for
+__all__ = ['closeness_centrality', 'incremental_closeness_centrality']
 
-__all__ = ["closeness_centrality", "incremental_closeness_centrality"]
-
-
-@nx._dispatchable(edge_attrs="distance")
+@nx._dispatchable(edge_attrs='distance')
 def closeness_centrality(G, u=None, distance=None, wf_improved=True):
-    r"""Compute closeness centrality for nodes.
+    """Compute closeness centrality for nodes.
 
     Closeness centrality [1]_ of a node `u` is the reciprocal of the
     average shortest path distance to `u` over all `n-1` reachable nodes.
 
     .. math::
 
-        C(u) = \frac{n - 1}{\sum_{v=1}^{n-1} d(v, u)},
+        C(u) = \\frac{n - 1}{\\sum_{v=1}^{n-1} d(v, u)},
 
     where `d(v, u)` is the shortest-path distance between `v` and `u`,
     and `n-1` is the number of nodes reachable from `u`. Notice that the
@@ -38,7 +35,7 @@ def closeness_centrality(G, u=None, distance=None, wf_improved=True):
 
     .. math::
 
-        C_{WF}(u) = \frac{n-1}{N-1} \frac{n - 1}{\sum_{v=1}^{n-1} d(v, u)},
+        C_{WF}(u) = \\frac{n-1}{N-1} \\frac{n - 1}{\\sum_{v=1}^{n-1} d(v, u)},
 
     Parameters
     ----------
@@ -103,45 +100,12 @@ def closeness_centrality(G, u=None, distance=None, wf_improved=True):
        Social Network Analysis: Methods and Applications, 1994,
        Cambridge University Press.
     """
-    if G.is_directed():
-        G = G.reverse()  # create a reversed graph view
+    pass
 
-    if distance is not None:
-        # use Dijkstra's algorithm with specified attribute as edge weight
-        path_length = functools.partial(
-            nx.single_source_dijkstra_path_length, weight=distance
-        )
-    else:
-        path_length = nx.single_source_shortest_path_length
-
-    if u is None:
-        nodes = G.nodes
-    else:
-        nodes = [u]
-    closeness_dict = {}
-    for n in nodes:
-        sp = path_length(G, n)
-        totsp = sum(sp.values())
-        len_G = len(G)
-        _closeness_centrality = 0.0
-        if totsp > 0.0 and len_G > 1:
-            _closeness_centrality = (len(sp) - 1.0) / totsp
-            # normalize to number of nodes-1 in connected part
-            if wf_improved:
-                s = (len(sp) - 1.0) / (len_G - 1)
-                _closeness_centrality *= s
-        closeness_dict[n] = _closeness_centrality
-    if u is not None:
-        return closeness_dict[u]
-    return closeness_dict
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable(mutates_input=True)
-def incremental_closeness_centrality(
-    G, edge, prev_cc=None, insertion=True, wf_improved=True
-):
-    r"""Incremental closeness centrality for nodes.
+def incremental_closeness_centrality(G, edge, prev_cc=None, insertion=True, wf_improved=True):
+    """Incremental closeness centrality for nodes.
 
     Compute closeness centrality for nodes using level-based work filtering
     as described in Incremental Algorithms for Closeness Centrality by Sariyuce et al.
@@ -153,8 +117,8 @@ def incremental_closeness_centrality(
     From "Incremental Algorithms for Closeness Centrality":
 
     Theorem 1: Let :math:`G = (V, E)` be a graph and u and v be two vertices in V
-    such that there is no edge (u, v) in E. Let :math:`G' = (V, E \cup uv)`
-    Then :math:`cc[s] = cc'[s]` if and only if :math:`\left|dG(s, u) - dG(s, v)\right| \leq 1`.
+    such that there is no edge (u, v) in E. Let :math:`G' = (V, E \\cup uv)`
+    Then :math:`cc[s] = cc'[s]` if and only if :math:`\\left|dG(s, u) - dG(s, v)\\right| \\leq 1`.
 
     Where :math:`dG(u, v)` denotes the length of the shortest path between
     two vertices u, v in a graph G, cc[s] is the closeness centrality for a
@@ -167,7 +131,7 @@ def incremental_closeness_centrality(
     other nodes to u and to v before the node is added. When removing an edge,
     we compute the shortest path lengths after the edge is removed. Then we
     apply Theorem 1 to use previously computed closeness centrality for nodes
-    where :math:`\left|dG(s, u) - dG(s, v)\right| \leq 1`. This works only for
+    where :math:`\\left|dG(s, u) - dG(s, v)\\right| \\leq 1`. This works only for
     undirected, unweighted graphs; the distance argument is not supported.
 
     Closeness centrality [1]_ of a node `u` is the reciprocal of the
@@ -178,7 +142,7 @@ def incremental_closeness_centrality(
 
     .. math::
 
-        C(u) = \frac{n - 1}{\sum_{v=1}^{n-1} d(v, u)},
+        C(u) = \\frac{n - 1}{\\sum_{v=1}^{n-1} d(v, u)},
 
     where `d(v, u)` is the shortest-path distance between `v` and `u`,
     and `n` is the number of nodes in the graph.
@@ -231,51 +195,4 @@ def incremental_closeness_centrality(
        Algorithms for Closeness Centrality. 2013 IEEE International Conference on Big Data
        http://sariyuce.com/papers/bigdata13.pdf
     """
-    if prev_cc is not None and set(prev_cc.keys()) != set(G.nodes()):
-        raise NetworkXError("prev_cc and G do not have the same nodes")
-
-    # Unpack edge
-    (u, v) = edge
-    path_length = nx.single_source_shortest_path_length
-
-    if insertion:
-        # For edge insertion, we want shortest paths before the edge is inserted
-        du = path_length(G, u)
-        dv = path_length(G, v)
-
-        G.add_edge(u, v)
-    else:
-        G.remove_edge(u, v)
-
-        # For edge removal, we want shortest paths after the edge is removed
-        du = path_length(G, u)
-        dv = path_length(G, v)
-
-    if prev_cc is None:
-        return nx.closeness_centrality(G)
-
-    nodes = G.nodes()
-    closeness_dict = {}
-    for n in nodes:
-        if n in du and n in dv and abs(du[n] - dv[n]) <= 1:
-            closeness_dict[n] = prev_cc[n]
-        else:
-            sp = path_length(G, n)
-            totsp = sum(sp.values())
-            len_G = len(G)
-            _closeness_centrality = 0.0
-            if totsp > 0.0 and len_G > 1:
-                _closeness_centrality = (len(sp) - 1.0) / totsp
-                # normalize to number of nodes-1 in connected part
-                if wf_improved:
-                    s = (len(sp) - 1.0) / (len_G - 1)
-                    _closeness_centrality *= s
-            closeness_dict[n] = _closeness_centrality
-
-    # Leave the graph as we found it
-    if insertion:
-        G.remove_edge(u, v)
-    else:
-        G.add_edge(u, v)
-
-    return closeness_dict
+    pass

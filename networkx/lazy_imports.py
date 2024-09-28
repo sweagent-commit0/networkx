@@ -4,9 +4,7 @@ import inspect
 import os
 import sys
 import types
-
-__all__ = ["attach", "_lazy_import"]
-
+__all__ = ['attach', '_lazy_import']
 
 def attach(module_name, submodules=None, submod_attrs=None):
     """Attach lazily loaded submodules, and functions or other attributes.
@@ -46,56 +44,20 @@ def attach(module_name, submodules=None, submod_attrs=None):
     __getattr__, __dir__, __all__
 
     """
-    if submod_attrs is None:
-        submod_attrs = {}
-
-    if submodules is None:
-        submodules = set()
-    else:
-        submodules = set(submodules)
-
-    attr_to_modules = {
-        attr: mod for mod, attrs in submod_attrs.items() for attr in attrs
-    }
-
-    __all__ = list(submodules | attr_to_modules.keys())
-
-    def __getattr__(name):
-        if name in submodules:
-            return importlib.import_module(f"{module_name}.{name}")
-        elif name in attr_to_modules:
-            submod = importlib.import_module(f"{module_name}.{attr_to_modules[name]}")
-            return getattr(submod, name)
-        else:
-            raise AttributeError(f"No {module_name} attribute {name}")
-
-    def __dir__():
-        return __all__
-
-    if os.environ.get("EAGER_IMPORT", ""):
-        for attr in set(attr_to_modules.keys()) | submodules:
-            __getattr__(attr)
-
-    return __getattr__, __dir__, list(__all__)
-
+    pass
 
 class DelayedImportErrorModule(types.ModuleType):
+
     def __init__(self, frame_data, *args, **kwargs):
         self.__frame_data = frame_data
         super().__init__(*args, **kwargs)
 
     def __getattr__(self, x):
-        if x in ("__class__", "__file__", "__frame_data"):
+        if x in ('__class__', '__file__', '__frame_data'):
             super().__getattr__(x)
         else:
             fd = self.__frame_data
-            raise ModuleNotFoundError(
-                f"No module named '{fd['spec']}'\n\n"
-                "This error is lazily reported, having originally occurred in\n"
-                f'  File {fd["filename"]}, line {fd["lineno"]}, in {fd["function"]}\n\n'
-                f'----> {"".join(fd["code_context"] or "").strip()}'
-            )
-
+            raise ModuleNotFoundError(f"No module named '{fd['spec']}'\n\nThis error is lazily reported, having originally occurred in\n  File {fd['filename']}, line {fd['lineno']}, in {fd['function']}\n\n----> {''.join(fd['code_context'] or '').strip()}")
 
 def _lazy_import(fullname):
     """Return a lazily imported proxy for a module or library.
@@ -157,32 +119,4 @@ def _lazy_import(fullname):
         Actual loading of the module occurs upon first attribute request.
 
     """
-    try:
-        return sys.modules[fullname]
-    except:
-        pass
-
-    # Not previously loaded -- look it up
-    spec = importlib.util.find_spec(fullname)
-
-    if spec is None:
-        try:
-            parent = inspect.stack()[1]
-            frame_data = {
-                "spec": fullname,
-                "filename": parent.filename,
-                "lineno": parent.lineno,
-                "function": parent.function,
-                "code_context": parent.code_context,
-            }
-            return DelayedImportErrorModule(frame_data, "DelayedImportErrorModule")
-        finally:
-            del parent
-
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[fullname] = module
-
-    loader = importlib.util.LazyLoader(spec.loader)
-    loader.exec_module(module)
-
-    return module
+    pass

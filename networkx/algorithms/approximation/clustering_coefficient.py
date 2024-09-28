@@ -1,14 +1,12 @@
 import networkx as nx
 from networkx.utils import not_implemented_for, py_random_state
+__all__ = ['average_clustering']
 
-__all__ = ["average_clustering"]
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @py_random_state(2)
-@nx._dispatchable(name="approximate_average_clustering")
+@nx._dispatchable(name='approximate_average_clustering')
 def average_clustering(G, trials=1000, seed=None):
-    r"""Estimates the average clustering coefficient of G.
+    """Estimates the average clustering coefficient of G.
 
     The local clustering of each node in `G` is the fraction of triangles
     that actually exist over all possible triangles in its neighborhood.
@@ -58,14 +56,4 @@ def average_clustering(G, trials=1000, seed=None):
        https://doi.org/10.5445/IR/1000001239
 
     """
-    n = len(G)
-    triangles = 0
-    nodes = list(G)
-    for i in [int(seed.random() * n) for i in range(trials)]:
-        nbrs = list(G[nodes[i]])
-        if len(nbrs) < 2:
-            continue
-        u, v = seed.sample(nbrs, 2)
-        if u in G[v]:
-            triangles += 1
-    return triangles / trials
+    pass

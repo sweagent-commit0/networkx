@@ -1,13 +1,10 @@
 """Bridge-finding algorithms."""
 from itertools import chain
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['bridges', 'has_bridges', 'local_bridges']
 
-__all__ = ["bridges", "has_bridges", "local_bridges"]
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def bridges(G, root=None):
     """Generate all bridges in a graph.
@@ -66,21 +63,9 @@ def bridges(G, root=None):
     ----------
     .. [1] https://en.wikipedia.org/wiki/Bridge_%28graph_theory%29#Bridge-Finding_with_Chain_Decompositions
     """
-    multigraph = G.is_multigraph()
-    H = nx.Graph(G) if multigraph else G
-    chains = nx.chain_decomposition(H, root=root)
-    chain_edges = set(chain.from_iterable(chains))
-    H_copy = H.copy()
-    if root is not None:
-        H = H.subgraph(nx.node_connected_component(H, root)).copy()
-    for u, v in H.edges():
-        if (u, v) not in chain_edges and (v, u) not in chain_edges:
-            if multigraph and len(G[u][v]) > 1:
-                continue
-            yield u, v
+    pass
 
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def has_bridges(G, root=None):
     """Decide whether a graph has any bridges.
@@ -132,17 +117,11 @@ def has_bridges(G, root=None):
     graph and $m$ is the number of edges.
 
     """
-    try:
-        next(bridges(G, root=root))
-    except StopIteration:
-        return False
-    else:
-        return True
+    pass
 
-
-@not_implemented_for("multigraph")
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
+@not_implemented_for('multigraph')
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
 def local_bridges(G, with_span=True, weight=None):
     """Iterate over local bridges of `G` optionally computing the span
 
@@ -183,23 +162,4 @@ def local_bridges(G, with_span=True, weight=None):
        >>> (0, 8, 8) in set(nx.local_bridges(G))
        True
     """
-    if with_span is not True:
-        for u, v in G.edges:
-            if not (set(G[u]) & set(G[v])):
-                yield u, v
-    else:
-        wt = nx.weighted._weight_function(G, weight)
-        for u, v in G.edges:
-            if not (set(G[u]) & set(G[v])):
-                enodes = {u, v}
-
-                def hide_edge(n, nbr, d):
-                    if n not in enodes or nbr not in enodes:
-                        return wt(n, nbr, d)
-                    return None
-
-                try:
-                    span = nx.shortest_path_length(G, u, v, weight=hide_edge)
-                    yield u, v, span
-                except nx.NetworkXNoPath:
-                    yield u, v, float("inf")
+    pass

@@ -7,14 +7,10 @@ Algorithms for a breadth-first traversal of edges in a graph.
 
 """
 from collections import deque
-
 import networkx as nx
-
-FORWARD = "forward"
-REVERSE = "reverse"
-
-__all__ = ["edge_bfs"]
-
+FORWARD = 'forward'
+REVERSE = 'reverse'
+__all__ = ['edge_bfs']
 
 @nx._dispatchable
 def edge_bfs(G, source=None, orientation=None):
@@ -104,74 +100,4 @@ def edge_bfs(G, source=None, orientation=None):
     edge_dfs
 
     """
-    nodes = list(G.nbunch_iter(source))
-    if not nodes:
-        return
-
-    directed = G.is_directed()
-    kwds = {"data": False}
-    if G.is_multigraph() is True:
-        kwds["keys"] = True
-
-    # set up edge lookup
-    if orientation is None:
-
-        def edges_from(node):
-            return iter(G.edges(node, **kwds))
-
-    elif not directed or orientation == "original":
-
-        def edges_from(node):
-            for e in G.edges(node, **kwds):
-                yield e + (FORWARD,)
-
-    elif orientation == "reverse":
-
-        def edges_from(node):
-            for e in G.in_edges(node, **kwds):
-                yield e + (REVERSE,)
-
-    elif orientation == "ignore":
-
-        def edges_from(node):
-            for e in G.edges(node, **kwds):
-                yield e + (FORWARD,)
-            for e in G.in_edges(node, **kwds):
-                yield e + (REVERSE,)
-
-    else:
-        raise nx.NetworkXError("invalid orientation argument.")
-
-    if directed:
-        neighbors = G.successors
-
-        def edge_id(edge):
-            # remove direction indicator
-            return edge[:-1] if orientation is not None else edge
-
-    else:
-        neighbors = G.neighbors
-
-        def edge_id(edge):
-            return (frozenset(edge[:2]),) + edge[2:]
-
-    check_reverse = directed and orientation in ("reverse", "ignore")
-
-    # start BFS
-    visited_nodes = set(nodes)
-    visited_edges = set()
-    queue = deque([(n, edges_from(n)) for n in nodes])
-    while queue:
-        parent, children_edges = queue.popleft()
-        for edge in children_edges:
-            if check_reverse and edge[-1] == REVERSE:
-                child = edge[0]
-            else:
-                child = edge[1]
-            if child not in visited_nodes:
-                visited_nodes.add(child)
-                queue.append((child, edges_from(child)))
-            edgeid = edge_id(edge)
-            if edgeid not in visited_edges:
-                visited_edges.add(edgeid)
-                yield edge
+    pass

@@ -1,18 +1,9 @@
 """Strongly connected components."""
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for
+__all__ = ['number_strongly_connected_components', 'strongly_connected_components', 'is_strongly_connected', 'strongly_connected_components_recursive', 'kosaraju_strongly_connected_components', 'condensation']
 
-__all__ = [
-    "number_strongly_connected_components",
-    "strongly_connected_components",
-    "is_strongly_connected",
-    "strongly_connected_components_recursive",
-    "kosaraju_strongly_connected_components",
-    "condensation",
-]
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def strongly_connected_components(G):
     """Generate nodes in strongly connected components of graph.
@@ -68,47 +59,9 @@ def strongly_connected_components(G):
        Information Processing Letters 49(1): 9-14, (1994)..
 
     """
-    preorder = {}
-    lowlink = {}
-    scc_found = set()
-    scc_queue = []
-    i = 0  # Preorder counter
-    neighbors = {v: iter(G[v]) for v in G}
-    for source in G:
-        if source not in scc_found:
-            queue = [source]
-            while queue:
-                v = queue[-1]
-                if v not in preorder:
-                    i = i + 1
-                    preorder[v] = i
-                done = True
-                for w in neighbors[v]:
-                    if w not in preorder:
-                        queue.append(w)
-                        done = False
-                        break
-                if done:
-                    lowlink[v] = preorder[v]
-                    for w in G[v]:
-                        if w not in scc_found:
-                            if preorder[w] > preorder[v]:
-                                lowlink[v] = min([lowlink[v], lowlink[w]])
-                            else:
-                                lowlink[v] = min([lowlink[v], preorder[w]])
-                    queue.pop()
-                    if lowlink[v] == preorder[v]:
-                        scc = {v}
-                        while scc_queue and preorder[scc_queue[-1]] > preorder[v]:
-                            k = scc_queue.pop()
-                            scc.add(k)
-                        scc_found.update(scc)
-                        yield scc
-                    else:
-                        scc_queue.append(v)
+    pass
 
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def kosaraju_strongly_connected_components(G, source=None):
     """Generate nodes in strongly connected components of graph.
@@ -157,20 +110,9 @@ def kosaraju_strongly_connected_components(G, source=None):
     Uses Kosaraju's algorithm.
 
     """
-    post = list(nx.dfs_postorder_nodes(G.reverse(copy=False), source=source))
+    pass
 
-    seen = set()
-    while post:
-        r = post.pop()
-        if r in seen:
-            continue
-        c = nx.dfs_preorder_nodes(G, r)
-        new = {v for v in c if v not in seen}
-        seen.update(new)
-        yield new
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def strongly_connected_components_recursive(G):
     """Generate nodes in strongly connected components of graph.
@@ -238,21 +180,9 @@ def strongly_connected_components_recursive(G):
        Information Processing Letters 49(1): 9-14, (1994)..
 
     """
-    import warnings
+    pass
 
-    warnings.warn(
-        (
-            "\n\nstrongly_connected_components_recursive is deprecated and will be\n"
-            "removed in the future. Use strongly_connected_components instead."
-        ),
-        category=DeprecationWarning,
-        stacklevel=2,
-    )
-
-    yield from strongly_connected_components(G)
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def number_strongly_connected_components(G):
     """Returns number of strongly connected components in graph.
@@ -290,10 +220,9 @@ def number_strongly_connected_components(G):
     -----
     For directed graphs only.
     """
-    return sum(1 for scc in strongly_connected_components(G))
+    pass
 
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def is_strongly_connected(G):
     """Test directed graph for strong connectivity.
@@ -337,15 +266,9 @@ def is_strongly_connected(G):
     -----
     For directed graphs only.
     """
-    if len(G) == 0:
-        raise nx.NetworkXPointlessConcept(
-            """Connectivity is undefined for the null graph."""
-        )
+    pass
 
-    return len(next(strongly_connected_components(G))) == len(G)
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable(returns_graph=True)
 def condensation(G, scc=None):
     """Returns the condensation of G.
@@ -408,23 +331,4 @@ def condensation(G, scc=None):
     the resulting graph is a directed acyclic graph.
 
     """
-    if scc is None:
-        scc = nx.strongly_connected_components(G)
-    mapping = {}
-    members = {}
-    C = nx.DiGraph()
-    # Add mapping dict as graph attribute
-    C.graph["mapping"] = mapping
-    if len(G) == 0:
-        return C
-    for i, component in enumerate(scc):
-        members[i] = component
-        mapping.update((n, i) for n in component)
-    number_of_components = i + 1
-    C.add_nodes_from(range(number_of_components))
-    C.add_edges_from(
-        (mapping[u], mapping[v]) for u, v in G.edges() if mapping[u] != mapping[v]
-    )
-    # Add a list of members (ie original nodes) to each node (ie scc) in C.
-    nx.set_node_attributes(C, members, "members")
-    return C
+    pass

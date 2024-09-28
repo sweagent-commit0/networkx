@@ -1,13 +1,10 @@
 from itertools import combinations
-
 import networkx as nx
-
-__all__ = ["dispersion"]
-
+__all__ = ['dispersion']
 
 @nx._dispatchable
 def dispersion(G, u=None, v=None, normalized=True, alpha=1.0, b=0.0, c=0.0):
-    r"""Calculate dispersion between `u` and `v` in `G`.
+    """Calculate dispersion between `u` and `v` in `G`.
 
     A link between two actors (`u` and `v`) has a high dispersion when their
     mutual ties (`s` and `t`) are not well connected with each other.
@@ -53,55 +50,4 @@ def dispersion(G, u=None, v=None, normalized=True, alpha=1.0, b=0.0, c=0.0):
         https://arxiv.org/pdf/1310.6753v1.pdf
 
     """
-
-    def _dispersion(G_u, u, v):
-        """dispersion for all nodes 'v' in a ego network G_u of node 'u'"""
-        u_nbrs = set(G_u[u])
-        ST = {n for n in G_u[v] if n in u_nbrs}
-        set_uv = {u, v}
-        # all possible ties of connections that u and b share
-        possib = combinations(ST, 2)
-        total = 0
-        for s, t in possib:
-            # neighbors of s that are in G_u, not including u and v
-            nbrs_s = u_nbrs.intersection(G_u[s]) - set_uv
-            # s and t are not directly connected
-            if t not in nbrs_s:
-                # s and t do not share a connection
-                if nbrs_s.isdisjoint(G_u[t]):
-                    # tick for disp(u, v)
-                    total += 1
-        # neighbors that u and v share
-        embeddedness = len(ST)
-
-        dispersion_val = total
-        if normalized:
-            dispersion_val = (total + b) ** alpha
-            if embeddedness + c != 0:
-                dispersion_val /= embeddedness + c
-
-        return dispersion_val
-
-    if u is None:
-        # v and u are not specified
-        if v is None:
-            results = {n: {} for n in G}
-            for u in G:
-                for v in G[u]:
-                    results[u][v] = _dispersion(G, u, v)
-        # u is not specified, but v is
-        else:
-            results = dict.fromkeys(G[v], {})
-            for u in G[v]:
-                results[u] = _dispersion(G, v, u)
-    else:
-        # u is specified with no target v
-        if v is None:
-            results = dict.fromkeys(G[u], {})
-            for v in G[u]:
-                results[v] = _dispersion(G, u, v)
-        # both u and v are specified
-        else:
-            results = _dispersion(G, u, v)
-
-    return results
+    pass

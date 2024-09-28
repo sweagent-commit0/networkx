@@ -2,17 +2,10 @@
 """
 import itertools
 from operator import itemgetter
-
 import networkx as nx
+__all__ = ['local_node_connectivity', 'node_connectivity', 'all_pairs_node_connectivity']
 
-__all__ = [
-    "local_node_connectivity",
-    "node_connectivity",
-    "all_pairs_node_connectivity",
-]
-
-
-@nx._dispatchable(name="approximate_local_node_connectivity")
+@nx._dispatchable(name='approximate_local_node_connectivity')
 def local_node_connectivity(G, source, target, cutoff=None):
     """Compute node connectivity between source and target.
 
@@ -80,37 +73,11 @@ def local_node_connectivity(G, source, target, cutoff=None):
         http://eclectic.ss.uci.edu/~drwhite/working.pdf
 
     """
-    if target == source:
-        raise nx.NetworkXError("source and target have to be different nodes.")
+    pass
 
-    # Maximum possible node independent paths
-    if G.is_directed():
-        possible = min(G.out_degree(source), G.in_degree(target))
-    else:
-        possible = min(G.degree(source), G.degree(target))
-
-    K = 0
-    if not possible:
-        return K
-
-    if cutoff is None:
-        cutoff = float("inf")
-
-    exclude = set()
-    for i in range(min(possible, cutoff)):
-        try:
-            path = _bidirectional_shortest_path(G, source, target, exclude)
-            exclude.update(set(path))
-            K += 1
-        except nx.NetworkXNoPath:
-            break
-
-    return K
-
-
-@nx._dispatchable(name="approximate_node_connectivity")
+@nx._dispatchable(name='approximate_node_connectivity')
 def node_connectivity(G, s=None, t=None):
-    r"""Returns an approximation for node connectivity for a graph or digraph G.
+    """Returns an approximation for node connectivity for a graph or digraph G.
 
     Node connectivity is equal to the minimum number of nodes that
     must be removed to disconnect G or render it trivial. By Menger's theorem,
@@ -172,49 +139,9 @@ def node_connectivity(G, s=None, t=None):
         http://eclectic.ss.uci.edu/~drwhite/working.pdf
 
     """
-    if (s is not None and t is None) or (s is None and t is not None):
-        raise nx.NetworkXError("Both source and target must be specified.")
+    pass
 
-    # Local node connectivity
-    if s is not None and t is not None:
-        if s not in G:
-            raise nx.NetworkXError(f"node {s} not in graph")
-        if t not in G:
-            raise nx.NetworkXError(f"node {t} not in graph")
-        return local_node_connectivity(G, s, t)
-
-    # Global node connectivity
-    if G.is_directed():
-        connected_func = nx.is_weakly_connected
-        iter_func = itertools.permutations
-
-        def neighbors(v):
-            return itertools.chain(G.predecessors(v), G.successors(v))
-
-    else:
-        connected_func = nx.is_connected
-        iter_func = itertools.combinations
-        neighbors = G.neighbors
-
-    if not connected_func(G):
-        return 0
-
-    # Choose a node with minimum degree
-    v, minimum_degree = min(G.degree(), key=itemgetter(1))
-    # Node connectivity is bounded by minimum degree
-    K = minimum_degree
-    # compute local node connectivity with all non-neighbors nodes
-    # and store the minimum
-    for w in set(G) - set(neighbors(v)) - {v}:
-        K = min(K, local_node_connectivity(G, v, w, cutoff=K))
-    # Same for non adjacent pairs of neighbors of v
-    for x, y in iter_func(neighbors(v), 2):
-        if y not in G[x] and x != y:
-            K = min(K, local_node_connectivity(G, x, y, cutoff=K))
-    return K
-
-
-@nx._dispatchable(name="approximate_all_pairs_node_connectivity")
+@nx._dispatchable(name='approximate_all_pairs_node_connectivity')
 def all_pairs_node_connectivity(G, nbunch=None, cutoff=None):
     """Compute node connectivity between all pairs of nodes.
 
@@ -272,27 +199,7 @@ def all_pairs_node_connectivity(G, nbunch=None, cutoff=None):
         Node-Independent Paths. Santa Fe Institute Working Paper #01-07-035
         http://eclectic.ss.uci.edu/~drwhite/working.pdf
     """
-    if nbunch is None:
-        nbunch = G
-    else:
-        nbunch = set(nbunch)
-
-    directed = G.is_directed()
-    if directed:
-        iter_func = itertools.permutations
-    else:
-        iter_func = itertools.combinations
-
-    all_pairs = {n: {} for n in nbunch}
-
-    for u, v in iter_func(nbunch, 2):
-        k = local_node_connectivity(G, u, v, cutoff=cutoff)
-        all_pairs[u][v] = k
-        if not directed:
-            all_pairs[v][u] = k
-
-    return all_pairs
-
+    pass
 
 def _bidirectional_shortest_path(G, source, target, exclude):
     """Returns shortest path between source and target ignoring nodes in the
@@ -337,76 +244,4 @@ def _bidirectional_shortest_path(G, source, target, exclude):
         http://eclectic.ss.uci.edu/~drwhite/working.pdf
 
     """
-    # call helper to do the real work
-    results = _bidirectional_pred_succ(G, source, target, exclude)
-    pred, succ, w = results
-
-    # build path from pred+w+succ
-    path = []
-    # from source to w
-    while w is not None:
-        path.append(w)
-        w = pred[w]
-    path.reverse()
-    # from w to target
-    w = succ[path[-1]]
-    while w is not None:
-        path.append(w)
-        w = succ[w]
-
-    return path
-
-
-def _bidirectional_pred_succ(G, source, target, exclude):
-    # does BFS from both source and target and meets in the middle
-    # excludes nodes in the container "exclude" from the search
-
-    # handle either directed or undirected
-    if G.is_directed():
-        Gpred = G.predecessors
-        Gsucc = G.successors
-    else:
-        Gpred = G.neighbors
-        Gsucc = G.neighbors
-
-    # predecessor and successors in search
-    pred = {source: None}
-    succ = {target: None}
-
-    # initialize fringes, start with forward
-    forward_fringe = [source]
-    reverse_fringe = [target]
-
-    level = 0
-
-    while forward_fringe and reverse_fringe:
-        # Make sure that we iterate one step forward and one step backwards
-        # thus source and target will only trigger "found path" when they are
-        # adjacent and then they can be safely included in the container 'exclude'
-        level += 1
-        if level % 2 != 0:
-            this_level = forward_fringe
-            forward_fringe = []
-            for v in this_level:
-                for w in Gsucc(v):
-                    if w in exclude:
-                        continue
-                    if w not in pred:
-                        forward_fringe.append(w)
-                        pred[w] = v
-                    if w in succ:
-                        return pred, succ, w  # found path
-        else:
-            this_level = reverse_fringe
-            reverse_fringe = []
-            for v in this_level:
-                for w in Gpred(v):
-                    if w in exclude:
-                        continue
-                    if w not in succ:
-                        succ[w] = v
-                        reverse_fringe.append(w)
-                    if w in pred:
-                        return pred, succ, w  # found path
-
-    raise nx.NetworkXNoPath(f"No path between {source} and {target}.")
+    pass

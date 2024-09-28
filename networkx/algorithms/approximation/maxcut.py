@@ -1,13 +1,11 @@
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for, py_random_state
+__all__ = ['randomized_partitioning', 'one_exchange']
 
-__all__ = ["randomized_partitioning", "one_exchange"]
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @py_random_state(1)
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def randomized_partitioning(G, seed=None, p=0.5, weight=None):
     """Compute a random partitioning of the graph nodes and its cut value.
 
@@ -54,20 +52,12 @@ def randomized_partitioning(G, seed=None, p=0.5, weight=None):
     NetworkXNotImplemented
         If the graph is directed or is a multigraph.
     """
-    cut = {node for node in G.nodes() if seed.random() < p}
-    cut_size = nx.algorithms.cut_size(G, cut, weight=weight)
-    partition = (cut, G.nodes - cut)
-    return cut_size, partition
+    pass
 
-
-def _swap_node_partition(cut, node):
-    return cut - {node} if node in cut else cut.union({node})
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @py_random_state(2)
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def one_exchange(G, initial_cut=None, seed=None, weight=None):
     """Compute a partitioning of the graphs nodes and the corresponding cut value.
 
@@ -115,29 +105,4 @@ def one_exchange(G, initial_cut=None, seed=None, weight=None):
     NetworkXNotImplemented
         If the graph is directed or is a multigraph.
     """
-    if initial_cut is None:
-        initial_cut = set()
-    cut = set(initial_cut)
-    current_cut_size = nx.algorithms.cut_size(G, cut, weight=weight)
-    while True:
-        nodes = list(G.nodes())
-        # Shuffling the nodes ensures random tie-breaks in the following call to max
-        seed.shuffle(nodes)
-        best_node_to_swap = max(
-            nodes,
-            key=lambda v: nx.algorithms.cut_size(
-                G, _swap_node_partition(cut, v), weight=weight
-            ),
-            default=None,
-        )
-        potential_cut = _swap_node_partition(cut, best_node_to_swap)
-        potential_cut_size = nx.algorithms.cut_size(G, potential_cut, weight=weight)
-
-        if potential_cut_size > current_cut_size:
-            cut = potential_cut
-            current_cut_size = potential_cut_size
-        else:
-            break
-
-    partition = (cut, G.nodes - cut)
-    return current_cut_size, partition
+    pass

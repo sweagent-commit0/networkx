@@ -14,15 +14,11 @@ References
        Croatica Chemica Acta, 71 (1998), 21-51.
        https://hrcak.srce.hr/132323
 """
-
 import itertools as it
-
 import networkx as nx
+__all__ = ['wiener_index', 'schultz_index', 'gutman_index']
 
-__all__ = ["wiener_index", "schultz_index", "gutman_index"]
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def wiener_index(G, weight=None):
     """Returns the Wiener index of the given graph.
 
@@ -82,21 +78,13 @@ def wiener_index(G, weight=None):
     ----------
     .. [1] `Wikipedia: Wiener Index <https://en.wikipedia.org/wiki/Wiener_index>`_
     """
-    connected = nx.is_strongly_connected(G) if G.is_directed() else nx.is_connected(G)
-    if not connected:
-        return float("inf")
+    pass
 
-    spl = nx.shortest_path_length(G, weight=weight)
-    total = sum(it.chain.from_iterable(nbrs.values() for node, nbrs in spl))
-    # Need to account for double counting pairs of nodes in undirected graphs.
-    return total if G.is_directed() else total / 2
-
-
-@nx.utils.not_implemented_for("directed")
-@nx.utils.not_implemented_for("multigraph")
-@nx._dispatchable(edge_attrs="weight")
+@nx.utils.not_implemented_for('directed')
+@nx.utils.not_implemented_for('multigraph')
+@nx._dispatchable(edge_attrs='weight')
 def schultz_index(G, weight=None):
-    r"""Returns the Schultz Index (of the first kind) of `G`
+    """Returns the Schultz Index (of the first kind) of `G`
 
     The *Schultz Index* [3]_ of a graph is the sum over all node pairs of
     distances times the sum of degrees. Consider an undirected graph `G`.
@@ -152,19 +140,13 @@ def schultz_index(G, weight=None):
            J. Chem. Inf. Comput. Sci. 29 (1989), 239–257.
 
     """
-    if not nx.is_connected(G):
-        return float("inf")
+    pass
 
-    spl = nx.shortest_path_length(G, weight=weight)
-    d = dict(G.degree, weight=weight)
-    return sum(dist * (d[u] + d[v]) for u, info in spl for v, dist in info.items()) / 2
-
-
-@nx.utils.not_implemented_for("directed")
-@nx.utils.not_implemented_for("multigraph")
-@nx._dispatchable(edge_attrs="weight")
+@nx.utils.not_implemented_for('directed')
+@nx.utils.not_implemented_for('multigraph')
+@nx._dispatchable(edge_attrs='weight')
 def gutman_index(G, weight=None):
-    r"""Returns the Gutman Index for the graph `G`.
+    """Returns the Gutman Index for the graph `G`.
 
     The *Gutman Index* measures the topology of networks, especially for molecule
     networks of atoms connected by bonds [1]_. It is also called the Schultz Index
@@ -218,9 +200,4 @@ def gutman_index(G, weight=None):
            https://doi.org/10.1021/ci00021a009
 
     """
-    if not nx.is_connected(G):
-        return float("inf")
-
-    spl = nx.shortest_path_length(G, weight=weight)
-    d = dict(G.degree, weight=weight)
-    return sum(dist * d[u] * d[v] for u, vinfo in spl for v, dist in vinfo.items()) / 2
+    pass

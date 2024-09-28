@@ -1,18 +1,14 @@
-r""" Computation of graph non-randomness
+""" Computation of graph non-randomness
 """
-
 import math
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['non_randomness']
 
-__all__ = ["non_randomness"]
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
-@nx._dispatchable(edge_attrs="weight")
-def non_randomness(G, k=None, weight="weight"):
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
+@nx._dispatchable(edge_attrs='weight')
+def non_randomness(G, k=None, weight='weight'):
     """Compute the non-randomness of graph G.
 
     The first returned value nr is the sum of non-randomness values of all
@@ -72,25 +68,4 @@ def non_randomness(G, k=None, weight="weight"):
            On Randomness Measures for Social Networks,
            SIAM International Conference on Data Mining. 2009
     """
-    import numpy as np
-
-    if not nx.is_connected(G):
-        raise nx.NetworkXException("Non connected graph.")
-    if len(list(nx.selfloop_edges(G))) > 0:
-        raise nx.NetworkXError("Graph must not contain self-loops")
-
-    if k is None:
-        k = len(tuple(nx.community.label_propagation_communities(G)))
-
-    # eq. 4.4
-    eigenvalues = np.linalg.eigvals(nx.to_numpy_array(G, weight=weight))
-    nr = float(np.real(np.sum(eigenvalues[:k])))
-
-    n = G.number_of_nodes()
-    m = G.number_of_edges()
-    p = (2 * k * m) / (n * (n - k))
-
-    # eq. 4.5
-    nr_rd = (nr - ((n - 2 * k) * p + k)) / math.sqrt(2 * k * p * (1 - p))
-
-    return nr, nr_rd
+    pass

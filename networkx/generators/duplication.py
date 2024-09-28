@@ -8,9 +8,7 @@ generally inspired by biological networks.
 import networkx as nx
 from networkx.exception import NetworkXError
 from networkx.utils import py_random_state
-
-__all__ = ["partial_duplication_graph", "duplication_divergence_graph"]
-
+__all__ = ['partial_duplication_graph', 'duplication_divergence_graph']
 
 @py_random_state(4)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -61,31 +59,7 @@ def partial_duplication_graph(N, n, p, q, seed=None):
            <https://doi.org/10.1155/2008/190836>
 
     """
-    if p < 0 or p > 1 or q < 0 or q > 1:
-        msg = "partial duplication graph must have 0 <= p, q <= 1."
-        raise NetworkXError(msg)
-    if n > N:
-        raise NetworkXError("partial duplication graph must have n <= N.")
-
-    G = nx.complete_graph(n)
-    for new_node in range(n, N):
-        # Pick a random vertex, u, already in the graph.
-        src_node = seed.randint(0, new_node - 1)
-
-        # Add a new vertex, v, to the graph.
-        G.add_node(new_node)
-
-        # For each neighbor of u...
-        for nbr_node in list(nx.all_neighbors(G, src_node)):
-            # Add the neighbor to v with probability p.
-            if seed.random() < p:
-                G.add_edge(new_node, nbr_node)
-
-        # Join v and u with probability q.
-        if seed.random() < q:
-            G.add_edge(new_node, src_node)
-    return G
-
+    pass
 
 @py_random_state(2)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -130,34 +104,4 @@ def duplication_divergence_graph(n, p, seed=None):
        Phys. Rev. E, 71, 061911, 2005.
 
     """
-    if p > 1 or p < 0:
-        msg = f"NetworkXError p={p} is not in [0,1]."
-        raise nx.NetworkXError(msg)
-    if n < 2:
-        msg = "n must be greater than or equal to 2"
-        raise nx.NetworkXError(msg)
-
-    G = nx.Graph()
-
-    # Initialize the graph with two connected nodes.
-    G.add_edge(0, 1)
-    i = 2
-    while i < n:
-        # Choose a random node from current graph to duplicate.
-        random_node = seed.choice(list(G))
-        # Make the replica.
-        G.add_node(i)
-        # flag indicates whether at least one edge is connected on the replica.
-        flag = False
-        for nbr in G.neighbors(random_node):
-            if seed.random() < p:
-                # Link retention step.
-                G.add_edge(i, nbr)
-                flag = True
-        if not flag:
-            # Delete replica if no edges retained.
-            G.remove_node(i)
-        else:
-            # Successful duplication.
-            i += 1
-    return G
+    pass

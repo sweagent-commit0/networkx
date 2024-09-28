@@ -1,15 +1,11 @@
 """Generates graphs with a given eigenvector structure"""
-
-
 import networkx as nx
 from networkx.utils import np_random_state
-
-__all__ = ["spectral_graph_forge"]
-
+__all__ = ['spectral_graph_forge']
 
 @np_random_state(3)
 @nx._dispatchable(returns_graph=True)
-def spectral_graph_forge(G, alpha, transformation="identity", seed=None):
+def spectral_graph_forge(G, alpha, transformation='identity', seed=None):
     """Returns a random simple graph with spectrum resembling that of `G`
 
     This algorithm, called Spectral Graph Forge (SGF), computes the
@@ -80,42 +76,4 @@ def spectral_graph_forge(G, alpha, transformation="identity", seed=None):
     >>> H = nx.spectral_graph_forge(G, 0.3)
     >>>
     """
-    import numpy as np
-    import scipy as sp
-
-    available_transformations = ["identity", "modularity"]
-    alpha = np.clip(alpha, 0, 1)
-    A = nx.to_numpy_array(G)
-    n = A.shape[1]
-    level = round(n * alpha)
-
-    if transformation not in available_transformations:
-        msg = f"{transformation!r} is not a valid transformation. "
-        msg += f"Transformations: {available_transformations}"
-        raise nx.NetworkXError(msg)
-
-    K = np.ones((1, n)) @ A
-
-    B = A
-    if transformation == "modularity":
-        B -= K.T @ K / K.sum()
-
-    # Compute low-rank approximation of B
-    evals, evecs = np.linalg.eigh(B)
-    k = np.argsort(np.abs(evals))[::-1]  # indices of evals in descending order
-    evecs[:, k[np.arange(level, n)]] = 0  # set smallest eigenvectors to 0
-    B = evecs @ np.diag(evals) @ evecs.T
-
-    if transformation == "modularity":
-        B += K.T @ K / K.sum()
-
-    B = np.clip(B, 0, 1)
-    np.fill_diagonal(B, 0)
-
-    for i in range(n - 1):
-        B[i, i + 1 :] = sp.stats.bernoulli.rvs(B[i, i + 1 :], random_state=seed)
-        B[i + 1 :, i] = np.transpose(B[i, i + 1 :])
-
-    H = nx.from_numpy_array(B)
-
-    return H
+    pass

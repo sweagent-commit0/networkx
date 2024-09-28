@@ -8,13 +8,11 @@ is incident to at least one node in the subset.
 
 """
 import networkx as nx
+__all__ = ['min_weighted_vertex_cover']
 
-__all__ = ["min_weighted_vertex_cover"]
-
-
-@nx._dispatchable(node_attrs="weight")
+@nx._dispatchable(node_attrs='weight')
 def min_weighted_vertex_cover(G, weight=None):
-    r"""Returns an approximate minimum weighted vertex cover.
+    """Returns an approximate minimum weighted vertex cover.
 
     The set of nodes returned by this function is guaranteed to be a
     vertex cover, and the total weight of the set is guaranteed to be at
@@ -23,7 +21,7 @@ def min_weighted_vertex_cover(G, weight=None):
 
     .. math::
 
-       w(S) \leq 2 * w(S^*),
+       w(S) \\leq 2 * w(S^*),
 
     where $S$ is the vertex cover returned by this function,
     $S^*$ is the vertex cover of minimum weight out of all vertex
@@ -55,7 +53,7 @@ def min_weighted_vertex_cover(G, weight=None):
     This is the local-ratio algorithm for computing an approximate
     vertex cover. The algorithm greedily reduces the costs over edges,
     iteratively building a cover. The worst-case runtime of this
-    implementation is $O(m \log n)$, where $n$ is the number
+    implementation is $O(m \\log n)$, where $n$ is the number
     of nodes and $m$ the number of edges in the graph.
 
     References
@@ -66,17 +64,4 @@ def min_weighted_vertex_cover(G, weight=None):
        <http://www.cs.technion.ac.il/~reuven/PDF/vc_lr.pdf>
 
     """
-    cost = dict(G.nodes(data=weight, default=1))
-    # While there are uncovered edges, choose an uncovered and update
-    # the cost of the remaining edges.
-    cover = set()
-    for u, v in G.edges():
-        if u in cover or v in cover:
-            continue
-        if cost[u] <= cost[v]:
-            cover.add(u)
-            cost[v] -= cost[u]
-        else:
-            cover.add(v)
-            cost[u] -= cost[v]
-    return cover
+    pass

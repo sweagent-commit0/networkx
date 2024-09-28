@@ -2,11 +2,8 @@
 Time Series Graphs
 """
 import itertools
-
 import networkx as nx
-
-__all__ = ["visibility_graph"]
-
+__all__ = ['visibility_graph']
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def visibility_graph(series):
@@ -51,23 +48,4 @@ def visibility_graph(series):
            National Academy of Sciences 105, no. 13 (2008): 4972-4975.
            https://www.pnas.org/doi/10.1073/pnas.0709247105
     """
-
-    # Sequential values are always connected
-    G = nx.path_graph(len(series))
-    nx.set_node_attributes(G, dict(enumerate(series)), "value")
-
-    # Check all combinations of nodes n series
-    for (n1, t1), (n2, t2) in itertools.combinations(enumerate(series), 2):
-        # check if any value between obstructs line of sight
-        slope = (t2 - t1) / (n2 - n1)
-        offset = t2 - slope * n2
-
-        obstructed = any(
-            t >= slope * n + offset
-            for n, t in enumerate(series[n1 + 1 : n2], start=n1 + 1)
-        )
-
-        if not obstructed:
-            G.add_edge(n1, n2)
-
-    return G
+    pass

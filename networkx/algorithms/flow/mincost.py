@@ -1,17 +1,12 @@
 """
 Minimum cost flow algorithms on directed connected graphs.
 """
-
-__all__ = ["min_cost_flow_cost", "min_cost_flow", "cost_of_flow", "max_flow_min_cost"]
-
+__all__ = ['min_cost_flow_cost', 'min_cost_flow', 'cost_of_flow', 'max_flow_min_cost']
 import networkx as nx
 
-
-@nx._dispatchable(
-    node_attrs="demand", edge_attrs={"capacity": float("inf"), "weight": 0}
-)
-def min_cost_flow_cost(G, demand="demand", capacity="capacity", weight="weight"):
-    r"""Find the cost of a minimum cost flow satisfying all demands in digraph G.
+@nx._dispatchable(node_attrs='demand', edge_attrs={'capacity': float('inf'), 'weight': 0})
+def min_cost_flow_cost(G, demand='demand', capacity='capacity', weight='weight'):
+    """Find the cost of a minimum cost flow satisfying all demands in digraph G.
 
     G is a digraph with edge costs and capacities and in which nodes
     have demand, i.e., they want to send or receive some amount of
@@ -96,14 +91,11 @@ def min_cost_flow_cost(G, demand="demand", capacity="capacity", weight="weight")
     >>> flowCost
     24
     """
-    return nx.network_simplex(G, demand=demand, capacity=capacity, weight=weight)[0]
+    pass
 
-
-@nx._dispatchable(
-    node_attrs="demand", edge_attrs={"capacity": float("inf"), "weight": 0}
-)
-def min_cost_flow(G, demand="demand", capacity="capacity", weight="weight"):
-    r"""Returns a minimum cost flow satisfying all demands in digraph G.
+@nx._dispatchable(node_attrs='demand', edge_attrs={'capacity': float('inf'), 'weight': 0})
+def min_cost_flow(G, demand='demand', capacity='capacity', weight='weight'):
+    """Returns a minimum cost flow satisfying all demands in digraph G.
 
     G is a digraph with edge costs and capacities and in which nodes
     have demand, i.e., they want to send or receive some amount of
@@ -189,11 +181,10 @@ def min_cost_flow(G, demand="demand", capacity="capacity", weight="weight"):
     >>> flowDict
     {'a': {'b': 4, 'c': 1}, 'd': {}, 'b': {'d': 4}, 'c': {'d': 1}}
     """
-    return nx.network_simplex(G, demand=demand, capacity=capacity, weight=weight)[1]
+    pass
 
-
-@nx._dispatchable(edge_attrs={"weight": 0})
-def cost_of_flow(G, flowDict, weight="weight"):
+@nx._dispatchable(edge_attrs={'weight': 0})
+def cost_of_flow(G, flowDict, weight='weight'):
     """Compute the cost of the flow given by flowDict on graph G.
 
     Note that this function does not check for the validity of the
@@ -249,11 +240,10 @@ def cost_of_flow(G, flowDict, weight="weight"):
     >>> nx.cost_of_flow(G, flowDict)
     24
     """
-    return sum((flowDict[u][v] * d.get(weight, 0) for u, v, d in G.edges(data=True)))
+    pass
 
-
-@nx._dispatchable(edge_attrs={"capacity": float("inf"), "weight": 0})
-def max_flow_min_cost(G, s, t, capacity="capacity", weight="weight"):
+@nx._dispatchable(edge_attrs={'capacity': float('inf'), 'weight': 0})
+def max_flow_min_cost(G, s, t, capacity='capacity', weight='weight'):
     """Returns a maximum (s, t)-flow of minimum cost.
 
     G is a digraph with edge costs and capacities. There is a source
@@ -349,8 +339,4 @@ def max_flow_min_cost(G, s, t, capacity="capacity", weight="weight"):
     True
 
     """
-    maxFlow = nx.maximum_flow_value(G, s, t, capacity=capacity)
-    H = nx.DiGraph(G)
-    H.add_node(s, demand=-maxFlow)
-    H.add_node(t, demand=maxFlow)
-    return min_cost_flow(H, capacity=capacity, weight=weight)
+    pass

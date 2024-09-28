@@ -2,44 +2,11 @@
 Various small and named graphs, together with some compact generators.
 
 """
-
-__all__ = [
-    "LCF_graph",
-    "bull_graph",
-    "chvatal_graph",
-    "cubical_graph",
-    "desargues_graph",
-    "diamond_graph",
-    "dodecahedral_graph",
-    "frucht_graph",
-    "heawood_graph",
-    "hoffman_singleton_graph",
-    "house_graph",
-    "house_x_graph",
-    "icosahedral_graph",
-    "krackhardt_kite_graph",
-    "moebius_kantor_graph",
-    "octahedral_graph",
-    "pappus_graph",
-    "petersen_graph",
-    "sedgewick_maze_graph",
-    "tetrahedral_graph",
-    "truncated_cube_graph",
-    "truncated_tetrahedron_graph",
-    "tutte_graph",
-]
-
+__all__ = ['LCF_graph', 'bull_graph', 'chvatal_graph', 'cubical_graph', 'desargues_graph', 'diamond_graph', 'dodecahedral_graph', 'frucht_graph', 'heawood_graph', 'hoffman_singleton_graph', 'house_graph', 'house_x_graph', 'icosahedral_graph', 'krackhardt_kite_graph', 'moebius_kantor_graph', 'octahedral_graph', 'pappus_graph', 'petersen_graph', 'sedgewick_maze_graph', 'tetrahedral_graph', 'truncated_cube_graph', 'truncated_tetrahedron_graph', 'tutte_graph']
 from functools import wraps
-
 import networkx as nx
 from networkx.exception import NetworkXError
-from networkx.generators.classic import (
-    complete_graph,
-    cycle_graph,
-    empty_graph,
-    path_graph,
-)
-
+from networkx.generators.classic import complete_graph, cycle_graph, empty_graph, path_graph
 
 def _raise_on_directed(func):
     """
@@ -47,17 +14,7 @@ def _raise_on_directed(func):
     NetworkX exception when `create_using` is a DiGraph (class or instance) for
     graph generators that do not support directed outputs.
     """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if kwargs.get("create_using") is not None:
-            G = nx.empty_graph(create_using=kwargs["create_using"])
-            if G.is_directed():
-                raise NetworkXError("Directed Graph not supported")
-        return func(*args, **kwargs)
-
-    return wrapper
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def LCF_graph(n, shift_list, repeats, create_using=None):
@@ -111,34 +68,7 @@ def LCF_graph(n, shift_list, repeats, create_using=None):
     .. [1] https://en.wikipedia.org/wiki/LCF_notation
 
     """
-    if n <= 0:
-        return empty_graph(0, create_using)
-
-    # start with the n-cycle
-    G = cycle_graph(n, create_using)
-    if G.is_directed():
-        raise NetworkXError("Directed Graph not supported")
-    G.name = "LCF_graph"
-    nodes = sorted(G)
-
-    n_extra_edges = repeats * len(shift_list)
-    # edges are added n_extra_edges times
-    # (not all of these need be new)
-    if n_extra_edges < 1:
-        return G
-
-    for i in range(n_extra_edges):
-        shift = shift_list[i % len(shift_list)]  # cycle through shift_list
-        v1 = nodes[i % n]  # cycle repeatedly through nodes
-        v2 = nodes[(i + shift) % n]
-        G.add_edge(v1, v2)
-    return G
-
-
-# -------------------------------------------------------------------------------
-#   Various small and named graphs
-# -------------------------------------------------------------------------------
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -166,13 +96,7 @@ def bull_graph(create_using=None):
     .. [1] https://en.wikipedia.org/wiki/Bull_graph.
 
     """
-    G = nx.from_dict_of_lists(
-        {0: [1, 2], 1: [0, 2, 3], 2: [0, 1, 4], 3: [1], 4: [2]},
-        create_using=create_using,
-    )
-    G.name = "Bull Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -200,24 +124,7 @@ def chvatal_graph(create_using=None):
     .. [2] https://mathworld.wolfram.com/ChvatalGraph.html
 
     """
-    G = nx.from_dict_of_lists(
-        {
-            0: [1, 4, 6, 9],
-            1: [2, 5, 7],
-            2: [3, 6, 8],
-            3: [4, 7, 9],
-            4: [5, 8],
-            5: [10, 11],
-            6: [10, 11],
-            7: [8, 11],
-            8: [10],
-            9: [10, 11],
-        },
-        create_using=create_using,
-    )
-    G.name = "Chvatal Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -246,22 +153,7 @@ def cubical_graph(create_using=None):
     .. [1] https://en.wikipedia.org/wiki/Cube#Cubical_graph
 
     """
-    G = nx.from_dict_of_lists(
-        {
-            0: [1, 3, 4],
-            1: [0, 2, 7],
-            2: [1, 3, 6],
-            3: [0, 2, 5],
-            4: [0, 5, 7],
-            5: [3, 4, 6],
-            6: [2, 5, 7],
-            7: [1, 4, 6],
-        },
-        create_using=create_using,
-    )
-    G.name = "Platonic Cubical Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def desargues_graph(create_using=None):
@@ -288,10 +180,7 @@ def desargues_graph(create_using=None):
     .. [1] https://en.wikipedia.org/wiki/Desargues_graph
     .. [2] https://mathworld.wolfram.com/DesarguesGraph.html
     """
-    G = LCF_graph(20, [5, -5, 9, -9], 5, create_using)
-    G.name = "Desargues Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -316,12 +205,7 @@ def diamond_graph(create_using=None):
     ----------
     .. [1] https://mathworld.wolfram.com/DiamondGraph.html
     """
-    G = nx.from_dict_of_lists(
-        {0: [1, 2], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2]}, create_using=create_using
-    )
-    G.name = "Diamond Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def dodecahedral_graph(create_using=None):
@@ -349,10 +233,7 @@ def dodecahedral_graph(create_using=None):
     .. [2] https://mathworld.wolfram.com/DodecahedralGraph.html
 
     """
-    G = LCF_graph(20, [10, 7, 4, -4, -7, 10, -4, 7, -7, 4], 2, create_using)
-    G.name = "Dodecahedral Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def frucht_graph(create_using=None):
@@ -380,26 +261,7 @@ def frucht_graph(create_using=None):
     .. [2] https://mathworld.wolfram.com/FruchtGraph.html
 
     """
-    G = cycle_graph(7, create_using)
-    G.add_edges_from(
-        [
-            [0, 7],
-            [1, 7],
-            [2, 8],
-            [3, 9],
-            [4, 9],
-            [5, 10],
-            [6, 10],
-            [7, 11],
-            [8, 11],
-            [8, 9],
-            [10, 11],
-        ]
-    )
-
-    G.name = "Frucht Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def heawood_graph(create_using=None):
@@ -430,10 +292,7 @@ def heawood_graph(create_using=None):
     .. [3] https://www.win.tue.nl/~aeb/graphs/Heawood.html
 
     """
-    G = LCF_graph(14, [5, -5], 7, create_using)
-    G.name = "Heawood Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def hoffman_singleton_graph():
@@ -464,19 +323,7 @@ def hoffman_singleton_graph():
     .. [3] https://en.wikipedia.org/wiki/Hoffman%E2%80%93Singleton_graph
 
     """
-    G = nx.Graph()
-    for i in range(5):
-        for j in range(5):
-            G.add_edge(("pentagon", i, j), ("pentagon", i, (j - 1) % 5))
-            G.add_edge(("pentagon", i, j), ("pentagon", i, (j + 1) % 5))
-            G.add_edge(("pentagram", i, j), ("pentagram", i, (j - 2) % 5))
-            G.add_edge(("pentagram", i, j), ("pentagram", i, (j + 2) % 5))
-            for k in range(5):
-                G.add_edge(("pentagon", i, j), ("pentagram", k, (i * k + j) % 5))
-    G = nx.convert_node_labels_to_integers(G)
-    G.name = "Hoffman-Singleton Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -501,13 +348,7 @@ def house_graph(create_using=None):
     ----------
     .. [1] https://mathworld.wolfram.com/HouseGraph.html
     """
-    G = nx.from_dict_of_lists(
-        {0: [1, 2], 1: [0, 3], 2: [0, 3, 4], 3: [1, 2, 4], 4: [2, 3]},
-        create_using=create_using,
-    )
-    G.name = "House Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -533,11 +374,7 @@ def house_x_graph(create_using=None):
     ----------
     .. [1] https://mathworld.wolfram.com/HouseGraph.html
     """
-    G = house_graph(create_using)
-    G.add_edges_from([(0, 3), (1, 2)])
-    G.name = "House-with-X-inside Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -563,24 +400,7 @@ def icosahedral_graph(create_using=None):
     ----------
     .. [1] https://mathworld.wolfram.com/IcosahedralGraph.html
     """
-    G = nx.from_dict_of_lists(
-        {
-            0: [1, 5, 7, 8, 11],
-            1: [2, 5, 6, 8],
-            2: [3, 6, 8, 9],
-            3: [4, 6, 9, 10],
-            4: [5, 6, 10, 11],
-            5: [6, 11],
-            7: [8, 9, 10, 11],
-            8: [9],
-            9: [10],
-            10: [11],
-        },
-        create_using=create_using,
-    )
-    G.name = "Platonic Icosahedral Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -614,24 +434,7 @@ def krackhardt_kite_graph(create_using=None):
        35 (2): 342–369. doi:10.2307/2393394. JSTOR 2393394. June 1990.
 
     """
-    G = nx.from_dict_of_lists(
-        {
-            0: [1, 2, 3, 5],
-            1: [0, 3, 4, 6],
-            2: [0, 3, 5],
-            3: [0, 1, 2, 4, 5, 6],
-            4: [1, 3, 6],
-            5: [0, 2, 3, 6, 7],
-            6: [1, 3, 4, 5, 7],
-            7: [5, 6, 8],
-            8: [7, 9],
-            9: [8],
-        },
-        create_using=create_using,
-    )
-    G.name = "Krackhardt Kite Social Network"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def moebius_kantor_graph(create_using=None):
@@ -657,10 +460,7 @@ def moebius_kantor_graph(create_using=None):
     .. [1] https://en.wikipedia.org/wiki/M%C3%B6bius%E2%80%93Kantor_graph
 
     """
-    G = LCF_graph(16, [5, -5], 8, create_using)
-    G.name = "Moebius-Kantor Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -690,13 +490,7 @@ def octahedral_graph(create_using=None):
     .. [2] https://en.wikipedia.org/wiki/Tur%C3%A1n_graph#Special_cases
 
     """
-    G = nx.from_dict_of_lists(
-        {0: [1, 2, 3, 4], 1: [2, 3, 5], 2: [4, 5], 3: [4, 5], 4: [5]},
-        create_using=create_using,
-    )
-    G.name = "Platonic Octahedral Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def pappus_graph():
@@ -716,10 +510,7 @@ def pappus_graph():
     ----------
     .. [1] https://en.wikipedia.org/wiki/Pappus_graph
     """
-    G = LCF_graph(18, [5, 7, -7, 7, -7, -5], 3)
-    G.name = "Pappus Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -747,24 +538,7 @@ def petersen_graph(create_using=None):
     .. [1] https://en.wikipedia.org/wiki/Petersen_graph
     .. [2] https://www.win.tue.nl/~aeb/drg/graphs/Petersen.html
     """
-    G = nx.from_dict_of_lists(
-        {
-            0: [1, 4, 5],
-            1: [0, 2, 6],
-            2: [1, 3, 7],
-            3: [2, 4, 8],
-            4: [3, 0, 9],
-            5: [0, 7, 8],
-            6: [1, 8, 9],
-            7: [2, 5, 9],
-            8: [3, 5, 6],
-            9: [4, 6, 7],
-        },
-        create_using=create_using,
-    )
-    G.name = "Petersen Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def sedgewick_maze_graph(create_using=None):
@@ -789,15 +563,7 @@ def sedgewick_maze_graph(create_using=None):
     ----------
     .. [1] Figure 18.2, Chapter 18, Graph Algorithms (3rd Ed), Sedgewick
     """
-    G = empty_graph(0, create_using)
-    G.add_nodes_from(range(8))
-    G.add_edges_from([[0, 2], [0, 7], [0, 5]])
-    G.add_edges_from([[1, 7], [2, 6]])
-    G.add_edges_from([[3, 4], [3, 5]])
-    G.add_edges_from([[4, 5], [4, 7], [4, 6]])
-    G.name = "Sedgewick Maze"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def tetrahedral_graph(create_using=None):
@@ -823,10 +589,7 @@ def tetrahedral_graph(create_using=None):
     .. [1] https://en.wikipedia.org/wiki/Tetrahedron#Tetrahedral_graph
 
     """
-    G = complete_graph(4, create_using)
-    G.name = "Platonic Tetrahedral Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -855,37 +618,7 @@ def truncated_cube_graph(create_using=None):
     .. [2] https://www.coolmath.com/reference/polyhedra-truncated-cube
 
     """
-    G = nx.from_dict_of_lists(
-        {
-            0: [1, 2, 4],
-            1: [11, 14],
-            2: [3, 4],
-            3: [6, 8],
-            4: [5],
-            5: [16, 18],
-            6: [7, 8],
-            7: [10, 12],
-            8: [9],
-            9: [17, 20],
-            10: [11, 12],
-            11: [14],
-            12: [13],
-            13: [21, 22],
-            14: [15],
-            15: [19, 23],
-            16: [17, 18],
-            17: [20],
-            18: [19],
-            19: [23],
-            20: [21],
-            21: [22],
-            22: [23],
-        },
-        create_using=create_using,
-    )
-    G.name = "Truncated Cube Graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def truncated_tetrahedron_graph(create_using=None):
@@ -911,11 +644,7 @@ def truncated_tetrahedron_graph(create_using=None):
     .. [1] https://en.wikipedia.org/wiki/Truncated_tetrahedron
 
     """
-    G = path_graph(12, create_using)
-    G.add_edges_from([(0, 2), (0, 9), (1, 6), (3, 11), (4, 11), (5, 7), (8, 10)])
-    G.name = "Truncated Tetrahedron Graph"
-    return G
-
+    pass
 
 @_raise_on_directed
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -944,50 +673,4 @@ def tutte_graph(create_using=None):
     ----------
     .. [1] https://en.wikipedia.org/wiki/Tutte_graph
     """
-    G = nx.from_dict_of_lists(
-        {
-            0: [1, 2, 3],
-            1: [4, 26],
-            2: [10, 11],
-            3: [18, 19],
-            4: [5, 33],
-            5: [6, 29],
-            6: [7, 27],
-            7: [8, 14],
-            8: [9, 38],
-            9: [10, 37],
-            10: [39],
-            11: [12, 39],
-            12: [13, 35],
-            13: [14, 15],
-            14: [34],
-            15: [16, 22],
-            16: [17, 44],
-            17: [18, 43],
-            18: [45],
-            19: [20, 45],
-            20: [21, 41],
-            21: [22, 23],
-            22: [40],
-            23: [24, 27],
-            24: [25, 32],
-            25: [26, 31],
-            26: [33],
-            27: [28],
-            28: [29, 32],
-            29: [30],
-            30: [31, 33],
-            31: [32],
-            34: [35, 38],
-            35: [36],
-            36: [37, 39],
-            37: [38],
-            40: [41, 44],
-            41: [42],
-            42: [43, 45],
-            43: [44],
-        },
-        create_using=create_using,
-    )
-    G.name = "Tutte's Graph"
-    return G
+    pass

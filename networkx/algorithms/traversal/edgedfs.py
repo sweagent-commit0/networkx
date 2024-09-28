@@ -7,12 +7,9 @@ Algorithms for a depth-first traversal of edges in a graph.
 
 """
 import networkx as nx
-
-FORWARD = "forward"
-REVERSE = "reverse"
-
-__all__ = ["edge_dfs"]
-
+FORWARD = 'forward'
+REVERSE = 'reverse'
+__all__ = ['edge_dfs']
 
 @nx._dispatchable
 def edge_dfs(G, source=None, orientation=None):
@@ -91,85 +88,4 @@ def edge_dfs(G, source=None, orientation=None):
     :func:`~networkx.algorithms.traversal.depth_first_search.dfs_edges`
 
     """
-    nodes = list(G.nbunch_iter(source))
-    if not nodes:
-        return
-
-    directed = G.is_directed()
-    kwds = {"data": False}
-    if G.is_multigraph() is True:
-        kwds["keys"] = True
-
-    # set up edge lookup
-    if orientation is None:
-
-        def edges_from(node):
-            return iter(G.edges(node, **kwds))
-
-    elif not directed or orientation == "original":
-
-        def edges_from(node):
-            for e in G.edges(node, **kwds):
-                yield e + (FORWARD,)
-
-    elif orientation == "reverse":
-
-        def edges_from(node):
-            for e in G.in_edges(node, **kwds):
-                yield e + (REVERSE,)
-
-    elif orientation == "ignore":
-
-        def edges_from(node):
-            for e in G.edges(node, **kwds):
-                yield e + (FORWARD,)
-            for e in G.in_edges(node, **kwds):
-                yield e + (REVERSE,)
-
-    else:
-        raise nx.NetworkXError("invalid orientation argument.")
-
-    # set up formation of edge_id to easily look up if edge already returned
-    if directed:
-
-        def edge_id(edge):
-            # remove direction indicator
-            return edge[:-1] if orientation is not None else edge
-
-    else:
-
-        def edge_id(edge):
-            # single id for undirected requires frozenset on nodes
-            return (frozenset(edge[:2]),) + edge[2:]
-
-    # Basic setup
-    check_reverse = directed and orientation in ("reverse", "ignore")
-
-    visited_edges = set()
-    visited_nodes = set()
-    edges = {}
-
-    # start DFS
-    for start_node in nodes:
-        stack = [start_node]
-        while stack:
-            current_node = stack[-1]
-            if current_node not in visited_nodes:
-                edges[current_node] = edges_from(current_node)
-                visited_nodes.add(current_node)
-
-            try:
-                edge = next(edges[current_node])
-            except StopIteration:
-                # No more edges from the current node.
-                stack.pop()
-            else:
-                edgeid = edge_id(edge)
-                if edgeid not in visited_edges:
-                    visited_edges.add(edgeid)
-                    # Mark the traversed "to" node as to-be-explored.
-                    if check_reverse and edge[-1] == REVERSE:
-                        stack.append(edge[0])
-                    else:
-                        stack.append(edge[1])
-                    yield edge
+    pass

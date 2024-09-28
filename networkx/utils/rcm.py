@@ -3,13 +3,9 @@ Cuthill-McKee ordering of graph nodes to produce sparse matrices
 """
 from collections import deque
 from operator import itemgetter
-
 import networkx as nx
-
 from ..utils import arbitrary_element
-
-__all__ = ["cuthill_mckee_ordering", "reverse_cuthill_mckee_ordering"]
-
+__all__ = ['cuthill_mckee_ordering', 'reverse_cuthill_mckee_ordering']
 
 def cuthill_mckee_ordering(G, heuristic=None):
     """Generate an ordering (permutation) of the graph nodes to make
@@ -64,9 +60,7 @@ def cuthill_mckee_ordering(G, heuristic=None):
     .. [2]  Steven S. Skiena. 1997. The Algorithm Design Manual.
        Springer-Verlag New York, Inc., New York, NY, USA.
     """
-    for c in nx.connected_components(G):
-        yield from connected_cuthill_mckee_ordering(G.subgraph(c), heuristic)
-
+    pass
 
 def reverse_cuthill_mckee_ordering(G, heuristic=None):
     """Generate an ordering (permutation) of the graph nodes to make
@@ -121,38 +115,4 @@ def reverse_cuthill_mckee_ordering(G, heuristic=None):
     .. [2]  Steven S. Skiena. 1997. The Algorithm Design Manual.
        Springer-Verlag New York, Inc., New York, NY, USA.
     """
-    return reversed(list(cuthill_mckee_ordering(G, heuristic=heuristic)))
-
-
-def connected_cuthill_mckee_ordering(G, heuristic=None):
-    # the cuthill mckee algorithm for connected graphs
-    if heuristic is None:
-        start = pseudo_peripheral_node(G)
-    else:
-        start = heuristic(G)
-    visited = {start}
-    queue = deque([start])
-    while queue:
-        parent = queue.popleft()
-        yield parent
-        nd = sorted(G.degree(set(G[parent]) - visited), key=itemgetter(1))
-        children = [n for n, d in nd]
-        visited.update(children)
-        queue.extend(children)
-
-
-def pseudo_peripheral_node(G):
-    # helper for cuthill-mckee to find a node in a "pseudo peripheral pair"
-    # to use as good starting node
-    u = arbitrary_element(G)
-    lp = 0
-    v = u
-    while True:
-        spl = dict(nx.shortest_path_length(G, v))
-        l = max(spl.values())
-        if l <= lp:
-            break
-        lp = l
-        farthest = (n for n, dist in spl.items() if dist == l)
-        v, deg = min(G.degree(farthest), key=itemgetter(1))
-    return v
+    pass

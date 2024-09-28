@@ -1,18 +1,7 @@
 """Basic algorithms for depth-first searching the nodes of a graph."""
 from collections import defaultdict
-
 import networkx as nx
-
-__all__ = [
-    "dfs_edges",
-    "dfs_tree",
-    "dfs_predecessors",
-    "dfs_successors",
-    "dfs_preorder_nodes",
-    "dfs_postorder_nodes",
-    "dfs_labeled_edges",
-]
-
+__all__ = ['dfs_edges', 'dfs_tree', 'dfs_predecessors', 'dfs_successors', 'dfs_preorder_nodes', 'dfs_postorder_nodes', 'dfs_labeled_edges']
 
 @nx._dispatchable
 def dfs_edges(G, source=None, depth_limit=None, *, sort_neighbors=None):
@@ -74,42 +63,7 @@ def dfs_edges(G, source=None, depth_limit=None, *, sort_neighbors=None):
     .. [1] http://www.ics.uci.edu/~eppstein/PADS
     .. [2] https://en.wikipedia.org/wiki/Depth-limited_search
     """
-    if source is None:
-        # edges for all components
-        nodes = G
-    else:
-        # edges for components with source
-        nodes = [source]
-    if depth_limit is None:
-        depth_limit = len(G)
-
-    get_children = (
-        G.neighbors
-        if sort_neighbors is None
-        else lambda n: iter(sort_neighbors(G.neighbors(n)))
-    )
-
-    visited = set()
-    for start in nodes:
-        if start in visited:
-            continue
-        visited.add(start)
-        stack = [(start, get_children(start))]
-        depth_now = 1
-        while stack:
-            parent, children = stack[-1]
-            for child in children:
-                if child not in visited:
-                    yield parent, child
-                    visited.add(child)
-                    if depth_now < depth_limit:
-                        stack.append((child, get_children(child)))
-                        depth_now += 1
-                        break
-            else:
-                stack.pop()
-                depth_now -= 1
-
+    pass
 
 @nx._dispatchable(returns_graph=True)
 def dfs_tree(G, source=None, depth_limit=None, *, sort_neighbors=None):
@@ -153,14 +107,7 @@ def dfs_tree(G, source=None, depth_limit=None, *, sort_neighbors=None):
     :func:`~networkx.algorithms.traversal.edgedfs.edge_dfs`
     :func:`~networkx.algorithms.traversal.breadth_first_search.bfs_tree`
     """
-    T = nx.DiGraph()
-    if source is None:
-        T.add_nodes_from(G)
-    else:
-        T.add_node(source)
-    T.add_edges_from(dfs_edges(G, source, depth_limit, sort_neighbors=sort_neighbors))
-    return T
-
+    pass
 
 @nx._dispatchable
 def dfs_predecessors(G, source=None, depth_limit=None, *, sort_neighbors=None):
@@ -218,11 +165,7 @@ def dfs_predecessors(G, source=None, depth_limit=None, *, sort_neighbors=None):
     :func:`~networkx.algorithms.traversal.edgedfs.edge_dfs`
     :func:`~networkx.algorithms.traversal.breadth_first_search.bfs_tree`
     """
-    return {
-        t: s
-        for s, t in dfs_edges(G, source, depth_limit, sort_neighbors=sort_neighbors)
-    }
-
+    pass
 
 @nx._dispatchable
 def dfs_successors(G, source=None, depth_limit=None, *, sort_neighbors=None):
@@ -280,16 +223,7 @@ def dfs_successors(G, source=None, depth_limit=None, *, sort_neighbors=None):
     :func:`~networkx.algorithms.traversal.edgedfs.edge_dfs`
     :func:`~networkx.algorithms.traversal.breadth_first_search.bfs_tree`
     """
-    d = defaultdict(list)
-    for s, t in dfs_edges(
-        G,
-        source=source,
-        depth_limit=depth_limit,
-        sort_neighbors=sort_neighbors,
-    ):
-        d[s].append(t)
-    return dict(d)
-
+    pass
 
 @nx._dispatchable
 def dfs_postorder_nodes(G, source=None, depth_limit=None, *, sort_neighbors=None):
@@ -344,11 +278,7 @@ def dfs_postorder_nodes(G, source=None, depth_limit=None, *, sort_neighbors=None
     :func:`~networkx.algorithms.traversal.edgedfs.edge_dfs`
     :func:`~networkx.algorithms.traversal.breadth_first_search.bfs_tree`
     """
-    edges = nx.dfs_labeled_edges(
-        G, source=source, depth_limit=depth_limit, sort_neighbors=sort_neighbors
-    )
-    return (v for u, v, d in edges if d == "reverse")
-
+    pass
 
 @nx._dispatchable
 def dfs_preorder_nodes(G, source=None, depth_limit=None, *, sort_neighbors=None):
@@ -403,11 +333,7 @@ def dfs_preorder_nodes(G, source=None, depth_limit=None, *, sort_neighbors=None)
     dfs_labeled_edges
     :func:`~networkx.algorithms.traversal.breadth_first_search.bfs_edges`
     """
-    edges = nx.dfs_labeled_edges(
-        G, source=source, depth_limit=depth_limit, sort_neighbors=sort_neighbors
-    )
-    return (v for u, v, d in edges if d == "forward")
-
+    pass
 
 @nx._dispatchable
 def dfs_labeled_edges(G, source=None, depth_limit=None, *, sort_neighbors=None):
@@ -481,48 +407,4 @@ def dfs_labeled_edges(G, source=None, depth_limit=None, *, sort_neighbors=None):
     dfs_preorder_nodes
     dfs_postorder_nodes
     """
-    # Based on http://www.ics.uci.edu/~eppstein/PADS/DFS.py
-    # by D. Eppstein, July 2004.
-    if source is None:
-        # edges for all components
-        nodes = G
-    else:
-        # edges for components with source
-        nodes = [source]
-    if depth_limit is None:
-        depth_limit = len(G)
-
-    get_children = (
-        G.neighbors
-        if sort_neighbors is None
-        else lambda n: iter(sort_neighbors(G.neighbors(n)))
-    )
-
-    visited = set()
-    for start in nodes:
-        if start in visited:
-            continue
-        yield start, start, "forward"
-        visited.add(start)
-        stack = [(start, get_children(start))]
-        depth_now = 1
-        while stack:
-            parent, children = stack[-1]
-            for child in children:
-                if child in visited:
-                    yield parent, child, "nontree"
-                else:
-                    yield parent, child, "forward"
-                    visited.add(child)
-                    if depth_now < depth_limit:
-                        stack.append((child, iter(get_children(child))))
-                        depth_now += 1
-                        break
-                    else:
-                        yield parent, child, "reverse-depth_limit"
-            else:
-                stack.pop()
-                depth_now -= 1
-                if stack:
-                    yield stack[-1][0], parent, "reverse"
-        yield start, start, "reverse"
+    pass

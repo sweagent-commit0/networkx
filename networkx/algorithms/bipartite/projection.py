@@ -2,21 +2,11 @@
 import networkx as nx
 from networkx.exception import NetworkXAlgorithmError
 from networkx.utils import not_implemented_for
+__all__ = ['projected_graph', 'weighted_projected_graph', 'collaboration_weighted_projected_graph', 'overlap_weighted_projected_graph', 'generic_weighted_projected_graph']
 
-__all__ = [
-    "projected_graph",
-    "weighted_projected_graph",
-    "collaboration_weighted_projected_graph",
-    "overlap_weighted_projected_graph",
-    "generic_weighted_projected_graph",
-]
-
-
-@nx._dispatchable(
-    graphs="B", preserve_node_attrs=True, preserve_graph_attrs=True, returns_graph=True
-)
+@nx._dispatchable(graphs='B', preserve_node_attrs=True, preserve_graph_attrs=True, returns_graph=True)
 def projected_graph(B, nodes, multigraph=False):
-    r"""Returns the projection of B onto one of its node sets.
+    """Returns the projection of B onto one of its node sets.
 
     Returns the graph G that is the projection of the bipartite graph B
     onto the specified nodes. They retain their attributes and are connected
@@ -86,42 +76,12 @@ def projected_graph(B, nodes, multigraph=False):
     overlap_weighted_projected_graph,
     generic_weighted_projected_graph
     """
-    if B.is_multigraph():
-        raise nx.NetworkXError("not defined for multigraphs")
-    if B.is_directed():
-        directed = True
-        if multigraph:
-            G = nx.MultiDiGraph()
-        else:
-            G = nx.DiGraph()
-    else:
-        directed = False
-        if multigraph:
-            G = nx.MultiGraph()
-        else:
-            G = nx.Graph()
-    G.graph.update(B.graph)
-    G.add_nodes_from((n, B.nodes[n]) for n in nodes)
-    for u in nodes:
-        nbrs2 = {v for nbr in B[u] for v in B[nbr] if v != u}
-        if multigraph:
-            for n in nbrs2:
-                if directed:
-                    links = set(B[u]) & set(B.pred[n])
-                else:
-                    links = set(B[u]) & set(B[n])
-                for l in links:
-                    if not G.has_edge(u, n, l):
-                        G.add_edge(u, n, key=l)
-        else:
-            G.add_edges_from((u, n) for n in nbrs2)
-    return G
+    pass
 
-
-@not_implemented_for("multigraph")
-@nx._dispatchable(graphs="B", returns_graph=True)
+@not_implemented_for('multigraph')
+@nx._dispatchable(graphs='B', returns_graph=True)
 def weighted_projected_graph(B, nodes, ratio=False):
-    r"""Returns a weighted projection of B onto one of its node sets.
+    """Returns a weighted projection of B onto one of its node sets.
 
     The weighted projected graph is the projection of the bipartite
     network B onto the specified nodes with weights representing the
@@ -189,40 +149,12 @@ def weighted_projected_graph(B, nodes, ratio=False):
         Networks". In Carrington, P. and Scott, J. (eds) The Sage Handbook
         of Social Network Analysis. Sage Publications.
     """
-    if B.is_directed():
-        pred = B.pred
-        G = nx.DiGraph()
-    else:
-        pred = B.adj
-        G = nx.Graph()
-    G.graph.update(B.graph)
-    G.add_nodes_from((n, B.nodes[n]) for n in nodes)
-    n_top = len(B) - len(nodes)
+    pass
 
-    if n_top < 1:
-        raise NetworkXAlgorithmError(
-            f"the size of the nodes to project onto ({len(nodes)}) is >= the graph size ({len(B)}).\n"
-            "They are either not a valid bipartite partition or contain duplicates"
-        )
-
-    for u in nodes:
-        unbrs = set(B[u])
-        nbrs2 = {n for nbr in unbrs for n in B[nbr]} - {u}
-        for v in nbrs2:
-            vnbrs = set(pred[v])
-            common = unbrs & vnbrs
-            if not ratio:
-                weight = len(common)
-            else:
-                weight = len(common) / n_top
-            G.add_edge(u, v, weight=weight)
-    return G
-
-
-@not_implemented_for("multigraph")
-@nx._dispatchable(graphs="B", returns_graph=True)
+@not_implemented_for('multigraph')
+@nx._dispatchable(graphs='B', returns_graph=True)
 def collaboration_weighted_projected_graph(B, nodes):
-    r"""Newman's weighted projection of B onto one of its node sets.
+    """Newman's weighted projection of B onto one of its node sets.
 
     The collaboration weighted projection is the projection of the
     bipartite network B onto the specified nodes with weights assigned
@@ -230,12 +162,12 @@ def collaboration_weighted_projected_graph(B, nodes):
 
     .. math::
 
-        w_{u, v} = \sum_k \frac{\delta_{u}^{k} \delta_{v}^{k}}{d_k - 1}
+        w_{u, v} = \\sum_k \\frac{\\delta_{u}^{k} \\delta_{v}^{k}}{d_k - 1}
 
     where `u` and `v` are nodes from the bottom bipartite node set,
     and `k` is a node of the top node set.
     The value `d_k` is the degree of node `k` in the bipartite
-    network and `\delta_{u}^{k}` is 1 if node `u` is
+    network and `\\delta_{u}^{k}` is 1 if node `u` is
     linked to node `k` in the original bipartite graph or 0 otherwise.
 
     The nodes retain their attributes and are connected in the resulting
@@ -294,29 +226,12 @@ def collaboration_weighted_projected_graph(B, nodes):
         Shortest paths, weighted networks, and centrality,
         M. E. J. Newman, Phys. Rev. E 64, 016132 (2001).
     """
-    if B.is_directed():
-        pred = B.pred
-        G = nx.DiGraph()
-    else:
-        pred = B.adj
-        G = nx.Graph()
-    G.graph.update(B.graph)
-    G.add_nodes_from((n, B.nodes[n]) for n in nodes)
-    for u in nodes:
-        unbrs = set(B[u])
-        nbrs2 = {n for nbr in unbrs for n in B[nbr] if n != u}
-        for v in nbrs2:
-            vnbrs = set(pred[v])
-            common_degree = (len(B[n]) for n in unbrs & vnbrs)
-            weight = sum(1.0 / (deg - 1) for deg in common_degree if deg > 1)
-            G.add_edge(u, v, weight=weight)
-    return G
+    pass
 
-
-@not_implemented_for("multigraph")
-@nx._dispatchable(graphs="B", returns_graph=True)
+@not_implemented_for('multigraph')
+@nx._dispatchable(graphs='B', returns_graph=True)
 def overlap_weighted_projected_graph(B, nodes, jaccard=True):
-    r"""Overlap weighted projection of B onto one of its node sets.
+    """Overlap weighted projection of B onto one of its node sets.
 
     The overlap weighted projection is the projection of the bipartite
     network B onto the specified nodes with weights representing
@@ -325,7 +240,7 @@ def overlap_weighted_projected_graph(B, nodes, jaccard=True):
 
     .. math::
 
-        w_{v, u} = \frac{|N(u) \cap N(v)|}{|N(u) \cup N(v)|}
+        w_{v, u} = \\frac{|N(u) \\cap N(v)|}{|N(u) \\cup N(v)|}
 
     or if the parameter 'jaccard' is False, the fraction of common
     neighbors by minimum of both nodes degree in the original
@@ -333,7 +248,7 @@ def overlap_weighted_projected_graph(B, nodes, jaccard=True):
 
     .. math::
 
-        w_{v, u} = \frac{|N(u) \cap N(v)|}{min(|N(u)|, |N(v)|)}
+        w_{v, u} = \\frac{|N(u) \\cap N(v)|}{min(|N(u)|, |N(v)|)}
 
     The nodes retain their attributes and are connected in the resulting
     graph if have an edge to a common node in the original bipartite graph.
@@ -392,31 +307,12 @@ def overlap_weighted_projected_graph(B, nodes, jaccard=True):
         of Social Network Analysis. Sage Publications.
 
     """
-    if B.is_directed():
-        pred = B.pred
-        G = nx.DiGraph()
-    else:
-        pred = B.adj
-        G = nx.Graph()
-    G.graph.update(B.graph)
-    G.add_nodes_from((n, B.nodes[n]) for n in nodes)
-    for u in nodes:
-        unbrs = set(B[u])
-        nbrs2 = {n for nbr in unbrs for n in B[nbr]} - {u}
-        for v in nbrs2:
-            vnbrs = set(pred[v])
-            if jaccard:
-                wt = len(unbrs & vnbrs) / len(unbrs | vnbrs)
-            else:
-                wt = len(unbrs & vnbrs) / min(len(unbrs), len(vnbrs))
-            G.add_edge(u, v, weight=wt)
-    return G
+    pass
 
-
-@not_implemented_for("multigraph")
-@nx._dispatchable(graphs="B", preserve_all_attrs=True, returns_graph=True)
+@not_implemented_for('multigraph')
+@nx._dispatchable(graphs='B', preserve_all_attrs=True, returns_graph=True)
 def generic_weighted_projected_graph(B, nodes, weight_function=None):
-    r"""Weighted projection of B with a user-specified weight function.
+    """Weighted projection of B with a user-specified weight function.
 
     The bipartite network B is projected on to the specified nodes
     with weights computed by a user-specified function.  This function
@@ -499,23 +395,4 @@ def generic_weighted_projected_graph(B, nodes, weight_function=None):
     projected_graph
 
     """
-    if B.is_directed():
-        pred = B.pred
-        G = nx.DiGraph()
-    else:
-        pred = B.adj
-        G = nx.Graph()
-    if weight_function is None:
-
-        def weight_function(G, u, v):
-            # Notice that we use set(pred[v]) for handling the directed case.
-            return len(set(G[u]) & set(pred[v]))
-
-    G.graph.update(B.graph)
-    G.add_nodes_from((n, B.nodes[n]) for n in nodes)
-    for u in nodes:
-        nbrs2 = {n for nbr in set(B[u]) for n in B[nbr]} - {u}
-        for v in nbrs2:
-            weight = weight_function(B, u, v)
-            G.add_edge(u, v, weight=weight)
-    return G
+    pass

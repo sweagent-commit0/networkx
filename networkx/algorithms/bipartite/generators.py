@@ -4,21 +4,9 @@ Generators and functions for bipartite graphs.
 import math
 import numbers
 from functools import reduce
-
 import networkx as nx
 from networkx.utils import nodes_or_number, py_random_state
-
-__all__ = [
-    "configuration_model",
-    "havel_hakimi_graph",
-    "reverse_havel_hakimi_graph",
-    "alternating_havel_hakimi_graph",
-    "preferential_attachment_graph",
-    "random_graph",
-    "gnmk_random_graph",
-    "complete_bipartite_graph",
-]
-
+__all__ = ['configuration_model', 'havel_hakimi_graph', 'reverse_havel_hakimi_graph', 'alternating_havel_hakimi_graph', 'preferential_attachment_graph', 'random_graph', 'gnmk_random_graph', 'complete_bipartite_graph']
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 @nodes_or_number([0, 1])
@@ -49,25 +37,10 @@ def complete_bipartite_graph(n1, n2, create_using=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.complete_bipartite_graph
     """
-    G = nx.empty_graph(0, create_using)
-    if G.is_directed():
-        raise nx.NetworkXError("Directed Graph not supported")
-
-    n1, top = n1
-    n2, bottom = n2
-    if isinstance(n1, numbers.Integral) and isinstance(n2, numbers.Integral):
-        bottom = [n1 + i for i in bottom]
-    G.add_nodes_from(top, bipartite=0)
-    G.add_nodes_from(bottom, bipartite=1)
-    if len(G) != len(top) + len(bottom):
-        raise nx.NetworkXError("Inputs n1 and n2 must contain distinct nodes")
-    G.add_edges_from((u, v) for u in top for v in bottom)
-    G.graph["name"] = f"complete_bipartite_graph({n1}, {n2})"
-    return G
-
+    pass
 
 @py_random_state(3)
-@nx._dispatchable(name="bipartite_configuration_model", graphs=None, returns_graph=True)
+@nx._dispatchable(name='bipartite_configuration_model', graphs=None, returns_graph=True)
 def configuration_model(aseq, bseq, create_using=None, seed=None):
     """Returns a random bipartite graph from two given degree sequences.
 
@@ -101,44 +74,9 @@ def configuration_model(aseq, bseq, create_using=None, seed=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.configuration_model
     """
-    G = nx.empty_graph(0, create_using, default=nx.MultiGraph)
-    if G.is_directed():
-        raise nx.NetworkXError("Directed Graph not supported")
+    pass
 
-    # length and sum of each sequence
-    lena = len(aseq)
-    lenb = len(bseq)
-    suma = sum(aseq)
-    sumb = sum(bseq)
-
-    if not suma == sumb:
-        raise nx.NetworkXError(
-            f"invalid degree sequences, sum(aseq)!=sum(bseq),{suma},{sumb}"
-        )
-
-    G = _add_nodes_with_bipartite_label(G, lena, lenb)
-
-    if len(aseq) == 0 or max(aseq) == 0:
-        return G  # done if no edges
-
-    # build lists of degree-repeated vertex numbers
-    stubs = [[v] * aseq[v] for v in range(lena)]
-    astubs = [x for subseq in stubs for x in subseq]
-
-    stubs = [[v] * bseq[v - lena] for v in range(lena, lena + lenb)]
-    bstubs = [x for subseq in stubs for x in subseq]
-
-    # shuffle lists
-    seed.shuffle(astubs)
-    seed.shuffle(bstubs)
-
-    G.add_edges_from([astubs[i], bstubs[i]] for i in range(suma))
-
-    G.name = "bipartite_configuration_model"
-    return G
-
-
-@nx._dispatchable(name="bipartite_havel_hakimi_graph", graphs=None, returns_graph=True)
+@nx._dispatchable(name='bipartite_havel_hakimi_graph', graphs=None, returns_graph=True)
 def havel_hakimi_graph(aseq, bseq, create_using=None):
     """Returns a bipartite graph from two given degree sequences using a
     Havel-Hakimi style construction.
@@ -171,47 +109,7 @@ def havel_hakimi_graph(aseq, bseq, create_using=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.havel_hakimi_graph
     """
-    G = nx.empty_graph(0, create_using, default=nx.MultiGraph)
-    if G.is_directed():
-        raise nx.NetworkXError("Directed Graph not supported")
-
-    # length of the each sequence
-    naseq = len(aseq)
-    nbseq = len(bseq)
-
-    suma = sum(aseq)
-    sumb = sum(bseq)
-
-    if not suma == sumb:
-        raise nx.NetworkXError(
-            f"invalid degree sequences, sum(aseq)!=sum(bseq),{suma},{sumb}"
-        )
-
-    G = _add_nodes_with_bipartite_label(G, naseq, nbseq)
-
-    if len(aseq) == 0 or max(aseq) == 0:
-        return G  # done if no edges
-
-    # build list of degree-repeated vertex numbers
-    astubs = [[aseq[v], v] for v in range(naseq)]
-    bstubs = [[bseq[v - naseq], v] for v in range(naseq, naseq + nbseq)]
-    astubs.sort()
-    while astubs:
-        (degree, u) = astubs.pop()  # take of largest degree node in the a set
-        if degree == 0:
-            break  # done, all are zero
-        # connect the source to largest degree nodes in the b set
-        bstubs.sort()
-        for target in bstubs[-degree:]:
-            v = target[1]
-            G.add_edge(u, v)
-            target[0] -= 1  # note this updates bstubs too.
-            if target[0] == 0:
-                bstubs.remove(target)
-
-    G.name = "bipartite_havel_hakimi_graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def reverse_havel_hakimi_graph(aseq, bseq, create_using=None):
@@ -246,46 +144,7 @@ def reverse_havel_hakimi_graph(aseq, bseq, create_using=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.reverse_havel_hakimi_graph
     """
-    G = nx.empty_graph(0, create_using, default=nx.MultiGraph)
-    if G.is_directed():
-        raise nx.NetworkXError("Directed Graph not supported")
-
-    # length of the each sequence
-    lena = len(aseq)
-    lenb = len(bseq)
-    suma = sum(aseq)
-    sumb = sum(bseq)
-
-    if not suma == sumb:
-        raise nx.NetworkXError(
-            f"invalid degree sequences, sum(aseq)!=sum(bseq),{suma},{sumb}"
-        )
-
-    G = _add_nodes_with_bipartite_label(G, lena, lenb)
-
-    if len(aseq) == 0 or max(aseq) == 0:
-        return G  # done if no edges
-
-    # build list of degree-repeated vertex numbers
-    astubs = [[aseq[v], v] for v in range(lena)]
-    bstubs = [[bseq[v - lena], v] for v in range(lena, lena + lenb)]
-    astubs.sort()
-    bstubs.sort()
-    while astubs:
-        (degree, u) = astubs.pop()  # take of largest degree node in the a set
-        if degree == 0:
-            break  # done, all are zero
-        # connect the source to the smallest degree nodes in the b set
-        for target in bstubs[0:degree]:
-            v = target[1]
-            G.add_edge(u, v)
-            target[0] -= 1  # note this updates bstubs too.
-            if target[0] == 0:
-                bstubs.remove(target)
-
-    G.name = "bipartite_reverse_havel_hakimi_graph"
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def alternating_havel_hakimi_graph(aseq, bseq, create_using=None):
@@ -321,49 +180,7 @@ def alternating_havel_hakimi_graph(aseq, bseq, create_using=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.alternating_havel_hakimi_graph
     """
-    G = nx.empty_graph(0, create_using, default=nx.MultiGraph)
-    if G.is_directed():
-        raise nx.NetworkXError("Directed Graph not supported")
-
-    # length of the each sequence
-    naseq = len(aseq)
-    nbseq = len(bseq)
-    suma = sum(aseq)
-    sumb = sum(bseq)
-
-    if not suma == sumb:
-        raise nx.NetworkXError(
-            f"invalid degree sequences, sum(aseq)!=sum(bseq),{suma},{sumb}"
-        )
-
-    G = _add_nodes_with_bipartite_label(G, naseq, nbseq)
-
-    if len(aseq) == 0 or max(aseq) == 0:
-        return G  # done if no edges
-    # build list of degree-repeated vertex numbers
-    astubs = [[aseq[v], v] for v in range(naseq)]
-    bstubs = [[bseq[v - naseq], v] for v in range(naseq, naseq + nbseq)]
-    while astubs:
-        astubs.sort()
-        (degree, u) = astubs.pop()  # take of largest degree node in the a set
-        if degree == 0:
-            break  # done, all are zero
-        bstubs.sort()
-        small = bstubs[0 : degree // 2]  # add these low degree targets
-        large = bstubs[(-degree + degree // 2) :]  # now high degree targets
-        stubs = [x for z in zip(large, small) for x in z]  # combine, sorry
-        if len(stubs) < len(small) + len(large):  # check for zip truncation
-            stubs.append(large.pop())
-        for target in stubs:
-            v = target[1]
-            G.add_edge(u, v)
-            target[0] -= 1  # note this updates bstubs too.
-            if target[0] == 0:
-                bstubs.remove(target)
-
-    G.name = "bipartite_alternating_havel_hakimi_graph"
-    return G
-
+    pass
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -406,36 +223,7 @@ def preferential_attachment_graph(aseq, p, create_using=None, seed=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.preferential_attachment_graph
     """
-    G = nx.empty_graph(0, create_using, default=nx.MultiGraph)
-    if G.is_directed():
-        raise nx.NetworkXError("Directed Graph not supported")
-
-    if p > 1:
-        raise nx.NetworkXError(f"probability {p} > 1")
-
-    naseq = len(aseq)
-    G = _add_nodes_with_bipartite_label(G, naseq, 0)
-    vv = [[v] * aseq[v] for v in range(naseq)]
-    while vv:
-        while vv[0]:
-            source = vv[0][0]
-            vv[0].remove(source)
-            if seed.random() < p or len(G) == naseq:
-                target = len(G)
-                G.add_node(target, bipartite=1)
-                G.add_edge(source, target)
-            else:
-                bb = [[b] * G.degree(b) for b in range(naseq, len(G))]
-                # flatten the list of lists into a list.
-                bbstubs = reduce(lambda x, y: x + y, bb)
-                # choose preferentially a bottom node.
-                target = seed.choice(bbstubs)
-                G.add_node(target, bipartite=1)
-                G.add_edge(source, target)
-        vv.remove(vv[0])
-    G.name = "bipartite_preferential_attachment_model"
-    return G
-
+    pass
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -483,46 +271,7 @@ def random_graph(n, m, p, seed=None, directed=False):
        "Efficient generation of large random networks",
        Phys. Rev. E, 71, 036113, 2005.
     """
-    G = nx.Graph()
-    G = _add_nodes_with_bipartite_label(G, n, m)
-    if directed:
-        G = nx.DiGraph(G)
-    G.name = f"fast_gnp_random_graph({n},{m},{p})"
-
-    if p <= 0:
-        return G
-    if p >= 1:
-        return nx.complete_bipartite_graph(n, m)
-
-    lp = math.log(1.0 - p)
-
-    v = 0
-    w = -1
-    while v < n:
-        lr = math.log(1.0 - seed.random())
-        w = w + 1 + int(lr / lp)
-        while w >= m and v < n:
-            w = w - m
-            v = v + 1
-        if v < n:
-            G.add_edge(v, n + w)
-
-    if directed:
-        # use the same algorithm to
-        # add edges from the "m" to "n" set
-        v = 0
-        w = -1
-        while v < n:
-            lr = math.log(1.0 - seed.random())
-            w = w + 1 + int(lr / lp)
-            while w >= m and v < n:
-                w = w - m
-                v = v + 1
-            if v < n:
-                G.add_edge(n + w, v)
-
-    return G
-
+    pass
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -569,35 +318,4 @@ def gnmk_random_graph(n, m, k, seed=None, directed=False):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.gnmk_random_graph
     """
-    G = nx.Graph()
-    G = _add_nodes_with_bipartite_label(G, n, m)
-    if directed:
-        G = nx.DiGraph(G)
-    G.name = f"bipartite_gnm_random_graph({n},{m},{k})"
-    if n == 1 or m == 1:
-        return G
-    max_edges = n * m  # max_edges for bipartite networks
-    if k >= max_edges:  # Maybe we should raise an exception here
-        return nx.complete_bipartite_graph(n, m, create_using=G)
-
-    top = [n for n, d in G.nodes(data=True) if d["bipartite"] == 0]
-    bottom = list(set(G) - set(top))
-    edge_count = 0
-    while edge_count < k:
-        # generate random edge,u,v
-        u = seed.choice(top)
-        v = seed.choice(bottom)
-        if v in G[u]:
-            continue
-        else:
-            G.add_edge(u, v)
-            edge_count += 1
-    return G
-
-
-def _add_nodes_with_bipartite_label(G, lena, lenb):
-    G.add_nodes_from(range(lena + lenb))
-    b = dict(zip(range(lena), [0] * lena))
-    b.update(dict(zip(range(lena, lena + lenb), [1] * lenb)))
-    nx.set_node_attributes(G, b, "bipartite")
-    return G
+    pass

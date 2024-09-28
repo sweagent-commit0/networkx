@@ -1,11 +1,8 @@
 """Operations on trees."""
 from functools import partial
 from itertools import accumulate, chain
-
 import networkx as nx
-
-__all__ = ["join", "join_trees"]
-
+__all__ = ['join', 'join_trees']
 
 def join(rooted_trees, label_attribute=None):
     """A deprecated name for `join_trees`
@@ -19,19 +16,8 @@ def join(rooted_trees, label_attribute=None):
        It has been renamed join_trees with the same syntax/interface.
 
     """
-    import warnings
+    pass
 
-    warnings.warn(
-        "The function `join` is deprecated and is renamed `join_trees`.\n"
-        "The ``join`` function itself will be removed in v3.4",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    return join_trees(rooted_trees, label_attribute=label_attribute)
-
-
-# Argument types don't match dispatching, but allow manual selection of backend
 @nx._dispatchable(graphs=None, returns_graph=True)
 def join_trees(rooted_trees, *, label_attribute=None, first_label=0):
     """Returns a new rooted tree made by joining `rooted_trees`
@@ -91,38 +77,4 @@ def join_trees(rooted_trees, *, label_attribute=None, first_label=0):
         True
 
     """
-    if not rooted_trees:
-        return nx.empty_graph(1)
-
-    # Unzip the zipped list of (tree, root) pairs.
-    trees, roots = zip(*rooted_trees)
-
-    # The join of the trees has the same type as the type of the first tree.
-    R = type(trees[0])()
-
-    lengths = (len(tree) for tree in trees[:-1])
-    first_labels = list(accumulate(lengths, initial=first_label + 1))
-
-    new_roots = []
-    for tree, root, first_node in zip(trees, roots, first_labels):
-        new_root = first_node + list(tree.nodes()).index(root)
-        new_roots.append(new_root)
-
-    # Relabel the nodes so that their union is the integers starting at first_label.
-    relabel = partial(
-        nx.convert_node_labels_to_integers, label_attribute=label_attribute
-    )
-    new_trees = [
-        relabel(tree, first_label=first_label)
-        for tree, first_label in zip(trees, first_labels)
-    ]
-
-    # Add all sets of nodes and edges, attributes
-    for tree in new_trees:
-        R.update(tree)
-
-    # Finally, join the subtrees at the root. We know first_label is unused by the way we relabeled the subtrees.
-    R.add_node(first_label)
-    R.add_edges_from((first_label, root) for root in new_roots)
-
-    return R
+    pass

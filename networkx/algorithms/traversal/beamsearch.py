@@ -1,8 +1,6 @@
 """Basic algorithms for breadth-first searching the nodes of a graph."""
 import networkx as nx
-
-__all__ = ["bfs_beam_edges"]
-
+__all__ = ['bfs_beam_edges']
 
 @nx._dispatchable
 def bfs_beam_edges(G, source, value, width=None):
@@ -60,30 +58,4 @@ def bfs_beam_edges(G, source, value, width=None):
     >>> list(nx.bfs_beam_edges(G, source=0, value=centrality.get, width=3))
     [(0, 2), (0, 1), (0, 8), (2, 32), (1, 13), (8, 33)]
     """
-
-    if width is None:
-        width = len(G)
-
-    def successors(v):
-        """Returns a list of the best neighbors of a node.
-
-        `v` is a node in the graph `G`.
-
-        The "best" neighbors are chosen according to the `value`
-        function (higher is better). Only the `width` best neighbors of
-        `v` are returned.
-        """
-        # TODO The Python documentation states that for small values, it
-        # is better to use `heapq.nlargest`. We should determine the
-        # threshold at which its better to use `heapq.nlargest()`
-        # instead of `sorted()[:]` and apply that optimization here.
-        #
-        # If `width` is greater than the number of neighbors of `v`, all
-        # neighbors are returned by the semantics of slicing in
-        # Python. This occurs in the special case that the user did not
-        # specify a `width`: in this case all neighbors are always
-        # returned, so this is just a (slower) implementation of
-        # `bfs_edges(G, source)` but with a sorted enqueue step.
-        return iter(sorted(G.neighbors(v), key=value, reverse=True)[:width])
-
-    yield from nx.generic_bfs_edges(G, source, successors)
+    pass

@@ -1,15 +1,9 @@
 """Weakly connected components."""
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for
+__all__ = ['number_weakly_connected_components', 'weakly_connected_components', 'is_weakly_connected']
 
-__all__ = [
-    "number_weakly_connected_components",
-    "weakly_connected_components",
-    "is_weakly_connected",
-]
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def weakly_connected_components(G):
     """Generate weakly connected components of G.
@@ -54,15 +48,9 @@ def weakly_connected_components(G):
     For directed graphs only.
 
     """
-    seen = set()
-    for v in G:
-        if v not in seen:
-            c = set(_plain_bfs(G, v))
-            seen.update(c)
-            yield c
+    pass
 
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def number_weakly_connected_components(G):
     """Returns the number of weakly connected components in G.
@@ -99,10 +87,9 @@ def number_weakly_connected_components(G):
     For directed graphs only.
 
     """
-    return sum(1 for wcc in weakly_connected_components(G))
+    pass
 
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def is_weakly_connected(G):
     """Test directed graph for weak connectivity.
@@ -152,13 +139,7 @@ def is_weakly_connected(G):
     For directed graphs only.
 
     """
-    if len(G) == 0:
-        raise nx.NetworkXPointlessConcept(
-            """Connectivity is undefined for the null graph."""
-        )
-
-    return len(next(weakly_connected_components(G))) == len(G)
-
+    pass
 
 def _plain_bfs(G, source):
     """A fast BFS node generator
@@ -168,26 +149,4 @@ def _plain_bfs(G, source):
     For directed graphs only.
 
     """
-    n = len(G)
-    Gsucc = G._succ
-    Gpred = G._pred
-    seen = {source}
-    nextlevel = [source]
-
-    yield source
-    while nextlevel:
-        thislevel = nextlevel
-        nextlevel = []
-        for v in thislevel:
-            for w in Gsucc[v]:
-                if w not in seen:
-                    seen.add(w)
-                    nextlevel.append(w)
-                    yield w
-            for w in Gpred[v]:
-                if w not in seen:
-                    seen.add(w)
-                    nextlevel.append(w)
-                    yield w
-            if len(seen) == n:
-                return
+    pass

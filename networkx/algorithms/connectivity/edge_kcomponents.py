@@ -10,19 +10,11 @@ least k.
 """
 import itertools as it
 from functools import partial
-
 import networkx as nx
 from networkx.utils import arbitrary_element, not_implemented_for
+__all__ = ['k_edge_components', 'k_edge_subgraphs', 'bridge_components', 'EdgeComponentAuxGraph']
 
-__all__ = [
-    "k_edge_components",
-    "k_edge_subgraphs",
-    "bridge_components",
-    "EdgeComponentAuxGraph",
-]
-
-
-@not_implemented_for("multigraph")
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def k_edge_components(G, k):
     """Generates nodes in each maximal k-edge-connected component in G.
@@ -86,27 +78,9 @@ def k_edge_components(G, k):
         k-edge-connected components.
         http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0136264
     """
-    # Compute k-edge-ccs using the most efficient algorithms available.
-    if k < 1:
-        raise ValueError("k cannot be less than 1")
-    if G.is_directed():
-        if k == 1:
-            return nx.strongly_connected_components(G)
-        else:
-            # TODO: investigate https://arxiv.org/abs/1412.6466 for k=2
-            aux_graph = EdgeComponentAuxGraph.construct(G)
-            return aux_graph.k_edge_components(k)
-    else:
-        if k == 1:
-            return nx.connected_components(G)
-        elif k == 2:
-            return bridge_components(G)
-        else:
-            aux_graph = EdgeComponentAuxGraph.construct(G)
-            return aux_graph.k_edge_components(k)
+    pass
 
-
-@not_implemented_for("multigraph")
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def k_edge_subgraphs(G, k):
     """Generates nodes in each maximal k-edge-connected subgraph in G.
@@ -167,35 +141,17 @@ def k_edge_subgraphs(G, k):
         Technology 2012 480-–491.
         https://openproceedings.org/2012/conf/edbt/ZhouLYLCL12.pdf
     """
-    if k < 1:
-        raise ValueError("k cannot be less than 1")
-    if G.is_directed():
-        if k <= 1:
-            # For directed graphs ,
-            # When k == 1, k-edge-ccs and k-edge-subgraphs are the same
-            return k_edge_components(G, k)
-        else:
-            return _k_edge_subgraphs_nodes(G, k)
-    else:
-        if k <= 2:
-            # For undirected graphs,
-            # when k <= 2, k-edge-ccs and k-edge-subgraphs are the same
-            return k_edge_components(G, k)
-        else:
-            return _k_edge_subgraphs_nodes(G, k)
-
+    pass
 
 def _k_edge_subgraphs_nodes(G, k):
     """Helper to get the nodes from the subgraphs.
 
     This allows k_edge_subgraphs to return a generator.
     """
-    for C in general_k_edge_subgraphs(G, k):
-        yield set(C.nodes())
+    pass
 
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def bridge_components(G):
     """Finds all bridge-connected components G.
@@ -233,13 +189,10 @@ def bridge_components(G):
     >>> sorted(map(sorted, bridge_components(G)))
     [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
     """
-    H = G.copy()
-    H.remove_edges_from(nx.bridges(G))
-    yield from nx.connected_components(H)
-
+    pass
 
 class EdgeComponentAuxGraph:
-    r"""A simple algorithm to find all k-edge-connected components in a graph.
+    """A simple algorithm to find all k-edge-connected components in a graph.
 
     Constructing the auxiliary graph (which may take some time) allows for the
     k-edge-ccs to be found in linear time for arbitrary k.
@@ -248,7 +201,7 @@ class EdgeComponentAuxGraph:
     -----
     This implementation is based on [1]_. The idea is to construct an auxiliary
     graph from which the k-edge-ccs can be extracted in linear time. The
-    auxiliary graph is constructed in $O(|V|\cdot F)$ operations, where F is the
+    auxiliary graph is constructed in $O(|V|\\cdot F)$ operations, where F is the
     complexity of max flow. Querying the components takes an additional $O(|V|)$
     operations. This algorithm can be slow for large graphs, but it handles an
     arbitrary k and works for both directed and undirected inputs.
@@ -310,7 +263,6 @@ class EdgeComponentAuxGraph:
     [[1, 4], [2], [3]]
     """
 
-    # @not_implemented_for('multigraph')  # TODO: fix decor for classmethods
     @classmethod
     def construct(EdgeComponentAuxGraph, G):
         """Builds an auxiliary graph encoding edge-connectivity between nodes.
@@ -332,52 +284,7 @@ class EdgeComponentAuxGraph:
         ----------
         G : NetworkX graph
         """
-        # workaround for classmethod decorator
-        not_implemented_for("multigraph")(lambda G: G)(G)
-
-        def _recursive_build(H, A, source, avail):
-            # Terminate once the flow has been compute to every node.
-            if {source} == avail:
-                return
-            # pick an arbitrary node as the sink
-            sink = arbitrary_element(avail - {source})
-            # find the minimum cut and its weight
-            value, (S, T) = nx.minimum_cut(H, source, sink)
-            if H.is_directed():
-                # check if the reverse direction has a smaller cut
-                value_, (T_, S_) = nx.minimum_cut(H, sink, source)
-                if value_ < value:
-                    value, S, T = value_, S_, T_
-            # add edge with weight of cut to the aux graph
-            A.add_edge(source, sink, weight=value)
-            # recursively call until all but one node is used
-            _recursive_build(H, A, source, avail.intersection(S))
-            _recursive_build(H, A, sink, avail.intersection(T))
-
-        # Copy input to ensure all edges have unit capacity
-        H = G.__class__()
-        H.add_nodes_from(G.nodes())
-        H.add_edges_from(G.edges(), capacity=1)
-
-        # A is the auxiliary graph to be constructed
-        # It is a weighted undirected tree
-        A = nx.Graph()
-
-        # Pick an arbitrary node as the source
-        if H.number_of_nodes() > 0:
-            source = arbitrary_element(H.nodes())
-            # Initialize a set of elements that can be chosen as the sink
-            avail = set(H.nodes())
-
-            # This constructs A
-            _recursive_build(H, A, source, avail)
-
-        # This class is a container the holds the auxiliary graph A and
-        # provides access the k_edge_components function.
-        self = EdgeComponentAuxGraph()
-        self.A = A
-        self.H = H
-        return self
+        pass
 
     def k_edge_components(self, k):
         """Queries the auxiliary graph for k-edge-connected components.
@@ -398,19 +305,7 @@ class EdgeComponentAuxGraph:
         k from the auxiliary graph.  The resulting connected components are the
         k-edge-ccs in the original graph.
         """
-        if k < 1:
-            raise ValueError("k cannot be less than 1")
-        A = self.A
-        # "traverse the auxiliary graph A and delete all edges with weights less
-        # than k"
-        aux_weights = nx.get_edge_attributes(A, "weight")
-        # Create a relevant graph with the auxiliary edges with weights >= k
-        R = nx.Graph()
-        R.add_nodes_from(A.nodes())
-        R.add_edges_from(e for e, w in aux_weights.items() if w >= k)
-
-        # Return the nodes that are k-edge-connected in the original graph
-        yield from nx.connected_components(R)
+        pass
 
     def k_edge_subgraphs(self, k):
         """Queries the auxiliary graph for k-edge-connected subgraphs.
@@ -433,50 +328,11 @@ class EdgeComponentAuxGraph:
         But for multiple values of k, it can be faster to build AuxGraph and
         then use this method.
         """
-        if k < 1:
-            raise ValueError("k cannot be less than 1")
-        H = self.H
-        A = self.A
-        # "traverse the auxiliary graph A and delete all edges with weights less
-        # than k"
-        aux_weights = nx.get_edge_attributes(A, "weight")
-        # Create a relevant graph with the auxiliary edges with weights >= k
-        R = nx.Graph()
-        R.add_nodes_from(A.nodes())
-        R.add_edges_from(e for e, w in aux_weights.items() if w >= k)
-
-        # Return the components whose subgraphs are k-edge-connected
-        for cc in nx.connected_components(R):
-            if len(cc) < k:
-                # Early return optimization
-                for node in cc:
-                    yield {node}
-            else:
-                # Call subgraph solution to refine the results
-                C = H.subgraph(cc)
-                yield from k_edge_subgraphs(C, k)
-
+        pass
 
 def _low_degree_nodes(G, k, nbunch=None):
     """Helper for finding nodes with degree less than k."""
-    # Nodes with degree less than k cannot be k-edge-connected.
-    if G.is_directed():
-        # Consider both in and out degree in the directed case
-        seen = set()
-        for node, degree in G.out_degree(nbunch):
-            if degree < k:
-                seen.add(node)
-                yield node
-        for node, degree in G.in_degree(nbunch):
-            if node not in seen and degree < k:
-                seen.add(node)
-                yield node
-    else:
-        # Only the degree matters in the undirected case
-        for node, degree in G.degree(nbunch):
-            if degree < k:
-                yield node
-
+    pass
 
 def _high_degree_components(G, k):
     """Helper for filtering components that can't be k-edge-connected.
@@ -484,24 +340,7 @@ def _high_degree_components(G, k):
     Removes and generates each node with degree less than k.  Then generates
     remaining components where all nodes have degree at least k.
     """
-    # Iteratively remove parts of the graph that are not k-edge-connected
-    H = G.copy()
-    singletons = set(_low_degree_nodes(H, k))
-    while singletons:
-        # Only search neighbors of removed nodes
-        nbunch = set(it.chain.from_iterable(map(H.neighbors, singletons)))
-        nbunch.difference_update(singletons)
-        H.remove_nodes_from(singletons)
-        for node in singletons:
-            yield {node}
-        singletons = set(_low_degree_nodes(H, k, nbunch))
-
-    # Note: remaining connected components may not be k-edge-connected
-    if G.is_directed():
-        yield from nx.strongly_connected_components(H)
-    else:
-        yield from nx.connected_components(H)
-
+    pass
 
 @nx._dispatchable(returns_graph=True)
 def general_k_edge_subgraphs(G, k):
@@ -557,35 +396,4 @@ def general_k_edge_subgraphs(G, k):
     >>> sorted(len(k_sg) for k_sg in k_edge_subgraphs(G, k=3))
     [1, 1, 1, 4, 4]
     """
-    if k < 1:
-        raise ValueError("k cannot be less than 1")
-
-    # Node pruning optimization (incorporates early return)
-    # find_ccs is either connected_components/strongly_connected_components
-    find_ccs = partial(_high_degree_components, k=k)
-
-    # Quick return optimization
-    if G.number_of_nodes() < k:
-        for node in G.nodes():
-            yield G.subgraph([node]).copy()
-        return
-
-    # Intermediate results
-    R0 = {G.subgraph(cc).copy() for cc in find_ccs(G)}
-    # Subdivide CCs in the intermediate results until they are k-conn
-    while R0:
-        G1 = R0.pop()
-        if G1.number_of_nodes() == 1:
-            yield G1
-        else:
-            # Find a global minimum cut
-            cut_edges = nx.minimum_edge_cut(G1)
-            cut_value = len(cut_edges)
-            if cut_value < k:
-                # G1 is not k-edge-connected, so subdivide it
-                G1.remove_edges_from(cut_edges)
-                for cc in find_ccs(G1):
-                    R0.add(G1.subgraph(cc).copy())
-            else:
-                # Otherwise we found a k-edge-connected subgraph
-                yield G1
+    pass

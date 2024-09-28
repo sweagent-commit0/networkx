@@ -1,31 +1,14 @@
 """Flow based node and edge disjoint paths."""
 import networkx as nx
-
-# Define the default maximum flow function to use for the underlying
-# maximum flow computations
-from networkx.algorithms.flow import (
-    edmonds_karp,
-    preflow_push,
-    shortest_augmenting_path,
-)
+from networkx.algorithms.flow import edmonds_karp, preflow_push, shortest_augmenting_path
 from networkx.exception import NetworkXNoPath
-
 default_flow_func = edmonds_karp
 from itertools import filterfalse as _filterfalse
-
-# Functions to build auxiliary data structures.
 from .utils import build_auxiliary_edge_connectivity, build_auxiliary_node_connectivity
+__all__ = ['edge_disjoint_paths', 'node_disjoint_paths']
 
-__all__ = ["edge_disjoint_paths", "node_disjoint_paths"]
-
-
-@nx._dispatchable(
-    graphs={"G": 0, "auxiliary?": 5},
-    preserve_edge_attrs={"auxiliary": {"capacity": float("inf")}},
-)
-def edge_disjoint_paths(
-    G, s, t, flow_func=None, cutoff=None, auxiliary=None, residual=None
-):
+@nx._dispatchable(graphs={'G': 0, 'auxiliary?': 5}, preserve_edge_attrs={'auxiliary': {'capacity': float('inf')}})
+def edge_disjoint_paths(G, s, t, flow_func=None, cutoff=None, auxiliary=None, residual=None):
     """Returns the edges disjoint paths between source and target.
 
     Edge disjoint paths are paths that do not share any edge. The
@@ -152,93 +135,11 @@ def edge_disjoint_paths(
     package.
 
     """
-    if s not in G:
-        raise nx.NetworkXError(f"node {s} not in graph")
-    if t not in G:
-        raise nx.NetworkXError(f"node {t} not in graph")
+    pass
 
-    if flow_func is None:
-        flow_func = default_flow_func
-
-    if auxiliary is None:
-        H = build_auxiliary_edge_connectivity(G)
-    else:
-        H = auxiliary
-
-    # Maximum possible edge disjoint paths
-    possible = min(H.out_degree(s), H.in_degree(t))
-    if not possible:
-        raise NetworkXNoPath
-
-    if cutoff is None:
-        cutoff = possible
-    else:
-        cutoff = min(cutoff, possible)
-
-    # Compute maximum flow between source and target. Flow functions in
-    # NetworkX return a residual network.
-    kwargs = {
-        "capacity": "capacity",
-        "residual": residual,
-        "cutoff": cutoff,
-        "value_only": True,
-    }
-    if flow_func is preflow_push:
-        del kwargs["cutoff"]
-    if flow_func is shortest_augmenting_path:
-        kwargs["two_phase"] = True
-    R = flow_func(H, s, t, **kwargs)
-
-    if R.graph["flow_value"] == 0:
-        raise NetworkXNoPath
-
-    # Saturated edges in the residual network form the edge disjoint paths
-    # between source and target
-    cutset = [
-        (u, v)
-        for u, v, d in R.edges(data=True)
-        if d["capacity"] == d["flow"] and d["flow"] > 0
-    ]
-    # This is equivalent of what flow.utils.build_flow_dict returns, but
-    # only for the nodes with saturated edges and without reporting 0 flows.
-    flow_dict = {n: {} for edge in cutset for n in edge}
-    for u, v in cutset:
-        flow_dict[u][v] = 1
-
-    # Rebuild the edge disjoint paths from the flow dictionary.
-    paths_found = 0
-    for v in list(flow_dict[s]):
-        if paths_found >= cutoff:
-            # preflow_push does not support cutoff: we have to
-            # keep track of the paths founds and stop at cutoff.
-            break
-        path = [s]
-        if v == t:
-            path.append(v)
-            yield path
-            continue
-        u = v
-        while u != t:
-            path.append(u)
-            try:
-                u, _ = flow_dict[u].popitem()
-            except KeyError:
-                break
-        else:
-            path.append(t)
-            yield path
-            paths_found += 1
-
-
-@nx._dispatchable(
-    graphs={"G": 0, "auxiliary?": 5},
-    preserve_node_attrs={"auxiliary": {"id": None}},
-    preserve_graph_attrs={"auxiliary"},
-)
-def node_disjoint_paths(
-    G, s, t, flow_func=None, cutoff=None, auxiliary=None, residual=None
-):
-    r"""Computes node disjoint paths between source and target.
+@nx._dispatchable(graphs={'G': 0, 'auxiliary?': 5}, preserve_node_attrs={'auxiliary': {'id': None}}, preserve_graph_attrs={'auxiliary'})
+def node_disjoint_paths(G, s, t, flow_func=None, cutoff=None, auxiliary=None, residual=None):
+    """Computes node disjoint paths between source and target.
 
     Node disjoint paths are paths that only share their first and last
     nodes. The number of node independent paths between two nodes is
@@ -357,51 +258,8 @@ def node_disjoint_paths(
     :meth:`shortest_augmenting_path`
 
     """
-    if s not in G:
-        raise nx.NetworkXError(f"node {s} not in graph")
-    if t not in G:
-        raise nx.NetworkXError(f"node {t} not in graph")
-
-    if auxiliary is None:
-        H = build_auxiliary_node_connectivity(G)
-    else:
-        H = auxiliary
-
-    mapping = H.graph.get("mapping", None)
-    if mapping is None:
-        raise nx.NetworkXError("Invalid auxiliary digraph.")
-
-    # Maximum possible edge disjoint paths
-    possible = min(H.out_degree(f"{mapping[s]}B"), H.in_degree(f"{mapping[t]}A"))
-    if not possible:
-        raise NetworkXNoPath
-
-    if cutoff is None:
-        cutoff = possible
-    else:
-        cutoff = min(cutoff, possible)
-
-    kwargs = {
-        "flow_func": flow_func,
-        "residual": residual,
-        "auxiliary": H,
-        "cutoff": cutoff,
-    }
-
-    # The edge disjoint paths in the auxiliary digraph correspond to the node
-    # disjoint paths in the original graph.
-    paths_edges = edge_disjoint_paths(H, f"{mapping[s]}B", f"{mapping[t]}A", **kwargs)
-    for path in paths_edges:
-        # Each node in the original graph maps to two nodes in auxiliary graph
-        yield list(_unique_everseen(H.nodes[node]["id"] for node in path))
-
+    pass
 
 def _unique_everseen(iterable):
-    # Adapted from https://docs.python.org/3/library/itertools.html examples
-    "List unique elements, preserving order. Remember all elements ever seen."
-    # unique_everseen('AAAABBBCCDAABBB') --> A B C D
-    seen = set()
-    seen_add = seen.add
-    for element in _filterfalse(seen.__contains__, iterable):
-        seen_add(element)
-        yield element
+    """List unique elements, preserving order. Remember all elements ever seen."""
+    pass

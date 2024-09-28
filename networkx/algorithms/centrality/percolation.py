@@ -1,19 +1,12 @@
 """Percolation centrality measures."""
-
 import networkx as nx
-from networkx.algorithms.centrality.betweenness import (
-    _single_source_dijkstra_path_basic as dijkstra,
-)
-from networkx.algorithms.centrality.betweenness import (
-    _single_source_shortest_path_basic as shortest_path,
-)
+from networkx.algorithms.centrality.betweenness import _single_source_dijkstra_path_basic as dijkstra
+from networkx.algorithms.centrality.betweenness import _single_source_shortest_path_basic as shortest_path
+__all__ = ['percolation_centrality']
 
-__all__ = ["percolation_centrality"]
-
-
-@nx._dispatchable(node_attrs="attribute", edge_attrs="weight")
-def percolation_centrality(G, attribute="percolation", states=None, weight=None):
-    r"""Compute the percolation centrality for nodes.
+@nx._dispatchable(node_attrs='attribute', edge_attrs='weight')
+def percolation_centrality(G, attribute='percolation', states=None, weight=None):
+    """Compute the percolation centrality for nodes.
 
     Percolation centrality of a node $v$, at a given time, is defined
     as the proportion of ‘percolated paths’ that go through that node.
@@ -83,46 +76,4 @@ def percolation_centrality(G, attribute="percolation", states=None, weight=None)
        Journal of Mathematical Sociology 25(2):163-177, 2001.
        https://doi.org/10.1080/0022250X.2001.9990249
     """
-    percolation = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-
-    nodes = G
-
-    if states is None:
-        states = nx.get_node_attributes(nodes, attribute, default=1)
-
-    # sum of all percolation states
-    p_sigma_x_t = 0.0
-    for v in states.values():
-        p_sigma_x_t += v
-
-    for s in nodes:
-        # single source shortest paths
-        if weight is None:  # use BFS
-            S, P, sigma, _ = shortest_path(G, s)
-        else:  # use Dijkstra's algorithm
-            S, P, sigma, _ = dijkstra(G, s, weight)
-        # accumulation
-        percolation = _accumulate_percolation(
-            percolation, S, P, sigma, s, states, p_sigma_x_t
-        )
-
-    n = len(G)
-
-    for v in percolation:
-        percolation[v] *= 1 / (n - 2)
-
-    return percolation
-
-
-def _accumulate_percolation(percolation, S, P, sigma, s, states, p_sigma_x_t):
-    delta = dict.fromkeys(S, 0)
-    while S:
-        w = S.pop()
-        coeff = (1 + delta[w]) / sigma[w]
-        for v in P[w]:
-            delta[v] += sigma[v] * coeff
-        if w != s:
-            # percolation weight
-            pw_s_w = states[s] / (p_sigma_x_t - states[w])
-            percolation[w] += delta[w] * pw_s_w
-    return percolation
+    pass

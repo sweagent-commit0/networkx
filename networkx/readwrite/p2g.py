@@ -34,9 +34,8 @@ itself. Indeed, self-loops are allowed. Node index starts from 0.
 import networkx as nx
 from networkx.utils import open_file
 
-
-@open_file(1, mode="w")
-def write_p2g(G, path, encoding="utf-8"):
+@open_file(1, mode='w')
+def write_p2g(G, path, encoding='utf-8'):
     """Write NetworkX graph in p2g format.
 
     Notes
@@ -44,21 +43,11 @@ def write_p2g(G, path, encoding="utf-8"):
     This format is meant to be used with directed graphs with
     possible self loops.
     """
-    path.write((f"{G.name}\n").encode(encoding))
-    path.write((f"{G.order()} {G.size()}\n").encode(encoding))
-    nodes = list(G)
-    # make dictionary mapping nodes to integers
-    nodenumber = dict(zip(nodes, range(len(nodes))))
-    for n in nodes:
-        path.write((f"{n}\n").encode(encoding))
-        for nbr in G.neighbors(n):
-            path.write((f"{nodenumber[nbr]} ").encode(encoding))
-        path.write("\n".encode(encoding))
+    pass
 
-
-@open_file(0, mode="r")
+@open_file(0, mode='r')
 @nx._dispatchable(graphs=None, returns_graph=True)
-def read_p2g(path, encoding="utf-8"):
+def read_p2g(path, encoding='utf-8'):
     """Read graph in p2g format from path.
 
     Returns
@@ -70,10 +59,7 @@ def read_p2g(path, encoding="utf-8"):
     If you want a DiGraph (with no self loops allowed and no edge data)
     use D=nx.DiGraph(read_p2g(path))
     """
-    lines = (line.decode(encoding) for line in path)
-    G = parse_p2g(lines)
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def parse_p2g(lines):
@@ -83,22 +69,4 @@ def parse_p2g(lines):
     -------
     MultiDiGraph
     """
-    description = next(lines).strip()
-    # are multiedges (parallel edges) allowed?
-    G = nx.MultiDiGraph(name=description, selfloops=True)
-    nnodes, nedges = map(int, next(lines).split())
-    nodelabel = {}
-    nbrs = {}
-    # loop over the nodes keeping track of node labels and out neighbors
-    # defer adding edges until all node labels are known
-    for i in range(nnodes):
-        n = next(lines).strip()
-        nodelabel[i] = n
-        G.add_node(n)
-        nbrs[n] = map(int, next(lines).split())
-    # now we know all of the node labels so we can add the edges
-    # with the correct labels
-    for n in G:
-        for nbr in nbrs[n]:
-            G.add_edge(n, nodelabel[nbr])
-    return G
+    pass

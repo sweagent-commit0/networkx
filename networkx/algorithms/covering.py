@@ -1,16 +1,12 @@
 """ Functions related to graph covers."""
-
 from functools import partial
 from itertools import chain
-
 import networkx as nx
 from networkx.utils import arbitrary_element, not_implemented_for
+__all__ = ['min_edge_cover', 'is_edge_cover']
 
-__all__ = ["min_edge_cover", "is_edge_cover"]
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def min_edge_cover(G, matching_algorithm=None):
     """Returns the min cardinality edge cover of the graph as a set of edges.
@@ -71,41 +67,9 @@ def min_edge_cover(G, matching_algorithm=None):
     simply this function with a default matching algorithm of
     :func:`~networkx.algorithms.bipartite.matching.hopcraft_karp_matching`
     """
-    if len(G) == 0:
-        return set()
-    if nx.number_of_isolates(G) > 0:
-        # ``min_cover`` does not exist as there is an isolated node
-        raise nx.NetworkXException(
-            "Graph has a node with no edge incident on it, so no edge cover exists."
-        )
-    if matching_algorithm is None:
-        matching_algorithm = partial(nx.max_weight_matching, maxcardinality=True)
-    maximum_matching = matching_algorithm(G)
-    # ``min_cover`` is superset of ``maximum_matching``
-    try:
-        # bipartite matching algs return dict so convert if needed
-        min_cover = set(maximum_matching.items())
-        bipartite_cover = True
-    except AttributeError:
-        min_cover = maximum_matching
-        bipartite_cover = False
-    # iterate for uncovered nodes
-    uncovered_nodes = set(G) - {v for u, v in min_cover} - {u for u, v in min_cover}
-    for v in uncovered_nodes:
-        # Since `v` is uncovered, each edge incident to `v` will join it
-        # with a covered node (otherwise, if there were an edge joining
-        # uncovered nodes `u` and `v`, the maximum matching algorithm
-        # would have found it), so we can choose an arbitrary edge
-        # incident to `v`. (This applies only in a simple graph, not a
-        # multigraph.)
-        u = arbitrary_element(G[v])
-        min_cover.add((u, v))
-        if bipartite_cover:
-            min_cover.add((v, u))
-    return min_cover
+    pass
 
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def is_edge_cover(G, cover):
     """Decides whether a set of edges is a valid edge cover of the graph.
@@ -139,4 +103,4 @@ def is_edge_cover(G, cover):
     An edge cover of a graph is a set of edges such that every node of
     the graph is incident to at least one edge of the set.
     """
-    return set(G) <= set(chain.from_iterable(cover))
+    pass

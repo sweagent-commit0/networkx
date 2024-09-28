@@ -24,19 +24,11 @@ with induced subgraphs.
 Often it is easiest to use .copy() to avoid chains.
 """
 import networkx as nx
-from networkx.classes.coreviews import (
-    FilterAdjacency,
-    FilterAtlas,
-    FilterMultiAdjacency,
-    UnionAdjacency,
-    UnionMultiAdjacency,
-)
+from networkx.classes.coreviews import FilterAdjacency, FilterAtlas, FilterMultiAdjacency, UnionAdjacency, UnionMultiAdjacency
 from networkx.classes.filters import no_filter
 from networkx.exception import NetworkXError
 from networkx.utils import deprecate_positional_args, not_implemented_for
-
-__all__ = ["generic_graph_view", "subgraph_view", "reverse_view"]
-
+__all__ = ['generic_graph_view', 'subgraph_view', 'reverse_view']
 
 def generic_graph_view(G, create_using=None):
     """Returns a read-only view of `G`.
@@ -100,39 +92,9 @@ def generic_graph_view(G, create_using=None):
     >>> type(viewDG)
     <class 'networkx.classes.digraph.DiGraph'>
     """
-    if create_using is None:
-        newG = G.__class__()
-    else:
-        newG = nx.empty_graph(0, create_using)
-    if G.is_multigraph() != newG.is_multigraph():
-        raise NetworkXError("Multigraph for G must agree with create_using")
-    newG = nx.freeze(newG)
+    pass
 
-    # create view by assigning attributes from G
-    newG._graph = G
-    newG.graph = G.graph
-
-    newG._node = G._node
-    if newG.is_directed():
-        if G.is_directed():
-            newG._succ = G._succ
-            newG._pred = G._pred
-            # newG._adj is synced with _succ
-        else:
-            newG._succ = G._adj
-            newG._pred = G._adj
-            # newG._adj is synced with _succ
-    elif G.is_directed():
-        if G.is_multigraph():
-            newG._adj = UnionMultiAdjacency(G._succ, G._pred)
-        else:
-            newG._adj = UnionAdjacency(G._succ, G._pred)
-    else:
-        newG._adj = G._adj
-    return newG
-
-
-@deprecate_positional_args(version="3.4")
+@deprecate_positional_args(version='3.4')
 def subgraph_view(G, *, filter_node=no_filter, filter_edge=no_filter):
     """View of `G` applying a filter on nodes and edges.
 
@@ -204,37 +166,9 @@ def subgraph_view(G, *, filter_node=no_filter, filter_edge=no_filter):
     >>> view.edges()
     EdgeView([(0, 1), (1, 2), (2, 3)])
     """
-    newG = nx.freeze(G.__class__())
-    newG._NODE_OK = filter_node
-    newG._EDGE_OK = filter_edge
+    pass
 
-    # create view by assigning attributes from G
-    newG._graph = G
-    newG.graph = G.graph
-
-    newG._node = FilterAtlas(G._node, filter_node)
-    if G.is_multigraph():
-        Adj = FilterMultiAdjacency
-
-        def reverse_edge(u, v, k=None):
-            return filter_edge(v, u, k)
-
-    else:
-        Adj = FilterAdjacency
-
-        def reverse_edge(u, v, k=None):
-            return filter_edge(v, u)
-
-    if G.is_directed():
-        newG._succ = Adj(G._succ, filter_node, filter_edge)
-        newG._pred = Adj(G._pred, filter_node, reverse_edge)
-        # newG._adj is synced with _succ
-    else:
-        newG._adj = Adj(G._adj, filter_node, filter_edge)
-    return newG
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 def reverse_view(G):
     """View of `G` with edge directions reversed
 
@@ -263,7 +197,4 @@ def reverse_view(G):
     >>> view.edges()
     OutEdgeView([(2, 1), (3, 2)])
     """
-    newG = generic_graph_view(G)
-    newG._succ, newG._pred = G._pred, G._succ
-    # newG._adj is synced with _succ
-    return newG
+    pass

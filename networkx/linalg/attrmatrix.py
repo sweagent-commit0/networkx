@@ -2,9 +2,7 @@
     Functions for constructing matrix-like objects from graph attributes.
 """
 import networkx as nx
-
-__all__ = ["attr_matrix", "attr_sparse_matrix"]
-
+__all__ = ['attr_matrix', 'attr_sparse_matrix']
 
 def _node_value(G, node_attr):
     """Returns a function that returns a value from G.nodes[u].
@@ -30,26 +28,7 @@ def _node_value(G, node_attr):
         returns a value from G.nodes[u] that depends on `edge_attr`.
 
     """
-    if node_attr is None:
-
-        def value(u):
-            return u
-
-    elif not callable(node_attr):
-        # assume it is a key for the node attribute dictionary
-        def value(u):
-            return G.nodes[u][node_attr]
-
-    else:
-        # Advanced:  Allow users to specify something else.
-        #
-        # For example,
-        #     node_attr = lambda u: G.nodes[u].get('size', .5) * 3
-        #
-        value = node_attr
-
-    return value
-
+    pass
 
 def _edge_value(G, edge_attr):
     """Returns a function that returns a value from G[u][v].
@@ -81,77 +60,10 @@ def _edge_value(G, edge_attr):
         return a value from G[u][v] that depends on `edge_attr`.
 
     """
+    pass
 
-    if edge_attr is None:
-        # topological count of edges
-
-        if G.is_multigraph():
-
-            def value(u, v):
-                return len(G[u][v])
-
-        else:
-
-            def value(u, v):
-                return 1
-
-    elif not callable(edge_attr):
-        # assume it is a key for the edge attribute dictionary
-
-        if edge_attr == "weight":
-            # provide a default value
-            if G.is_multigraph():
-
-                def value(u, v):
-                    return sum(d.get(edge_attr, 1) for d in G[u][v].values())
-
-            else:
-
-                def value(u, v):
-                    return G[u][v].get(edge_attr, 1)
-
-        else:
-            # otherwise, the edge attribute MUST exist for each edge
-            if G.is_multigraph():
-
-                def value(u, v):
-                    return sum(d[edge_attr] for d in G[u][v].values())
-
-            else:
-
-                def value(u, v):
-                    return G[u][v][edge_attr]
-
-    else:
-        # Advanced:  Allow users to specify something else.
-        #
-        # Alternative default value:
-        #     edge_attr = lambda u,v: G[u][v].get('thickness', .5)
-        #
-        # Function on an attribute:
-        #     edge_attr = lambda u,v: abs(G[u][v]['weight'])
-        #
-        # Handle Multi(Di)Graphs differently:
-        #     edge_attr = lambda u,v: numpy.prod([d['size'] for d in G[u][v].values()])
-        #
-        # Ignore multiple edges
-        #     edge_attr = lambda u,v: 1 if len(G[u][v]) else 0
-        #
-        value = edge_attr
-
-    return value
-
-
-@nx._dispatchable(edge_attrs={"edge_attr": None}, node_attrs="node_attr")
-def attr_matrix(
-    G,
-    edge_attr=None,
-    node_attr=None,
-    normalized=False,
-    rc_order=None,
-    dtype=None,
-    order=None,
-):
+@nx._dispatchable(edge_attrs={'edge_attr': None}, node_attrs='node_attr')
+def attr_matrix(G, edge_attr=None, node_attr=None, normalized=False, rc_order=None, dtype=None, order=None):
     """Returns the attribute matrix using attributes from `G` as a numpy array.
 
     If only `G` is passed in, then the adjacency matrix is constructed.
@@ -269,47 +181,10 @@ def attr_matrix(
         (blue, blue) is 0   # there are no edges with blue endpoints
 
     """
-    import numpy as np
+    pass
 
-    edge_value = _edge_value(G, edge_attr)
-    node_value = _node_value(G, node_attr)
-
-    if rc_order is None:
-        ordering = list({node_value(n) for n in G})
-    else:
-        ordering = rc_order
-
-    N = len(ordering)
-    undirected = not G.is_directed()
-    index = dict(zip(ordering, range(N)))
-    M = np.zeros((N, N), dtype=dtype, order=order)
-
-    seen = set()
-    for u, nbrdict in G.adjacency():
-        for v in nbrdict:
-            # Obtain the node attribute values.
-            i, j = index[node_value(u)], index[node_value(v)]
-            if v not in seen:
-                M[i, j] += edge_value(u, v)
-                if undirected:
-                    M[j, i] = M[i, j]
-
-        if undirected:
-            seen.add(u)
-
-    if normalized:
-        M /= M.sum(axis=1).reshape((N, 1))
-
-    if rc_order is None:
-        return M, ordering
-    else:
-        return M
-
-
-@nx._dispatchable(edge_attrs={"edge_attr": None}, node_attrs="node_attr")
-def attr_sparse_matrix(
-    G, edge_attr=None, node_attr=None, normalized=False, rc_order=None, dtype=None
-):
+@nx._dispatchable(edge_attrs={'edge_attr': None}, node_attrs='node_attr')
+def attr_sparse_matrix(G, edge_attr=None, node_attr=None, normalized=False, rc_order=None, dtype=None):
     """Returns a SciPy sparse array using attributes from G.
 
     If only `G` is passed in, then the adjacency matrix is constructed.
@@ -426,39 +301,4 @@ def attr_sparse_matrix(
         (blue, blue) is 0   # there are no edges with blue endpoints
 
     """
-    import numpy as np
-    import scipy as sp
-
-    edge_value = _edge_value(G, edge_attr)
-    node_value = _node_value(G, node_attr)
-
-    if rc_order is None:
-        ordering = list({node_value(n) for n in G})
-    else:
-        ordering = rc_order
-
-    N = len(ordering)
-    undirected = not G.is_directed()
-    index = dict(zip(ordering, range(N)))
-    M = sp.sparse.lil_array((N, N), dtype=dtype)
-
-    seen = set()
-    for u, nbrdict in G.adjacency():
-        for v in nbrdict:
-            # Obtain the node attribute values.
-            i, j = index[node_value(u)], index[node_value(v)]
-            if v not in seen:
-                M[i, j] += edge_value(u, v)
-                if undirected:
-                    M[j, i] = M[i, j]
-
-        if undirected:
-            seen.add(u)
-
-    if normalized:
-        M *= 1 / M.sum(axis=1)[:, np.newaxis]  # in-place mult preserves sparse
-
-    if rc_order is None:
-        return M, ordering
-    else:
-        return M
+    pass

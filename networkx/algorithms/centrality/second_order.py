@@ -29,18 +29,13 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['second_order_centrality']
 
-# Authors: Erwan Le Merrer (erwan.lemerrer@technicolor.com)
-
-__all__ = ["second_order_centrality"]
-
-
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
-def second_order_centrality(G, weight="weight"):
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
+def second_order_centrality(G, weight='weight'):
     """Compute the second order centrality for nodes of G.
 
     The second order centrality of a given node is the standard deviation of
@@ -99,43 +94,4 @@ def second_order_centrality(G, weight="weight"):
        "Second order centrality: Distributed assessment of nodes criticity in
        complex networks", Elsevier Computer Communications 34(5):619-628, 2011.
     """
-    import numpy as np
-
-    n = len(G)
-
-    if n == 0:
-        raise nx.NetworkXException("Empty graph.")
-    if not nx.is_connected(G):
-        raise nx.NetworkXException("Non connected graph.")
-    if any(d.get(weight, 0) < 0 for u, v, d in G.edges(data=True)):
-        raise nx.NetworkXException("Graph has negative edge weights.")
-
-    # balancing G for Metropolis-Hastings random walks
-    G = nx.DiGraph(G)
-    in_deg = dict(G.in_degree(weight=weight))
-    d_max = max(in_deg.values())
-    for i, deg in in_deg.items():
-        if deg < d_max:
-            G.add_edge(i, i, weight=d_max - deg)
-
-    P = nx.to_numpy_array(G)
-    P /= P.sum(axis=1)[:, np.newaxis]  # to transition probability matrix
-
-    def _Qj(P, j):
-        P = P.copy()
-        P[:, j] = 0
-        return P
-
-    M = np.empty([n, n])
-
-    for i in range(n):
-        M[:, i] = np.linalg.solve(
-            np.identity(n) - _Qj(P, i), np.ones([n, 1])[:, 0]
-        )  # eq 3
-
-    return dict(
-        zip(
-            G.nodes,
-            (float(np.sqrt(2 * np.sum(M[:, i]) - n * (n + 1))) for i in range(n)),
-        )
-    )  # eq 6
+    pass

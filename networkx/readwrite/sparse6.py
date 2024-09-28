@@ -1,5 +1,3 @@
-# Original author: D. Eppstein, UC Irvine, August 12, 2003.
-# The original code at https://www.ics.uci.edu/~eppstein/PADS/ is public domain.
 """Functions for reading and writing graphs in the *sparse6* format.
 
 The *sparse6* file format is a space-efficient format for large sparse
@@ -15,9 +13,7 @@ import networkx as nx
 from networkx.exception import NetworkXError
 from networkx.readwrite.graph6 import data_to_n, n_to_data
 from networkx.utils import not_implemented_for, open_file
-
-__all__ = ["from_sparse6_bytes", "read_sparse6", "to_sparse6_bytes", "write_sparse6"]
-
+__all__ = ['from_sparse6_bytes', 'read_sparse6', 'to_sparse6_bytes', 'write_sparse6']
 
 def _generate_sparse6_bytes(G, nodes, header):
     """Yield bytes in the sparse6 encoding of a graph.
@@ -40,66 +36,7 @@ def _generate_sparse6_bytes(G, nodes, header):
     the graph6 format (that is, greater than ``2 ** 36`` nodes).
 
     """
-    n = len(G)
-    if n >= 2**36:
-        raise ValueError(
-            "sparse6 is only defined if number of nodes is less than 2 ** 36"
-        )
-    if header:
-        yield b">>sparse6<<"
-    yield b":"
-    for d in n_to_data(n):
-        yield str.encode(chr(d + 63))
-
-    k = 1
-    while 1 << k < n:
-        k += 1
-
-    def enc(x):
-        """Big endian k-bit encoding of x"""
-        return [1 if (x & 1 << (k - 1 - i)) else 0 for i in range(k)]
-
-    edges = sorted((max(u, v), min(u, v)) for u, v in G.edges())
-    bits = []
-    curv = 0
-    for v, u in edges:
-        if v == curv:  # current vertex edge
-            bits.append(0)
-            bits.extend(enc(u))
-        elif v == curv + 1:  # next vertex edge
-            curv += 1
-            bits.append(1)
-            bits.extend(enc(u))
-        else:  # skip to vertex v and then add edge to u
-            curv = v
-            bits.append(1)
-            bits.extend(enc(v))
-            bits.append(0)
-            bits.extend(enc(u))
-    if k < 6 and n == (1 << k) and ((-len(bits)) % 6) >= k and curv < (n - 1):
-        # Padding special case: small k, n=2^k,
-        # more than k bits of padding needed,
-        # current vertex is not (n-1) --
-        # appending 1111... would add a loop on (n-1)
-        bits.append(0)
-        bits.extend([1] * ((-len(bits)) % 6))
-    else:
-        bits.extend([1] * ((-len(bits)) % 6))
-
-    data = [
-        (bits[i + 0] << 5)
-        + (bits[i + 1] << 4)
-        + (bits[i + 2] << 3)
-        + (bits[i + 3] << 2)
-        + (bits[i + 4] << 1)
-        + (bits[i + 5] << 0)
-        for i in range(0, len(bits), 6)
-    ]
-
-    for d in data:
-        yield str.encode(chr(d + 63))
-    yield b"\n"
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def from_sparse6_bytes(string):
@@ -135,69 +72,7 @@ def from_sparse6_bytes(string):
            <https://users.cecs.anu.edu.au/~bdm/data/formats.html>
 
     """
-    if string.startswith(b">>sparse6<<"):
-        string = string[11:]
-    if not string.startswith(b":"):
-        raise NetworkXError("Expected leading colon in sparse6")
-
-    chars = [c - 63 for c in string[1:]]
-    n, data = data_to_n(chars)
-    k = 1
-    while 1 << k < n:
-        k += 1
-
-    def parseData():
-        """Returns stream of pairs b[i], x[i] for sparse6 format."""
-        chunks = iter(data)
-        d = None  # partial data word
-        dLen = 0  # how many unparsed bits are left in d
-
-        while 1:
-            if dLen < 1:
-                try:
-                    d = next(chunks)
-                except StopIteration:
-                    return
-                dLen = 6
-            dLen -= 1
-            b = (d >> dLen) & 1  # grab top remaining bit
-
-            x = d & ((1 << dLen) - 1)  # partially built up value of x
-            xLen = dLen  # how many bits included so far in x
-            while xLen < k:  # now grab full chunks until we have enough
-                try:
-                    d = next(chunks)
-                except StopIteration:
-                    return
-                dLen = 6
-                x = (x << 6) + d
-                xLen += 6
-            x = x >> (xLen - k)  # shift back the extra bits
-            dLen = xLen - k
-            yield b, x
-
-    v = 0
-
-    G = nx.MultiGraph()
-    G.add_nodes_from(range(n))
-
-    multigraph = False
-    for b, x in parseData():
-        if b == 1:
-            v += 1
-        # padding with ones can cause overlarge number here
-        if x >= n or v >= n:
-            break
-        elif x > v:
-            v = x
-        else:
-            if G.has_edge(x, v):
-                multigraph = True
-            G.add_edge(x, v)
-    if not multigraph:
-        G = nx.Graph(G)
-    return G
-
+    pass
 
 def to_sparse6_bytes(G, nodes=None, header=True):
     """Convert an undirected graph to bytes in sparse6 format.
@@ -243,13 +118,9 @@ def to_sparse6_bytes(G, nodes=None, header=True):
            <https://users.cecs.anu.edu.au/~bdm/data/formats.html>
 
     """
-    if nodes is not None:
-        G = G.subgraph(nodes)
-    G = nx.convert_node_labels_to_integers(G, ordering="sorted")
-    return b"".join(_generate_sparse6_bytes(G, nodes, header))
+    pass
 
-
-@open_file(0, mode="rb")
+@open_file(0, mode='rb')
 @nx._dispatchable(graphs=None, returns_graph=True)
 def read_sparse6(path):
     """Read an undirected graph in sparse6 format from path.
@@ -301,20 +172,10 @@ def read_sparse6(path):
            <https://users.cecs.anu.edu.au/~bdm/data/formats.html>
 
     """
-    glist = []
-    for line in path:
-        line = line.strip()
-        if not len(line):
-            continue
-        glist.append(from_sparse6_bytes(line))
-    if len(glist) == 1:
-        return glist[0]
-    else:
-        return glist
+    pass
 
-
-@not_implemented_for("directed")
-@open_file(1, mode="wb")
+@not_implemented_for('directed')
+@open_file(1, mode='wb')
 def write_sparse6(G, path, nodes=None, header=True):
     """Write graph G to given path in sparse6 format.
 
@@ -369,8 +230,4 @@ def write_sparse6(G, path, nodes=None, header=True):
            <https://users.cecs.anu.edu.au/~bdm/data/formats.html>
 
     """
-    if nodes is not None:
-        G = G.subgraph(nodes)
-    G = nx.convert_node_labels_to_integers(G, ordering="sorted")
-    for b in _generate_sparse6_bytes(G, nodes, header):
-        path.write(b)
+    pass

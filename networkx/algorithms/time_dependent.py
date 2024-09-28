@@ -1,16 +1,13 @@
 """Time dependent algorithms."""
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['cd_index']
 
-__all__ = ["cd_index"]
-
-
-@not_implemented_for("undirected")
-@not_implemented_for("multigraph")
-@nx._dispatchable(node_attrs={"time": None, "weight": 1})
-def cd_index(G, node, time_delta, *, time="time", weight=None):
-    r"""Compute the CD index for `node` within the graph `G`.
+@not_implemented_for('undirected')
+@not_implemented_for('multigraph')
+@nx._dispatchable(node_attrs={'time': None, 'weight': 1})
+def cd_index(G, node, time_delta, *, time='time', weight=None):
+    """Compute the CD index for `node` within the graph `G`.
 
     Calculates the CD index for the given node of the graph,
     considering only its predecessors who have the `time` attribute
@@ -87,7 +84,7 @@ def cd_index(G, node, time_delta, *, time="time", weight=None):
     below:
 
     .. math::
-        CD_{t}=\frac{1}{n_{t}}\sum_{i=1}^{n}\frac{-2f_{it}b_{it}+f_{it}}{w_{it}},
+        CD_{t}=\\frac{1}{n_{t}}\\sum_{i=1}^{n}\\frac{-2f_{it}b_{it}+f_{it}}{w_{it}},
 
     where `f_{it}` equals 1 if `i` cites the focal patent else 0, `b_{it}` equals
     1 if `i` cites any of the focal patents successors else 0, `n_{t}` is the number
@@ -110,33 +107,4 @@ def cd_index(G, node, time_delta, *, time="time", weight=None):
            http://russellfunk.org/cdindex/static/papers/funk_ms_2017.pdf
 
     """
-    if not all(time in G.nodes[n] for n in G):
-        raise nx.NetworkXError("Not all nodes have a 'time' attribute.")
-
-    try:
-        # get target_date
-        target_date = G.nodes[node][time] + time_delta
-        # keep the predecessors that existed before the target date
-        pred = {i for i in G.pred[node] if G.nodes[i][time] <= target_date}
-    except:
-        raise nx.NetworkXError(
-            "Addition and comparison are not supported between 'time_delta' "
-            "and 'time' types."
-        )
-
-    # -1 if any edge between node's predecessors and node's successors, else 1
-    b = [-1 if any(j in G[i] for j in G[node]) else 1 for i in pred]
-
-    # n is size of the union of the focal node's predecessors and its successors' predecessors
-    n = len(pred.union(*(G.pred[s].keys() - {node} for s in G[node])))
-    if n == 0:
-        raise nx.NetworkXError("The cd index cannot be defined.")
-
-    # calculate cd index
-    if weight is None:
-        return round(sum(bi for bi in b) / n, 2)
-    else:
-        # If a node has the specified weight attribute, its weight is used in the calculation
-        # otherwise, a weight of 1 is assumed for that node
-        weights = [G.nodes[i].get(weight, 1) for i in pred]
-        return round(sum(bi / wt for bi, wt in zip(b, weights)) / n, 2)
+    pass

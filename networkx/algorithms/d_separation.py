@@ -212,23 +212,13 @@ References
 .. [6] https://en.wikipedia.org/wiki/Berkson%27s_paradox
 
 """
-
 from collections import deque
 from itertools import chain
-
 import networkx as nx
 from networkx.utils import UnionFind, not_implemented_for
+__all__ = ['is_d_separator', 'is_minimal_d_separator', 'find_minimal_d_separator', 'd_separated', 'minimal_d_separator']
 
-__all__ = [
-    "is_d_separator",
-    "is_minimal_d_separator",
-    "find_minimal_d_separator",
-    "d_separated",
-    "minimal_d_separator",
-]
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def is_d_separator(G, x, y, z):
     """Return whether node sets `x` and `y` are d-separated by `z`.
@@ -275,68 +265,9 @@ def is_d_separator(G, x, y, z):
 
     https://en.wikipedia.org/wiki/Bayesian_network#d-separation
     """
-    try:
-        x = {x} if x in G else x
-        y = {y} if y in G else y
-        z = {z} if z in G else z
+    pass
 
-        intersection = x & y or x & z or y & z
-        if intersection:
-            raise nx.NetworkXError(
-                f"The sets are not disjoint, with intersection {intersection}"
-            )
-
-        set_v = x | y | z
-        if set_v - G.nodes:
-            raise nx.NodeNotFound(f"The node(s) {set_v - G.nodes} are not found in G")
-    except TypeError:
-        raise nx.NodeNotFound("One of x, y, or z is not a node or a set of nodes in G")
-
-    if not nx.is_directed_acyclic_graph(G):
-        raise nx.NetworkXError("graph should be directed acyclic")
-
-    # contains -> and <-> edges from starting node T
-    forward_deque = deque([])
-    forward_visited = set()
-
-    # contains <- and - edges from starting node T
-    backward_deque = deque(x)
-    backward_visited = set()
-
-    ancestors_or_z = set().union(*[nx.ancestors(G, node) for node in x]) | z | x
-
-    while forward_deque or backward_deque:
-        if backward_deque:
-            node = backward_deque.popleft()
-            backward_visited.add(node)
-            if node in y:
-                return False
-            if node in z:
-                continue
-
-            # add <- edges to backward deque
-            backward_deque.extend(G.pred[node].keys() - backward_visited)
-            # add -> edges to forward deque
-            forward_deque.extend(G.succ[node].keys() - forward_visited)
-
-        if forward_deque:
-            node = forward_deque.popleft()
-            forward_visited.add(node)
-            if node in y:
-                return False
-
-            # Consider if -> node <- is opened due to ancestor of node in z
-            if node in ancestors_or_z:
-                # add <- edges to backward deque
-                backward_deque.extend(G.pred[node].keys() - backward_visited)
-            if node not in z:
-                # add -> edges to forward deque
-                forward_deque.extend(G.succ[node].keys() - forward_visited)
-
-    return True
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def find_minimal_d_separator(G, x, y, *, included=None, restricted=None):
     """Returns a minimal d-separating set between `x` and `y` if possible
@@ -393,57 +324,9 @@ def find_minimal_d_separator(G, x, y, *, included=None, restricted=None):
         minimal d-separators in linear time and applications." In
         Uncertainty in Artificial Intelligence, pp. 637-647. PMLR, 2020.
     """
-    if not nx.is_directed_acyclic_graph(G):
-        raise nx.NetworkXError("graph should be directed acyclic")
+    pass
 
-    try:
-        x = {x} if x in G else x
-        y = {y} if y in G else y
-
-        if included is None:
-            included = set()
-        elif included in G:
-            included = {included}
-
-        if restricted is None:
-            restricted = set(G)
-        elif restricted in G:
-            restricted = {restricted}
-
-        set_y = x | y | included | restricted
-        if set_y - G.nodes:
-            raise nx.NodeNotFound(f"The node(s) {set_y - G.nodes} are not found in G")
-    except TypeError:
-        raise nx.NodeNotFound(
-            "One of x, y, included or restricted is not a node or set of nodes in G"
-        )
-
-    if not included <= restricted:
-        raise nx.NetworkXError(
-            f"Included nodes {included} must be in restricted nodes {restricted}"
-        )
-
-    intersection = x & y or x & included or y & included
-    if intersection:
-        raise nx.NetworkXError(
-            f"The sets x, y, included are not disjoint. Overlap: {intersection}"
-        )
-
-    nodeset = x | y | included
-    ancestors_x_y_included = nodeset.union(*[nx.ancestors(G, node) for node in nodeset])
-
-    z_init = restricted & (ancestors_x_y_included - (x | y))
-
-    x_closure = _reachable(G, x, ancestors_x_y_included, z_init)
-    if x_closure & y:
-        return None
-
-    z_updated = z_init & (x_closure | included)
-    y_closure = _reachable(G, y, ancestors_x_y_included, z_updated)
-    return z_updated & (y_closure | included)
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def is_minimal_d_separator(G, x, y, z, *, included=None, restricted=None):
     """Determine if `z` is a minimal d-separator for `x` and `y`.
@@ -527,67 +410,9 @@ def is_minimal_d_separator(G, x, y, z, *, included=None, restricted=None):
 
     For full details, see [1]_.
     """
-    if not nx.is_directed_acyclic_graph(G):
-        raise nx.NetworkXError("graph should be directed acyclic")
+    pass
 
-    try:
-        x = {x} if x in G else x
-        y = {y} if y in G else y
-        z = {z} if z in G else z
-
-        if included is None:
-            included = set()
-        elif included in G:
-            included = {included}
-
-        if restricted is None:
-            restricted = set(G)
-        elif restricted in G:
-            restricted = {restricted}
-
-        set_y = x | y | included | restricted
-        if set_y - G.nodes:
-            raise nx.NodeNotFound(f"The node(s) {set_y - G.nodes} are not found in G")
-    except TypeError:
-        raise nx.NodeNotFound(
-            "One of x, y, z, included or restricted is not a node or set of nodes in G"
-        )
-
-    if not included <= z:
-        raise nx.NetworkXError(
-            f"Included nodes {included} must be in proposed separating set z {x}"
-        )
-    if not z <= restricted:
-        raise nx.NetworkXError(
-            f"Separating set {z} must be contained in restricted set {restricted}"
-        )
-
-    intersection = x.intersection(y) or x.intersection(z) or y.intersection(z)
-    if intersection:
-        raise nx.NetworkXError(
-            f"The sets are not disjoint, with intersection {intersection}"
-        )
-
-    nodeset = x | y | included
-    ancestors_x_y_included = nodeset.union(*[nx.ancestors(G, n) for n in nodeset])
-
-    # criterion (a) -- check that z is actually a separator
-    x_closure = _reachable(G, x, ancestors_x_y_included, z)
-    if x_closure & y:
-        return False
-
-    # criterion (b) -- basic constraint; included and restricted already checked above
-    if not (z <= ancestors_x_y_included):
-        return False
-
-    # criterion (c) -- check that z is minimal
-    y_closure = _reachable(G, y, ancestors_x_y_included, z)
-    if not ((z - included) <= (x_closure & y_closure)):
-        return False
-    return True
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 def _reachable(G, x, a, z):
     """Modified Bayes-Ball algorithm for finding d-connected nodes.
 
@@ -625,61 +450,8 @@ def _reachable(G, x, a, z):
        Fourteenth Conference on Uncertainty in Artificial Intelligence
        (UAI), (pp. 480–487). 1998.
     """
+    pass
 
-    def _pass(e, v, f, n):
-        """Whether a ball entering node `v` along edge `e` passes to `n` along `f`.
-
-        Boolean function defined on page 6 of [1]_.
-
-        Parameters
-        ----------
-        e : bool
-            Directed edge by which the ball got to node `v`; `True` iff directed into `v`.
-        v : node
-            Node where the ball is.
-        f : bool
-            Directed edge connecting nodes `v` and `n`; `True` iff directed `n`.
-        n : node
-            Checking whether the ball passes to this node.
-
-        Returns
-        -------
-        b : bool
-            Whether the ball passes or not.
-
-        References
-        ----------
-        .. [1] van der Zander, Benito, and Maciej Liśkiewicz. "Finding
-           minimal d-separators in linear time and applications." In
-           Uncertainty in Artificial Intelligence, pp. 637-647. PMLR, 2020.
-        """
-        is_element_of_A = n in a
-        # almost_definite_status = True  # always true for DAGs; not so for RCGs
-        collider_if_in_Z = v not in z or (e and not f)
-        return is_element_of_A and collider_if_in_Z  # and almost_definite_status
-
-    queue = deque([])
-    for node in x:
-        if bool(G.pred[node]):
-            queue.append((True, node))
-        if bool(G.succ[node]):
-            queue.append((False, node))
-    processed = queue.copy()
-
-    while any(queue):
-        e, v = queue.popleft()
-        preds = ((False, n) for n in G.pred[v])
-        succs = ((True, n) for n in G.succ[v])
-        f_n_pairs = chain(preds, succs)
-        for f, n in f_n_pairs:
-            if (f, n) not in processed and _pass(e, v, f, n):
-                queue.append((f, n))
-                processed.append((f, n))
-
-    return {w for (_, w) in processed}
-
-
-# Deprecated functions:
 def d_separated(G, x, y, z):
     """Return whether nodes sets ``x`` and ``y`` are d-separated by ``z``.
 
@@ -689,16 +461,7 @@ def d_separated(G, x, y, z):
         Please use `is_d_separator(G, x, y, z)`.
 
     """
-    import warnings
-
-    warnings.warn(
-        "d_separated is deprecated and will be removed in NetworkX v3.5."
-        "Please use `is_d_separator(G, x, y, z)`.",
-        category=DeprecationWarning,
-        stacklevel=2,
-    )
-    return nx.is_d_separator(G, x, y, z)
-
+    pass
 
 def minimal_d_separator(G, u, v):
     """Returns a minimal_d-separating set between `x` and `y` if possible
@@ -709,14 +472,4 @@ def minimal_d_separator(G, u, v):
         Please use `find_minimal_d_separator(G, x, y)`.
 
     """
-    import warnings
-
-    warnings.warn(
-        (
-            "This function is deprecated and will be removed in NetworkX v3.5."
-            "Please use `is_d_separator(G, x, y)`."
-        ),
-        category=DeprecationWarning,
-        stacklevel=2,
-    )
-    return nx.find_minimal_d_separator(G, u, v)
+    pass

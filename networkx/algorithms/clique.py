@@ -9,23 +9,11 @@ see the Wikipedia article on the clique problem [1]_.
 """
 from collections import defaultdict, deque
 from itertools import chain, combinations, islice
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['find_cliques', 'find_cliques_recursive', 'make_max_clique_graph', 'make_clique_bipartite', 'node_clique_number', 'number_of_cliques', 'enumerate_all_cliques', 'max_weight_clique']
 
-__all__ = [
-    "find_cliques",
-    "find_cliques_recursive",
-    "make_max_clique_graph",
-    "make_clique_bipartite",
-    "node_clique_number",
-    "number_of_cliques",
-    "enumerate_all_cliques",
-    "max_weight_clique",
-]
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def enumerate_all_cliques(G):
     """Returns all cliques in an undirected graph.
@@ -72,32 +60,9 @@ def enumerate_all_cliques(G):
            <https://doi.org/10.1109/SC.2005.29>.
 
     """
-    index = {}
-    nbrs = {}
-    for u in G:
-        index[u] = len(index)
-        # Neighbors of u that appear after u in the iteration order of G.
-        nbrs[u] = {v for v in G[u] if v not in index}
+    pass
 
-    queue = deque(([u], sorted(nbrs[u], key=index.__getitem__)) for u in G)
-    # Loop invariants:
-    # 1. len(base) is nondecreasing.
-    # 2. (base + cnbrs) is sorted with respect to the iteration order of G.
-    # 3. cnbrs is a set of common neighbors of nodes in base.
-    while queue:
-        base, cnbrs = map(list, queue.popleft())
-        yield base
-        for i, u in enumerate(cnbrs):
-            # Use generators to reduce memory consumption.
-            queue.append(
-                (
-                    chain(base, [u]),
-                    filter(nbrs[u].__contains__, islice(cnbrs, i + 1, None)),
-                )
-            )
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def find_cliques(G, nodes=None):
     """Returns all maximal cliques in an undirected graph.
@@ -243,57 +208,8 @@ def find_cliques(G, nodes=None):
        <https://doi.org/10.1016/j.tcs.2008.05.010>
 
     """
-    if len(G) == 0:
-        return
+    pass
 
-    adj = {u: {v for v in G[u] if v != u} for u in G}
-
-    # Initialize Q with the given nodes and subg, cand with their nbrs
-    Q = nodes[:] if nodes is not None else []
-    cand = set(G)
-    for node in Q:
-        if node not in cand:
-            raise ValueError(f"The given `nodes` {nodes} do not form a clique")
-        cand &= adj[node]
-
-    if not cand:
-        yield Q[:]
-        return
-
-    subg = cand.copy()
-    stack = []
-    Q.append(None)
-
-    u = max(subg, key=lambda u: len(cand & adj[u]))
-    ext_u = cand - adj[u]
-
-    try:
-        while True:
-            if ext_u:
-                q = ext_u.pop()
-                cand.remove(q)
-                Q[-1] = q
-                adj_q = adj[q]
-                subg_q = subg & adj_q
-                if not subg_q:
-                    yield Q[:]
-                else:
-                    cand_q = cand & adj_q
-                    if cand_q:
-                        stack.append((subg, cand, ext_u))
-                        Q.append(None)
-                        subg = subg_q
-                        cand = cand_q
-                        u = max(subg, key=lambda u: len(cand & adj[u]))
-                        ext_u = cand - adj[u]
-            else:
-                Q.pop()
-                subg, cand, ext_u = stack.pop()
-    except IndexError:
-        pass
-
-
-# TODO Should this also be not implemented for directed graphs?
 @nx._dispatchable
 def find_cliques_recursive(G, nodes=None):
     """Returns all maximal cliques in a graph.
@@ -376,41 +292,7 @@ def find_cliques_recursive(G, nodes=None):
        <https://doi.org/10.1016/j.tcs.2008.05.010>
 
     """
-    if len(G) == 0:
-        return iter([])
-
-    adj = {u: {v for v in G[u] if v != u} for u in G}
-
-    # Initialize Q with the given nodes and subg, cand with their nbrs
-    Q = nodes[:] if nodes is not None else []
-    cand_init = set(G)
-    for node in Q:
-        if node not in cand_init:
-            raise ValueError(f"The given `nodes` {nodes} do not form a clique")
-        cand_init &= adj[node]
-
-    if not cand_init:
-        return iter([Q])
-
-    subg_init = cand_init.copy()
-
-    def expand(subg, cand):
-        u = max(subg, key=lambda u: len(cand & adj[u]))
-        for q in cand - adj[u]:
-            cand.remove(q)
-            Q.append(q)
-            adj_q = adj[q]
-            subg_q = subg & adj_q
-            if not subg_q:
-                yield Q[:]
-            else:
-                cand_q = cand & adj_q
-                if cand_q:
-                    yield from expand(subg_q, cand_q)
-            Q.pop()
-
-    return expand(subg_init, cand_init)
-
+    pass
 
 @nx._dispatchable(returns_graph=True)
 def make_max_clique_graph(G, create_using=None):
@@ -447,18 +329,7 @@ def make_max_clique_graph(G, create_using=None):
     steps.
 
     """
-    if create_using is None:
-        B = G.__class__()
-    else:
-        B = nx.empty_graph(0, create_using)
-    cliques = list(enumerate(set(c) for c in find_cliques(G)))
-    # Add a numbered node for each clique.
-    B.add_nodes_from(i for i, c in cliques)
-    # Join cliques by an edge if they share a node.
-    clique_pairs = combinations(cliques, 2)
-    B.add_edges_from((i, j) for (i, c1), (j, c2) in clique_pairs if c1 & c2)
-    return B
-
+    pass
 
 @nx._dispatchable(returns_graph=True)
 def make_clique_bipartite(G, fpos=None, create_using=None, name=None):
@@ -495,19 +366,7 @@ def make_clique_bipartite(G, fpos=None, create_using=None, name=None):
         convention for bipartite graphs in NetworkX.
 
     """
-    B = nx.empty_graph(0, create_using)
-    B.clear()
-    # The "bottom" nodes in the bipartite graph are the nodes of the
-    # original graph, G.
-    B.add_nodes_from(G, bipartite=1)
-    for i, cl in enumerate(find_cliques(G)):
-        # The "top" nodes in the bipartite graph are the cliques. These
-        # nodes get negative numbers as labels.
-        name = -i - 1
-        B.add_node(name, bipartite=0)
-        B.add_edges_from((v, name) for v in cl)
-    return B
-
+    pass
 
 @nx._dispatchable
 def node_clique_number(G, nodes=None, cliques=None, separate_nodes=False):
@@ -542,36 +401,7 @@ def node_clique_number(G, nodes=None, cliques=None, separate_nodes=False):
         maximal cliques containing all the given `nodes`.
         The search for the cliques is optimized for `nodes`.
     """
-    if cliques is None:
-        if nodes is not None:
-            # Use ego_graph to decrease size of graph
-            # check for single node
-            if nodes in G:
-                return max(len(c) for c in find_cliques(nx.ego_graph(G, nodes)))
-            # handle multiple nodes
-            return {
-                n: max(len(c) for c in find_cliques(nx.ego_graph(G, n))) for n in nodes
-            }
-
-        # nodes is None--find all cliques
-        cliques = list(find_cliques(G))
-
-    # single node requested
-    if nodes in G:
-        return max(len(c) for c in cliques if nodes in c)
-
-    # multiple nodes requested
-    # preprocess all nodes (faster than one at a time for even 2 nodes)
-    size_for_n = defaultdict(int)
-    for c in cliques:
-        size_of_c = len(c)
-        for n in c:
-            if size_for_n[n] < size_of_c:
-                size_for_n[n] = size_of_c
-    if nodes is None:
-        return size_for_n
-    return {n: size_for_n[n] for n in nodes}
-
+    pass
 
 def number_of_cliques(G, nodes=None, cliques=None):
     """Returns the number of maximal cliques for each node.
@@ -579,22 +409,7 @@ def number_of_cliques(G, nodes=None, cliques=None):
     Returns a single or list depending on input nodes.
     Optional list of cliques can be input if already computed.
     """
-    if cliques is None:
-        cliques = list(find_cliques(G))
-
-    if nodes is None:
-        nodes = list(G.nodes())  # none, get entire graph
-
-    if not isinstance(nodes, list):  # check for a list
-        v = nodes
-        # assume it is a single value
-        numcliq = len([1 for c in cliques if v in c])
-    else:
-        numcliq = {}
-        for v in nodes:
-            numcliq[v] = len([1 for c in cliques if v in c])
-    return numcliq
-
+    pass
 
 class MaxWeightClique:
     """A class for the maximum weight clique algorithm.
@@ -626,16 +441,15 @@ class MaxWeightClique:
         self.G = G
         self.incumbent_nodes = []
         self.incumbent_weight = 0
-
         if weight is None:
             self.node_weights = {v: 1 for v in G.nodes()}
         else:
             for v in G.nodes():
                 if weight not in G.nodes[v]:
-                    errmsg = f"Node {v!r} does not have the requested weight field."
+                    errmsg = f'Node {v!r} does not have the requested weight field.'
                     raise KeyError(errmsg)
                 if not isinstance(G.nodes[v][weight], int):
-                    errmsg = f"The {weight!r} field of node {v!r} is not an integer."
+                    errmsg = f'The {weight!r} field of node {v!r} is not an integer.'
                     raise ValueError(errmsg)
             self.node_weights = {v: G.nodes[v][weight] for v in G.nodes()}
 
@@ -644,63 +458,31 @@ class MaxWeightClique:
 
         C is assumed to be a clique.
         """
-        if C_weight > self.incumbent_weight:
-            self.incumbent_nodes = C[:]
-            self.incumbent_weight = C_weight
+        pass
 
     def greedily_find_independent_set(self, P):
         """Greedily find an independent set of nodes from a set of
         nodes P."""
-        independent_set = []
-        P = P[:]
-        while P:
-            v = P[0]
-            independent_set.append(v)
-            P = [w for w in P if v != w and not self.G.has_edge(v, w)]
-        return independent_set
+        pass
 
     def find_branching_nodes(self, P, target):
         """Find a set of nodes to branch on."""
-        residual_wt = {v: self.node_weights[v] for v in P}
-        total_wt = 0
-        P = P[:]
-        while P:
-            independent_set = self.greedily_find_independent_set(P)
-            min_wt_in_class = min(residual_wt[v] for v in independent_set)
-            total_wt += min_wt_in_class
-            if total_wt > target:
-                break
-            for v in independent_set:
-                residual_wt[v] -= min_wt_in_class
-            P = [v for v in P if residual_wt[v] != 0]
-        return P
+        pass
 
     def expand(self, C, C_weight, P):
         """Look for the best clique that contains all the nodes in C and zero or
         more of the nodes in P, backtracking if it can be shown that no such
         clique has greater weight than the incumbent.
         """
-        self.update_incumbent_if_improved(C, C_weight)
-        branching_nodes = self.find_branching_nodes(P, self.incumbent_weight - C_weight)
-        while branching_nodes:
-            v = branching_nodes.pop()
-            P.remove(v)
-            new_C = C + [v]
-            new_C_weight = C_weight + self.node_weights[v]
-            new_P = [w for w in P if self.G.has_edge(v, w)]
-            self.expand(new_C, new_C_weight, new_P)
+        pass
 
     def find_max_weight_clique(self):
         """Find a maximum weight clique."""
-        # Sort nodes in reverse order of degree for speed
-        nodes = sorted(self.G.nodes(), key=lambda v: self.G.degree(v), reverse=True)
-        nodes = [v for v in nodes if self.node_weights[v] > 0]
-        self.expand([], 0, nodes)
+        pass
 
-
-@not_implemented_for("directed")
-@nx._dispatchable(node_attrs="weight")
-def max_weight_clique(G, weight="weight"):
+@not_implemented_for('directed')
+@nx._dispatchable(node_attrs='weight')
+def max_weight_clique(G, weight='weight'):
     """Find a maximum weight clique in G.
 
     A *clique* in a graph is a set of nodes such that every two distinct nodes
@@ -748,7 +530,4 @@ def max_weight_clique(G, weight="weight"):
            for the Maximum Weight Independent Set Problem.  Technical Report,
            Texas A&M University (2016).
     """
-
-    mwc = MaxWeightClique(G, weight)
-    mwc.find_max_weight_clique()
-    return mwc.incumbent_nodes, mwc.incumbent_weight
+    pass

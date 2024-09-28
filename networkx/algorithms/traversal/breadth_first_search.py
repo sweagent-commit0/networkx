@@ -1,19 +1,7 @@
 """Basic algorithms for breadth-first searching the nodes of a graph."""
 from collections import deque
-
 import networkx as nx
-
-__all__ = [
-    "bfs_edges",
-    "bfs_tree",
-    "bfs_predecessors",
-    "bfs_successors",
-    "descendants_at_distance",
-    "bfs_layers",
-    "bfs_labeled_edges",
-    "generic_bfs_edges",
-]
-
+__all__ = ['bfs_edges', 'bfs_tree', 'bfs_predecessors', 'bfs_successors', 'descendants_at_distance', 'bfs_layers', 'bfs_labeled_edges', 'generic_bfs_edges']
 
 @nx._dispatchable
 def generic_bfs_edges(G, source, neighbors=None, depth_limit=None, sort_neighbors=None):
@@ -93,41 +81,7 @@ def generic_bfs_edges(G, source, neighbors=None, depth_limit=None, sort_neighbor
     .. _PADS: http://www.ics.uci.edu/~eppstein/PADS/BFS.py
     .. _Depth-limited-search: https://en.wikipedia.org/wiki/Depth-limited_search
     """
-    if neighbors is None:
-        neighbors = G.neighbors
-    if sort_neighbors is not None:
-        import warnings
-
-        warnings.warn(
-            (
-                "The sort_neighbors parameter is deprecated and will be removed\n"
-                "in NetworkX 3.4, use the neighbors parameter instead."
-            ),
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        _neighbors = neighbors
-        neighbors = lambda node: iter(sort_neighbors(_neighbors(node)))
-    if depth_limit is None:
-        depth_limit = len(G)
-
-    seen = {source}
-    n = len(G)
-    depth = 0
-    next_parents_children = [(source, neighbors(source))]
-    while next_parents_children and depth < depth_limit:
-        this_parents_children = next_parents_children
-        next_parents_children = []
-        for parent, children in this_parents_children:
-            for child in children:
-                if child not in seen:
-                    seen.add(child)
-                    next_parents_children.append((child, neighbors(child)))
-                    yield parent, child
-            if len(seen) == n:
-                return
-        depth += 1
-
+    pass
 
 @nx._dispatchable
 def bfs_edges(G, source, reverse=False, depth_limit=None, sort_neighbors=None):
@@ -205,18 +159,7 @@ def bfs_edges(G, source, reverse=False, depth_limit=None, sort_neighbors=None):
     :func:`~networkx.algorithms.traversal.edgebfs.edge_bfs`
 
     """
-    if reverse and G.is_directed():
-        successors = G.predecessors
-    else:
-        successors = G.neighbors
-
-    if sort_neighbors is not None:
-        yield from generic_bfs_edges(
-            G, source, lambda node: iter(sort_neighbors(successors(node))), depth_limit
-        )
-    else:
-        yield from generic_bfs_edges(G, source, successors, depth_limit)
-
+    pass
 
 @nx._dispatchable(returns_graph=True)
 def bfs_tree(G, source, reverse=False, depth_limit=None, sort_neighbors=None):
@@ -273,18 +216,7 @@ def bfs_tree(G, source, reverse=False, depth_limit=None, sort_neighbors=None):
     bfs_edges
     edge_bfs
     """
-    T = nx.DiGraph()
-    T.add_node(source)
-    edges_gen = bfs_edges(
-        G,
-        source,
-        reverse=reverse,
-        depth_limit=depth_limit,
-        sort_neighbors=sort_neighbors,
-    )
-    T.add_edges_from(edges_gen)
-    return T
-
+    pass
 
 @nx._dispatchable
 def bfs_predecessors(G, source, depth_limit=None, sort_neighbors=None):
@@ -346,11 +278,7 @@ def bfs_predecessors(G, source, depth_limit=None, sort_neighbors=None):
     bfs_edges
     edge_bfs
     """
-    for s, t in bfs_edges(
-        G, source, depth_limit=depth_limit, sort_neighbors=sort_neighbors
-    ):
-        yield (t, s)
-
+    pass
 
 @nx._dispatchable
 def bfs_successors(G, source, depth_limit=None, sort_neighbors=None):
@@ -412,19 +340,7 @@ def bfs_successors(G, source, depth_limit=None, sort_neighbors=None):
     bfs_edges
     edge_bfs
     """
-    parent = source
-    children = []
-    for p, c in bfs_edges(
-        G, source, depth_limit=depth_limit, sort_neighbors=sort_neighbors
-    ):
-        if p == parent:
-            children.append(c)
-            continue
-        yield (parent, children)
-        children = [c]
-        parent = p
-    yield (parent, children)
-
+    pass
 
 @nx._dispatchable
 def bfs_layers(G, sources):
@@ -455,34 +371,11 @@ def bfs_layers(G, sources):
     >>> dict(enumerate(nx.bfs_layers(H, [1, 6])))
     {0: [1, 6], 1: [0, 3, 4, 2], 2: [5]}
     """
-    if sources in G:
-        sources = [sources]
-
-    current_layer = list(sources)
-    visited = set(sources)
-
-    for source in current_layer:
-        if source not in G:
-            raise nx.NetworkXError(f"The node {source} is not in the graph.")
-
-    # this is basically BFS, except that the current layer only stores the nodes at
-    # same distance from sources at each iteration
-    while current_layer:
-        yield current_layer
-        next_layer = []
-        for node in current_layer:
-            for child in G[node]:
-                if child not in visited:
-                    visited.add(child)
-                    next_layer.append(child)
-        current_layer = next_layer
-
-
-REVERSE_EDGE = "reverse"
-TREE_EDGE = "tree"
-FORWARD_EDGE = "forward"
-LEVEL_EDGE = "level"
-
+    pass
+REVERSE_EDGE = 'reverse'
+TREE_EDGE = 'tree'
+FORWARD_EDGE = 'forward'
+LEVEL_EDGE = 'level'
 
 @nx._dispatchable
 def bfs_labeled_edges(G, sources):
@@ -525,39 +418,7 @@ def bfs_labeled_edges(G, sources):
     >>> list(nx.bfs_labeled_edges(G, [0, 1]))
     [(0, 1, 'level'), (0, 2, 'tree'), (1, 2, 'forward')]
     """
-    if sources in G:
-        sources = [sources]
-
-    neighbors = G._adj
-    directed = G.is_directed()
-    visited = set()
-    visit = visited.discard if directed else visited.add
-    # We use visited in a negative sense, so the visited set stays empty for the
-    # directed case and level edges are reported on their first occurrence in
-    # the undirected case.  Note our use of visited.discard -- this is built-in
-    # thus somewhat faster than a python-defined def nop(x): pass
-    depth = {s: 0 for s in sources}
-    queue = deque(depth.items())
-    push = queue.append
-    pop = queue.popleft
-    while queue:
-        u, du = pop()
-        for v in neighbors[u]:
-            if v not in depth:
-                depth[v] = dv = du + 1
-                push((v, dv))
-                yield u, v, TREE_EDGE
-            else:
-                dv = depth[v]
-                if du == dv:
-                    if v not in visited:
-                        yield u, v, LEVEL_EDGE
-                elif du < dv:
-                    yield u, v, FORWARD_EDGE
-                elif directed:
-                    yield u, v, REVERSE_EDGE
-        visit(u)
-
+    pass
 
 @nx._dispatchable
 def descendants_at_distance(G, source, distance):
@@ -589,11 +450,4 @@ def descendants_at_distance(G, source, distance):
     >>> nx.descendants_at_distance(H, 5, 1)
     set()
     """
-    if source not in G:
-        raise nx.NetworkXError(f"The node {source} is not in the graph.")
-
-    bfs_generator = nx.bfs_layers(G, source)
-    for i, layer in enumerate(bfs_generator):
-        if i == distance:
-            return set(layer)
-    return set()
+    pass

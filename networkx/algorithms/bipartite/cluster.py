@@ -1,44 +1,21 @@
 """Functions for computing clustering of pairs
 
 """
-
 import itertools
-
 import networkx as nx
-
-__all__ = [
-    "clustering",
-    "average_clustering",
-    "latapy_clustering",
-    "robins_alexander_clustering",
-]
-
-
-def cc_dot(nu, nv):
-    return len(nu & nv) / len(nu | nv)
-
-
-def cc_max(nu, nv):
-    return len(nu & nv) / max(len(nu), len(nv))
-
-
-def cc_min(nu, nv):
-    return len(nu & nv) / min(len(nu), len(nv))
-
-
-modes = {"dot": cc_dot, "min": cc_min, "max": cc_max}
-
+__all__ = ['clustering', 'average_clustering', 'latapy_clustering', 'robins_alexander_clustering']
+modes = {'dot': cc_dot, 'min': cc_min, 'max': cc_max}
 
 @nx._dispatchable
-def latapy_clustering(G, nodes=None, mode="dot"):
-    r"""Compute a bipartite clustering coefficient for nodes.
+def latapy_clustering(G, nodes=None, mode='dot'):
+    """Compute a bipartite clustering coefficient for nodes.
 
     The bipartite clustering coefficient is a measure of local density
     of connections defined as [1]_:
 
     .. math::
 
-       c_u = \frac{\sum_{v \in N(N(u))} c_{uv} }{|N(N(u))|}
+       c_u = \\frac{\\sum_{v \\in N(N(u))} c_{uv} }{|N(N(u))|}
 
     where `N(N(u))` are the second order neighbors of `u` in `G` excluding `u`,
     and `c_{uv}` is the pairwise clustering coefficient between nodes
@@ -50,19 +27,19 @@ def latapy_clustering(G, nodes=None, mode="dot"):
 
     .. math::
 
-       c_{uv}=\frac{|N(u)\cap N(v)|}{|N(u) \cup N(v)|}
+       c_{uv}=\\frac{|N(u)\\cap N(v)|}{|N(u) \\cup N(v)|}
 
     `min`:
 
     .. math::
 
-       c_{uv}=\frac{|N(u)\cap N(v)|}{min(|N(u)|,|N(v)|)}
+       c_{uv}=\\frac{|N(u)\\cap N(v)|}{min(|N(u)|,|N(v)|)}
 
     `max`:
 
     .. math::
 
-       c_{uv}=\frac{|N(u)\cap N(v)|}{max(|N(u)|,|N(v)|)}
+       c_{uv}=\\frac{|N(u)\\cap N(v)|}{max(|N(u)|,|N(v)|)}
 
 
     Parameters
@@ -107,42 +84,18 @@ def latapy_clustering(G, nodes=None, mode="dot"):
        Basic notions for the analysis of large two-mode networks.
        Social Networks 30(1), 31--48.
     """
-    if not nx.algorithms.bipartite.is_bipartite(G):
-        raise nx.NetworkXError("Graph is not bipartite")
-
-    try:
-        cc_func = modes[mode]
-    except KeyError as err:
-        raise nx.NetworkXError(
-            "Mode for bipartite clustering must be: dot, min or max"
-        ) from err
-
-    if nodes is None:
-        nodes = G
-    ccs = {}
-    for v in nodes:
-        cc = 0.0
-        nbrs2 = {u for nbr in G[v] for u in G[nbr]} - {v}
-        for u in nbrs2:
-            cc += cc_func(set(G[u]), set(G[v]))
-        if cc > 0.0:  # len(nbrs2)>0
-            cc /= len(nbrs2)
-        ccs[v] = cc
-    return ccs
-
-
+    pass
 clustering = latapy_clustering
 
-
-@nx._dispatchable(name="bipartite_average_clustering")
-def average_clustering(G, nodes=None, mode="dot"):
-    r"""Compute the average bipartite clustering coefficient.
+@nx._dispatchable(name='bipartite_average_clustering')
+def average_clustering(G, nodes=None, mode='dot'):
+    """Compute the average bipartite clustering coefficient.
 
     A clustering coefficient for the whole graph is the average,
 
     .. math::
 
-       C = \frac{1}{n}\sum_{v \in G} c_v,
+       C = \\frac{1}{n}\\sum_{v \\in G} c_v,
 
     where `n` is the number of nodes in `G`.
 
@@ -150,7 +103,7 @@ def average_clustering(G, nodes=None, mode="dot"):
 
     .. math::
 
-       C_X = \frac{1}{|X|}\sum_{v \in X} c_v,
+       C_X = \\frac{1}{|X|}\\sum_{v \\in X} c_v,
 
     where `X` is a bipartite set of `G`.
 
@@ -205,15 +158,11 @@ def average_clustering(G, nodes=None, mode="dot"):
         Basic notions for the analysis of large two-mode networks.
         Social Networks 30(1), 31--48.
     """
-    if nodes is None:
-        nodes = G
-    ccs = latapy_clustering(G, nodes=nodes, mode=mode)
-    return sum(ccs[v] for v in nodes) / len(nodes)
-
+    pass
 
 @nx._dispatchable
 def robins_alexander_clustering(G):
-    r"""Compute the bipartite clustering of G.
+    """Compute the bipartite clustering of G.
 
     Robins and Alexander [1]_ defined bipartite clustering coefficient as
     four times the number of four cycles `C_4` divided by the number of
@@ -221,7 +170,7 @@ def robins_alexander_clustering(G):
 
     .. math::
 
-       CC_4 = \frac{4 * C_4}{L_3}
+       CC_4 = \\frac{4 * C_4}{L_3}
 
     Parameters
     ----------
@@ -252,29 +201,4 @@ def robins_alexander_clustering(G):
            Computational & Mathematical Organization Theory 10(1), 69–94.
 
     """
-    if G.order() < 4 or G.size() < 3:
-        return 0
-    L_3 = _threepaths(G)
-    if L_3 == 0:
-        return 0
-    C_4 = _four_cycles(G)
-    return (4.0 * C_4) / L_3
-
-
-def _four_cycles(G):
-    cycles = 0
-    for v in G:
-        for u, w in itertools.combinations(G[v], 2):
-            cycles += len((set(G[u]) & set(G[w])) - {v})
-    return cycles / 4
-
-
-def _threepaths(G):
-    paths = 0
-    for v in G:
-        for u in G[v]:
-            for w in set(G[u]) - {v}:
-                paths += len(set(G[w]) - {v, u})
-    # Divide by two because we count each three path twice
-    # one for each possible starting point
-    return paths / 2
+    pass

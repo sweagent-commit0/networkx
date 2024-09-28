@@ -1,22 +1,9 @@
 """Graph diameter, radius, eccentricity and other properties."""
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['eccentricity', 'diameter', 'radius', 'periphery', 'center', 'barycenter', 'resistance_distance', 'kemeny_constant', 'effective_graph_resistance']
 
-__all__ = [
-    "eccentricity",
-    "diameter",
-    "radius",
-    "periphery",
-    "center",
-    "barycenter",
-    "resistance_distance",
-    "kemeny_constant",
-    "effective_graph_resistance",
-]
-
-
-def _extrema_bounding(G, compute="diameter", weight=None):
+def _extrema_bounding(G, compute='diameter', weight=None):
     """Compute requested extreme distance metric of undirected graph G
 
     Computation is based on smart lower and upper bounds, and in practice
@@ -88,156 +75,9 @@ def _extrema_bounding(G, compute="diameter", weight=None):
        Theoretical Computer Science, 2015
        https://www.sciencedirect.com/science/article/pii/S0304397515001644
     """
-    # init variables
-    degrees = dict(G.degree())  # start with the highest degree node
-    minlowernode = max(degrees, key=degrees.get)
-    N = len(degrees)  # number of nodes
-    # alternate between smallest lower and largest upper bound
-    high = False
-    # status variables
-    ecc_lower = dict.fromkeys(G, 0)
-    ecc_upper = dict.fromkeys(G, N)
-    candidates = set(G)
+    pass
 
-    # (re)set bound extremes
-    minlower = N
-    maxlower = 0
-    minupper = N
-    maxupper = 0
-
-    # repeat the following until there are no more candidates
-    while candidates:
-        if high:
-            current = maxuppernode  # select node with largest upper bound
-        else:
-            current = minlowernode  # select node with smallest lower bound
-        high = not high
-
-        # get distances from/to current node and derive eccentricity
-        dist = nx.shortest_path_length(G, source=current, weight=weight)
-
-        if len(dist) != N:
-            msg = "Cannot compute metric because graph is not connected."
-            raise nx.NetworkXError(msg)
-        current_ecc = max(dist.values())
-
-        # print status update
-        #        print ("ecc of " + str(current) + " (" + str(ecc_lower[current]) + "/"
-        #        + str(ecc_upper[current]) + ", deg: " + str(dist[current]) + ") is "
-        #        + str(current_ecc))
-        #        print(ecc_upper)
-
-        # (re)set bound extremes
-        maxuppernode = None
-        minlowernode = None
-
-        # update node bounds
-        for i in candidates:
-            # update eccentricity bounds
-            d = dist[i]
-            ecc_lower[i] = low = max(ecc_lower[i], max(d, (current_ecc - d)))
-            ecc_upper[i] = upp = min(ecc_upper[i], current_ecc + d)
-
-            # update min/max values of lower and upper bounds
-            minlower = min(ecc_lower[i], minlower)
-            maxlower = max(ecc_lower[i], maxlower)
-            minupper = min(ecc_upper[i], minupper)
-            maxupper = max(ecc_upper[i], maxupper)
-
-        # update candidate set
-        if compute == "diameter":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_upper[i] <= maxlower and 2 * ecc_lower[i] >= maxupper
-            }
-        elif compute == "radius":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_lower[i] >= minupper and ecc_upper[i] + 1 <= 2 * minlower
-            }
-        elif compute == "periphery":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_upper[i] < maxlower
-                and (maxlower == maxupper or ecc_lower[i] > maxupper)
-            }
-        elif compute == "center":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_lower[i] > minupper
-                and (minlower == minupper or ecc_upper[i] + 1 < 2 * minlower)
-            }
-        elif compute == "eccentricities":
-            ruled_out = set()
-        else:
-            msg = "compute must be one of 'diameter', 'radius', 'periphery', 'center', 'eccentricities'"
-            raise ValueError(msg)
-
-        ruled_out.update(i for i in candidates if ecc_lower[i] == ecc_upper[i])
-        candidates -= ruled_out
-
-        #        for i in ruled_out:
-        #            print("removing %g: ecc_u: %g maxl: %g ecc_l: %g maxu: %g"%
-        #                    (i,ecc_upper[i],maxlower,ecc_lower[i],maxupper))
-        #        print("node %g: ecc_u: %g maxl: %g ecc_l: %g maxu: %g"%
-        #                    (4,ecc_upper[4],maxlower,ecc_lower[4],maxupper))
-        #        print("NODE 4: %g"%(ecc_upper[4] <= maxlower))
-        #        print("NODE 4: %g"%(2 * ecc_lower[4] >= maxupper))
-        #        print("NODE 4: %g"%(ecc_upper[4] <= maxlower
-        #                            and 2 * ecc_lower[4] >= maxupper))
-
-        # updating maxuppernode and minlowernode for selection in next round
-        for i in candidates:
-            if (
-                minlowernode is None
-                or (
-                    ecc_lower[i] == ecc_lower[minlowernode]
-                    and degrees[i] > degrees[minlowernode]
-                )
-                or (ecc_lower[i] < ecc_lower[minlowernode])
-            ):
-                minlowernode = i
-
-            if (
-                maxuppernode is None
-                or (
-                    ecc_upper[i] == ecc_upper[maxuppernode]
-                    and degrees[i] > degrees[maxuppernode]
-                )
-                or (ecc_upper[i] > ecc_upper[maxuppernode])
-            ):
-                maxuppernode = i
-
-        # print status update
-    #        print (" min=" + str(minlower) + "/" + str(minupper) +
-    #        " max=" + str(maxlower) + "/" + str(maxupper) +
-    #        " candidates: " + str(len(candidates)))
-    #        print("cand:",candidates)
-    #        print("ecc_l",ecc_lower)
-    #        print("ecc_u",ecc_upper)
-    #        wait = input("press Enter to continue")
-
-    # return the correct value of the requested metric
-    if compute == "diameter":
-        return maxlower
-    if compute == "radius":
-        return minupper
-    if compute == "periphery":
-        p = [v for v in G if ecc_lower[v] == maxlower]
-        return p
-    if compute == "center":
-        c = [v for v in G if ecc_upper[v] == minupper]
-        return c
-    if compute == "eccentricities":
-        return ecc_lower
-    return None
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def eccentricity(G, v=None, sp=None, weight=None):
     """Returns the eccentricity of nodes in G.
 
@@ -290,43 +130,9 @@ def eccentricity(G, v=None, sp=None, weight=None):
     {1: 2, 5: 3}
 
     """
-    #    if v is None:                # none, use entire graph
-    #        nodes=G.nodes()
-    #    elif v in G:               # is v a single node
-    #        nodes=[v]
-    #    else:                      # assume v is a container of nodes
-    #        nodes=v
-    order = G.order()
-    e = {}
-    for n in G.nbunch_iter(v):
-        if sp is None:
-            length = nx.shortest_path_length(G, source=n, weight=weight)
+    pass
 
-            L = len(length)
-        else:
-            try:
-                length = sp[n]
-                L = len(length)
-            except TypeError as err:
-                raise nx.NetworkXError('Format of "sp" is invalid.') from err
-        if L != order:
-            if G.is_directed():
-                msg = (
-                    "Found infinite path length because the digraph is not"
-                    " strongly connected"
-                )
-            else:
-                msg = "Found infinite path length because the graph is not" " connected"
-            raise nx.NetworkXError(msg)
-
-        e[n] = max(length.values())
-
-    if v in G:
-        return e[v]  # return single value
-    return e
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def diameter(G, e=None, usebounds=False, weight=None):
     """Returns the diameter of the graph G.
 
@@ -375,14 +181,9 @@ def diameter(G, e=None, usebounds=False, weight=None):
     --------
     eccentricity
     """
-    if usebounds is True and e is None and not G.is_directed():
-        return _extrema_bounding(G, compute="diameter", weight=weight)
-    if e is None:
-        e = eccentricity(G, weight=weight)
-    return max(e.values())
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def periphery(G, e=None, usebounds=False, weight=None):
     """Returns the periphery of the graph G.
 
@@ -432,16 +233,9 @@ def periphery(G, e=None, usebounds=False, weight=None):
     barycenter
     center
     """
-    if usebounds is True and e is None and not G.is_directed():
-        return _extrema_bounding(G, compute="periphery", weight=weight)
-    if e is None:
-        e = eccentricity(G, weight=weight)
-    diameter = max(e.values())
-    p = [v for v in e if e[v] == diameter]
-    return p
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def radius(G, e=None, usebounds=False, weight=None):
     """Returns the radius of the graph G.
 
@@ -487,14 +281,9 @@ def radius(G, e=None, usebounds=False, weight=None):
     2
 
     """
-    if usebounds is True and e is None and not G.is_directed():
-        return _extrema_bounding(G, compute="radius", weight=weight)
-    if e is None:
-        e = eccentricity(G, weight=weight)
-    return min(e.values())
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def center(G, e=None, usebounds=False, weight=None):
     """Returns the center of the graph G.
 
@@ -544,18 +333,11 @@ def center(G, e=None, usebounds=False, weight=None):
     barycenter
     periphery
     """
-    if usebounds is True and e is None and not G.is_directed():
-        return _extrema_bounding(G, compute="center", weight=weight)
-    if e is None:
-        e = eccentricity(G, weight=weight)
-    radius = min(e.values())
-    p = [v for v in e if e[v] == radius]
-    return p
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight", mutates_input={"attr": 2})
+@nx._dispatchable(edge_attrs='weight', mutates_input={'attr': 2})
 def barycenter(G, weight=None, attr=None, sp=None):
-    r"""Calculate barycenter of a connected graph, optionally with edge weights.
+    """Calculate barycenter of a connected graph, optionally with edge weights.
 
     The :dfn:`barycenter` a
     :func:`connected <networkx.algorithms.components.is_connected>` graph
@@ -564,7 +346,7 @@ def barycenter(G, weight=None, attr=None, sp=None):
 
     .. math::
 
-        \sum_{u \in V(G)} d_G(u, v),
+        \\sum_{u \\in V(G)} d_G(u, v),
 
     where :math:`d_G` is the (possibly weighted) :func:`path length
     <networkx.algorithms.shortest_paths.generic.shortest_path_length>`.
@@ -608,34 +390,10 @@ def barycenter(G, weight=None, attr=None, sp=None):
     center
     periphery
     """
-    if sp is None:
-        sp = nx.shortest_path_length(G, weight=weight)
-    else:
-        sp = sp.items()
-        if weight is not None:
-            raise ValueError("Cannot use both sp, weight arguments together")
-    smallest, barycenter_vertices, n = float("inf"), [], len(G)
-    for v, dists in sp:
-        if len(dists) < n:
-            raise nx.NetworkXNoPath(
-                f"Input graph {G} is disconnected, so every induced subgraph "
-                "has infinite barycentricity."
-            )
-        barycentricity = sum(dists.values())
-        if attr is not None:
-            G.nodes[v][attr] = barycentricity
-        if barycentricity < smallest:
-            smallest = barycentricity
-            barycenter_vertices = [v]
-        elif barycentricity == smallest:
-            barycenter_vertices.append(v)
-    if attr is not None:
-        nx._clear_cache(G)
-    return barycenter_vertices
+    pass
 
-
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
 def resistance_distance(G, nodeA=None, nodeB=None, weight=None, invert_weight=True):
     """Returns the resistance distance between pairs of nodes in graph G.
 
@@ -705,74 +463,10 @@ def resistance_distance(G, nodeA=None, nodeB=None, weight=None, invert_weight=Tr
         Resistance distance.
         J. of Math. Chem. 12:81-95, 1993.
     """
-    import numpy as np
+    pass
 
-    if len(G) == 0:
-        raise nx.NetworkXError("Graph G must contain at least one node.")
-    if not nx.is_connected(G):
-        raise nx.NetworkXError("Graph G must be strongly connected.")
-    if nodeA is not None and nodeA not in G:
-        raise nx.NetworkXError("Node A is not in graph G.")
-    if nodeB is not None and nodeB not in G:
-        raise nx.NetworkXError("Node B is not in graph G.")
-
-    G = G.copy()
-    node_list = list(G)
-
-    # Invert weights
-    if invert_weight and weight is not None:
-        if G.is_multigraph():
-            for u, v, k, d in G.edges(keys=True, data=True):
-                d[weight] = 1 / d[weight]
-        else:
-            for u, v, d in G.edges(data=True):
-                d[weight] = 1 / d[weight]
-
-    # Compute resistance distance using the Pseudo-inverse of the Laplacian
-    # Self-loops are ignored
-    L = nx.laplacian_matrix(G, weight=weight).todense()
-    Linv = np.linalg.pinv(L, hermitian=True)
-
-    # Return relevant distances
-    if nodeA is not None and nodeB is not None:
-        i = node_list.index(nodeA)
-        j = node_list.index(nodeB)
-        return Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
-
-    elif nodeA is not None:
-        i = node_list.index(nodeA)
-        d = {}
-        for n in G:
-            j = node_list.index(n)
-            d[n] = Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
-        return d
-
-    elif nodeB is not None:
-        j = node_list.index(nodeB)
-        d = {}
-        for n in G:
-            i = node_list.index(n)
-            d[n] = Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
-        return d
-
-    else:
-        d = {}
-        for n in G:
-            i = node_list.index(n)
-            d[n] = {}
-            for n2 in G:
-                j = node_list.index(n2)
-                d[n][n2] = (
-                    Linv.item(i, i)
-                    + Linv.item(j, j)
-                    - Linv.item(i, j)
-                    - Linv.item(j, i)
-                )
-        return d
-
-
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
 def effective_graph_resistance(G, weight=None, invert_weight=True):
     """Returns the Effective graph resistance of G.
 
@@ -832,35 +526,10 @@ def effective_graph_resistance(G, weight=None, invert_weight=True):
         Effective graph resistance.
         Lin. Alg. Appl. 435:2491-2506, 2011.
     """
-    import numpy as np
+    pass
 
-    if len(G) == 0:
-        raise nx.NetworkXError("Graph G must contain at least one node.")
-
-    # Disconnected graphs have infinite Effective graph resistance
-    if not nx.is_connected(G):
-        return float("inf")
-
-    # Invert weights
-    G = G.copy()
-    if invert_weight and weight is not None:
-        if G.is_multigraph():
-            for u, v, k, d in G.edges(keys=True, data=True):
-                d[weight] = 1 / d[weight]
-        else:
-            for u, v, d in G.edges(data=True):
-                d[weight] = 1 / d[weight]
-
-    # Get Laplacian eigenvalues
-    mu = np.sort(nx.laplacian_spectrum(G, weight=weight))
-
-    # Compute Effective graph resistance based on spectrum of the Laplacian
-    # Self-loops are ignored
-    return float(np.sum(1 / mu[1:]) * G.number_of_nodes())
-
-
-@nx.utils.not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
+@nx.utils.not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
 def kemeny_constant(G, *, weight=None):
     """Returns the Kemeny constant of the given graph.
 
@@ -924,28 +593,4 @@ def kemeny_constant(G, *, weight=None):
         Paul Erdös is Eighty, vol. 2, Bolyai Society,
         Mathematical Studies, Keszthely, Hungary (1993), pp. 1-46
     """
-    import numpy as np
-    import scipy as sp
-
-    if len(G) == 0:
-        raise nx.NetworkXError("Graph G must contain at least one node.")
-    if not nx.is_connected(G):
-        raise nx.NetworkXError("Graph G must be connected.")
-    if nx.is_negatively_weighted(G, weight=weight):
-        raise nx.NetworkXError("The weights of graph G must be nonnegative.")
-
-    # Compute matrix H = D^-1/2 A D^-1/2
-    A = nx.adjacency_matrix(G, weight=weight)
-    n, m = A.shape
-    diags = A.sum(axis=1)
-    with np.errstate(divide="ignore"):
-        diags_sqrt = 1.0 / np.sqrt(diags)
-    diags_sqrt[np.isinf(diags_sqrt)] = 0
-    DH = sp.sparse.csr_array(sp.sparse.spdiags(diags_sqrt, 0, m, n, format="csr"))
-    H = DH @ (A @ DH)
-
-    # Compute eigenvalues of H
-    eig = np.sort(sp.linalg.eigvalsh(H.todense()))
-
-    # Compute the Kemeny constant
-    return float(np.sum(1 / (1 - eig[:-1])))
+    pass

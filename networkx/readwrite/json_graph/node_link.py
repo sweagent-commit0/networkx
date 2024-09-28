@@ -1,18 +1,7 @@
 from itertools import chain, count
-
 import networkx as nx
-
-__all__ = ["node_link_data", "node_link_graph"]
-
-
-_attrs = {
-    "source": "source",
-    "target": "target",
-    "name": "id",
-    "key": "key",
-    "link": "links",
-}
-
+__all__ = ['node_link_data', 'node_link_graph']
+_attrs = {'source': 'source', 'target': 'target', 'name': 'id', 'key': 'key', 'link': 'links'}
 
 def _to_tuple(x):
     """Converts lists to tuples, including nested lists.
@@ -26,20 +15,9 @@ def _to_tuple(x):
     >>> _to_tuple([1, 2, [3, 4]])
     (1, 2, (3, 4))
     """
-    if not isinstance(x, tuple | list):
-        return x
-    return tuple(map(_to_tuple, x))
+    pass
 
-
-def node_link_data(
-    G,
-    *,
-    source="source",
-    target="target",
-    name="id",
-    key="key",
-    link="links",
-):
+def node_link_data(G, *, source='source', target='target', name='id', key='key', link='links'):
     """Returns data in node-link format that is suitable for JSON serialization
     and use in JavaScript documents.
 
@@ -110,40 +88,10 @@ def node_link_data(
     --------
     node_link_graph, adjacency_data, tree_data
     """
-    multigraph = G.is_multigraph()
-
-    # Allow 'key' to be omitted from attrs if the graph is not a multigraph.
-    key = None if not multigraph else key
-    if len({source, target, key}) < 3:
-        raise nx.NetworkXError("Attribute names are not unique.")
-    data = {
-        "directed": G.is_directed(),
-        "multigraph": multigraph,
-        "graph": G.graph,
-        "nodes": [{**G.nodes[n], name: n} for n in G],
-    }
-    if multigraph:
-        data[link] = [
-            {**d, source: u, target: v, key: k}
-            for u, v, k, d in G.edges(keys=True, data=True)
-        ]
-    else:
-        data[link] = [{**d, source: u, target: v} for u, v, d in G.edges(data=True)]
-    return data
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
-def node_link_graph(
-    data,
-    directed=False,
-    multigraph=True,
-    *,
-    source="source",
-    target="target",
-    name="id",
-    key="key",
-    link="links",
-):
+def node_link_graph(data, directed=False, multigraph=True, *, source='source', target='target', name='id', key='key', link='links'):
     """Returns graph from node-link data format.
     Useful for de-serialization from JSON.
 
@@ -210,35 +158,4 @@ def node_link_graph(
     --------
     node_link_data, adjacency_data, tree_data
     """
-    multigraph = data.get("multigraph", multigraph)
-    directed = data.get("directed", directed)
-    if multigraph:
-        graph = nx.MultiGraph()
-    else:
-        graph = nx.Graph()
-    if directed:
-        graph = graph.to_directed()
-
-    # Allow 'key' to be omitted from attrs if the graph is not a multigraph.
-    key = None if not multigraph else key
-    graph.graph = data.get("graph", {})
-    c = count()
-    for d in data["nodes"]:
-        node = _to_tuple(d.get(name, next(c)))
-        nodedata = {str(k): v for k, v in d.items() if k != name}
-        graph.add_node(node, **nodedata)
-    for d in data[link]:
-        src = tuple(d[source]) if isinstance(d[source], list) else d[source]
-        tgt = tuple(d[target]) if isinstance(d[target], list) else d[target]
-        if not multigraph:
-            edgedata = {str(k): v for k, v in d.items() if k != source and k != target}
-            graph.add_edge(src, tgt, **edgedata)
-        else:
-            ky = d.get(key, None)
-            edgedata = {
-                str(k): v
-                for k, v in d.items()
-                if k != source and k != target and k != key
-            }
-            graph.add_edge(src, tgt, ky, **edgedata)
-    return graph
+    pass

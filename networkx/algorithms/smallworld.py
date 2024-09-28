@@ -16,12 +16,10 @@ For more information, see the Wikipedia article on small-world network [1]_.
 """
 import networkx as nx
 from networkx.utils import not_implemented_for, py_random_state
+__all__ = ['random_reference', 'lattice_reference', 'sigma', 'omega']
 
-__all__ = ["random_reference", "lattice_reference", "sigma", "omega"]
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @py_random_state(3)
 @nx._dispatchable(returns_graph=True)
 def random_reference(G, niter=1, connectivity=True, seed=None):
@@ -63,63 +61,10 @@ def random_reference(G, niter=1, connectivity=True, seed=None):
            "Specificity and stability in topology of protein networks."
            Science 296.5569 (2002): 910-913.
     """
-    if len(G) < 4:
-        raise nx.NetworkXError("Graph has fewer than four nodes.")
-    if len(G.edges) < 2:
-        raise nx.NetworkXError("Graph has fewer that 2 edges")
+    pass
 
-    from networkx.utils import cumulative_distribution, discrete_sequence
-
-    local_conn = nx.connectivity.local_edge_connectivity
-
-    G = G.copy()
-    keys, degrees = zip(*G.degree())  # keys, degree
-    cdf = cumulative_distribution(degrees)  # cdf of degree
-    nnodes = len(G)
-    nedges = nx.number_of_edges(G)
-    niter = niter * nedges
-    ntries = int(nnodes * nedges / (nnodes * (nnodes - 1) / 2))
-    swapcount = 0
-
-    for i in range(niter):
-        n = 0
-        while n < ntries:
-            # pick two random edges without creating edge list
-            # choose source node indices from discrete distribution
-            (ai, ci) = discrete_sequence(2, cdistribution=cdf, seed=seed)
-            if ai == ci:
-                continue  # same source, skip
-            a = keys[ai]  # convert index to label
-            c = keys[ci]
-            # choose target uniformly from neighbors
-            b = seed.choice(list(G.neighbors(a)))
-            d = seed.choice(list(G.neighbors(c)))
-            if b in [a, c, d] or d in [a, b, c]:
-                continue  # all vertices should be different
-
-            # don't create parallel edges
-            if (d not in G[a]) and (b not in G[c]):
-                G.add_edge(a, d)
-                G.add_edge(c, b)
-                G.remove_edge(a, b)
-                G.remove_edge(c, d)
-
-                # Check if the graph is still connected
-                if connectivity and local_conn(G, a, b) == 0:
-                    # Not connected, revert the swap
-                    G.remove_edge(a, d)
-                    G.remove_edge(c, b)
-                    G.add_edge(a, b)
-                    G.add_edge(c, d)
-                else:
-                    swapcount += 1
-                    break
-            n += 1
-    return G
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @py_random_state(4)
 @nx._dispatchable(returns_graph=True)
 def lattice_reference(G, niter=5, D=None, connectivity=True, seed=None):
@@ -167,83 +112,10 @@ def lattice_reference(G, niter=5, D=None, connectivity=True, seed=None):
        "Specificity and stability in topology of protein networks."
        Science 296.5569 (2002): 910-913.
     """
-    import numpy as np
+    pass
 
-    from networkx.utils import cumulative_distribution, discrete_sequence
-
-    local_conn = nx.connectivity.local_edge_connectivity
-
-    if len(G) < 4:
-        raise nx.NetworkXError("Graph has fewer than four nodes.")
-    if len(G.edges) < 2:
-        raise nx.NetworkXError("Graph has fewer that 2 edges")
-    # Instead of choosing uniformly at random from a generated edge list,
-    # this algorithm chooses nonuniformly from the set of nodes with
-    # probability weighted by degree.
-    G = G.copy()
-    keys, degrees = zip(*G.degree())  # keys, degree
-    cdf = cumulative_distribution(degrees)  # cdf of degree
-
-    nnodes = len(G)
-    nedges = nx.number_of_edges(G)
-    if D is None:
-        D = np.zeros((nnodes, nnodes))
-        un = np.arange(1, nnodes)
-        um = np.arange(nnodes - 1, 0, -1)
-        u = np.append((0,), np.where(un < um, un, um))
-
-        for v in range(int(np.ceil(nnodes / 2))):
-            D[nnodes - v - 1, :] = np.append(u[v + 1 :], u[: v + 1])
-            D[v, :] = D[nnodes - v - 1, :][::-1]
-
-    niter = niter * nedges
-    # maximal number of rewiring attempts per 'niter'
-    max_attempts = int(nnodes * nedges / (nnodes * (nnodes - 1) / 2))
-
-    for _ in range(niter):
-        n = 0
-        while n < max_attempts:
-            # pick two random edges without creating edge list
-            # choose source node indices from discrete distribution
-            (ai, ci) = discrete_sequence(2, cdistribution=cdf, seed=seed)
-            if ai == ci:
-                continue  # same source, skip
-            a = keys[ai]  # convert index to label
-            c = keys[ci]
-            # choose target uniformly from neighbors
-            b = seed.choice(list(G.neighbors(a)))
-            d = seed.choice(list(G.neighbors(c)))
-            bi = keys.index(b)
-            di = keys.index(d)
-
-            if b in [a, c, d] or d in [a, b, c]:
-                continue  # all vertices should be different
-
-            # don't create parallel edges
-            if (d not in G[a]) and (b not in G[c]):
-                if D[ai, bi] + D[ci, di] >= D[ai, ci] + D[bi, di]:
-                    # only swap if we get closer to the diagonal
-                    G.add_edge(a, d)
-                    G.add_edge(c, b)
-                    G.remove_edge(a, b)
-                    G.remove_edge(c, d)
-
-                    # Check if the graph is still connected
-                    if connectivity and local_conn(G, a, b) == 0:
-                        # Not connected, revert the swap
-                        G.remove_edge(a, d)
-                        G.remove_edge(c, b)
-                        G.add_edge(a, b)
-                        G.add_edge(c, d)
-                    else:
-                        break
-            n += 1
-
-    return G
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @py_random_state(3)
 @nx._dispatchable
 def sigma(G, niter=100, nrand=10, seed=None):
@@ -291,28 +163,10 @@ def sigma(G, niter=100, nrand=10, seed=None):
            Canonical Network Equivalence".
            PLoS One. 3 (4). PMID 18446219. doi:10.1371/journal.pone.0002051.
     """
-    import numpy as np
+    pass
 
-    # Compute the mean clustering coefficient and average shortest path length
-    # for an equivalent random graph
-    randMetrics = {"C": [], "L": []}
-    for i in range(nrand):
-        Gr = random_reference(G, niter=niter, seed=seed)
-        randMetrics["C"].append(nx.transitivity(Gr))
-        randMetrics["L"].append(nx.average_shortest_path_length(Gr))
-
-    C = nx.transitivity(G)
-    L = nx.average_shortest_path_length(G)
-    Cr = np.mean(randMetrics["C"])
-    Lr = np.mean(randMetrics["L"])
-
-    sigma = (C / Cr) / (L / Lr)
-
-    return float(sigma)
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @py_random_state(3)
 @nx._dispatchable
 def omega(G, niter=5, nrand=10, seed=None):
@@ -366,38 +220,4 @@ def omega(G, niter=5, nrand=10, seed=None):
            Brain Connectivity. 1 (0038): 367-75.  PMC 3604768. PMID 22432451.
            doi:10.1089/brain.2011.0038.
     """
-    import numpy as np
-
-    # Compute the mean clustering coefficient and average shortest path length
-    # for an equivalent random graph
-    randMetrics = {"C": [], "L": []}
-
-    # Calculate initial average clustering coefficient which potentially will
-    # get replaced by higher clustering coefficients from generated lattice
-    # reference graphs
-    Cl = nx.average_clustering(G)
-
-    niter_lattice_reference = niter
-    niter_random_reference = niter * 2
-
-    for _ in range(nrand):
-        # Generate random graph
-        Gr = random_reference(G, niter=niter_random_reference, seed=seed)
-        randMetrics["L"].append(nx.average_shortest_path_length(Gr))
-
-        # Generate lattice graph
-        Gl = lattice_reference(G, niter=niter_lattice_reference, seed=seed)
-
-        # Replace old clustering coefficient, if clustering is higher in
-        # generated lattice reference
-        Cl_temp = nx.average_clustering(Gl)
-        if Cl_temp > Cl:
-            Cl = Cl_temp
-
-    C = nx.average_clustering(G)
-    L = nx.average_shortest_path_length(G)
-    Lr = np.mean(randMetrics["L"])
-
-    omega = (Lr / L) - (C / Cl)
-
-    return float(omega)
+    pass

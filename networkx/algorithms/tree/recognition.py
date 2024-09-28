@@ -72,13 +72,10 @@ nodes from a larger graph, and it is in this context that the term "spanning"
 becomes a useful notion.
 
 """
-
 import networkx as nx
+__all__ = ['is_arborescence', 'is_branching', 'is_forest', 'is_tree']
 
-__all__ = ["is_arborescence", "is_branching", "is_forest", "is_tree"]
-
-
-@nx.utils.not_implemented_for("undirected")
+@nx.utils.not_implemented_for('undirected')
 @nx._dispatchable
 def is_arborescence(G):
     """
@@ -115,10 +112,9 @@ def is_arborescence(G):
     is_tree
 
     """
-    return is_tree(G) and max(d for n, d in G.in_degree()) <= 1
+    pass
 
-
-@nx.utils.not_implemented_for("undirected")
+@nx.utils.not_implemented_for('undirected')
 @nx._dispatchable
 def is_branching(G):
     """
@@ -155,8 +151,7 @@ def is_branching(G):
     is_forest
 
     """
-    return is_forest(G) and max(d for n, d in G.in_degree()) <= 1
-
+    pass
 
 @nx._dispatchable
 def is_forest(G):
@@ -204,16 +199,7 @@ def is_forest(G):
     is_branching
 
     """
-    if len(G) == 0:
-        raise nx.exception.NetworkXPointlessConcept("G has no nodes.")
-
-    if G.is_directed():
-        components = (G.subgraph(c) for c in nx.weakly_connected_components(G))
-    else:
-        components = (G.subgraph(c) for c in nx.connected_components(G))
-
-    return all(len(c) - 1 == c.number_of_edges() for c in components)
-
+    pass
 
 @nx._dispatchable
 def is_tree(G):
@@ -261,13 +247,4 @@ def is_tree(G):
     is_arborescence
 
     """
-    if len(G) == 0:
-        raise nx.exception.NetworkXPointlessConcept("G has no nodes.")
-
-    if G.is_directed():
-        is_connected = nx.is_weakly_connected
-    else:
-        is_connected = nx.is_connected
-
-    # A connected graph with no cycles has n-1 edges.
-    return len(G) - 1 == G.number_of_edges() and is_connected(G)
+    pass

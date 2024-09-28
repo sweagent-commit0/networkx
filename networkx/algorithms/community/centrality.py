@@ -1,11 +1,8 @@
 """Functions for computing communities based on centrality notions."""
-
 import networkx as nx
+__all__ = ['girvan_newman']
 
-__all__ = ["girvan_newman"]
-
-
-@nx._dispatchable(preserve_edge_attrs="most_valuable_edge")
+@nx._dispatchable(preserve_edge_attrs='most_valuable_edge')
 def girvan_newman(G, most_valuable_edge=None):
     """Finds communities in a graph using the Girvan–Newman method.
 
@@ -120,33 +117,7 @@ def girvan_newman(G, most_valuable_edge=None):
     result can be depicted as a dendrogram.
 
     """
-    # If the graph is already empty, simply return its connected
-    # components.
-    if G.number_of_edges() == 0:
-        yield tuple(nx.connected_components(G))
-        return
-    # If no function is provided for computing the most valuable edge,
-    # use the edge betweenness centrality.
-    if most_valuable_edge is None:
-
-        def most_valuable_edge(G):
-            """Returns the edge with the highest betweenness centrality
-            in the graph `G`.
-
-            """
-            # We have guaranteed that the graph is non-empty, so this
-            # dictionary will never be empty.
-            betweenness = nx.edge_betweenness_centrality(G)
-            return max(betweenness, key=betweenness.get)
-
-    # The copy of G here must include the edge weight data.
-    g = G.copy().to_undirected()
-    # Self-loops must be removed because their removal has no effect on
-    # the connected components of the graph.
-    g.remove_edges_from(nx.selfloop_edges(g))
-    while g.number_of_edges() > 0:
-        yield _without_most_central_edges(g, most_valuable_edge)
-
+    pass
 
 def _without_most_central_edges(G, most_valuable_edge):
     """Returns the connected components of the graph that results from
@@ -161,11 +132,4 @@ def _without_most_central_edges(G, most_valuable_edge):
     until the number of connected components in the graph increases.
 
     """
-    original_num_components = nx.number_connected_components(G)
-    num_new_components = original_num_components
-    while num_new_components <= original_num_components:
-        edge = most_valuable_edge(G)
-        G.remove_edge(*edge)
-        new_components = tuple(nx.connected_components(G))
-        num_new_components = len(new_components)
-    return new_components
+    pass

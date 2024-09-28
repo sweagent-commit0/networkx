@@ -21,14 +21,11 @@ adjacency list (anything following the # in a line is a comment)::
      a b c # source target target
      d e
 """
-
-__all__ = ["generate_adjlist", "write_adjlist", "parse_adjlist", "read_adjlist"]
-
+__all__ = ['generate_adjlist', 'write_adjlist', 'parse_adjlist', 'read_adjlist']
 import networkx as nx
 from networkx.utils import open_file
 
-
-def generate_adjlist(G, delimiter=" "):
+def generate_adjlist(G, delimiter=' '):
     """Generate a single line of the graph G in adjacency list format.
 
     Parameters
@@ -69,25 +66,10 @@ def generate_adjlist(G, delimiter=" "):
     NB: This option is not available for data that isn't user-generated.
 
     """
-    directed = G.is_directed()
-    seen = set()
-    for s, nbrs in G.adjacency():
-        line = str(s) + delimiter
-        for t, data in nbrs.items():
-            if not directed and t in seen:
-                continue
-            if G.is_multigraph():
-                for d in data.values():
-                    line += str(t) + delimiter
-            else:
-                line += str(t) + delimiter
-        if not directed:
-            seen.add(s)
-        yield line[: -len(delimiter)]
+    pass
 
-
-@open_file(1, mode="wb")
-def write_adjlist(G, path, comments="#", delimiter=" ", encoding="utf-8"):
+@open_file(1, mode='wb')
+def write_adjlist(G, path, comments='#', delimiter=' ', encoding='utf-8'):
     """Write graph G in single-line adjacency-list format to path.
 
 
@@ -132,28 +114,10 @@ def write_adjlist(G, path, comments="#", delimiter=" ", encoding="utf-8"):
     --------
     read_adjlist, generate_adjlist
     """
-    import sys
-    import time
-
-    pargs = comments + " ".join(sys.argv) + "\n"
-    header = (
-        pargs
-        + comments
-        + f" GMT {time.asctime(time.gmtime())}\n"
-        + comments
-        + f" {G.name}\n"
-    )
-    path.write(header.encode(encoding))
-
-    for line in generate_adjlist(G, delimiter):
-        line += "\n"
-        path.write(line.encode(encoding))
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
-def parse_adjlist(
-    lines, comments="#", delimiter=None, create_using=None, nodetype=None
-):
+def parse_adjlist(lines, comments='#', delimiter=None, create_using=None, nodetype=None):
     """Parse lines of a graph adjacency list representation.
 
     Parameters
@@ -194,45 +158,11 @@ def parse_adjlist(
     read_adjlist
 
     """
-    G = nx.empty_graph(0, create_using)
-    for line in lines:
-        p = line.find(comments)
-        if p >= 0:
-            line = line[:p]
-        if not len(line):
-            continue
-        vlist = line.strip().split(delimiter)
-        u = vlist.pop(0)
-        # convert types
-        if nodetype is not None:
-            try:
-                u = nodetype(u)
-            except BaseException as err:
-                raise TypeError(
-                    f"Failed to convert node ({u}) to type {nodetype}"
-                ) from err
-        G.add_node(u)
-        if nodetype is not None:
-            try:
-                vlist = list(map(nodetype, vlist))
-            except BaseException as err:
-                raise TypeError(
-                    f"Failed to convert nodes ({','.join(vlist)}) to type {nodetype}"
-                ) from err
-        G.add_edges_from([(u, v) for v in vlist])
-    return G
+    pass
 
-
-@open_file(0, mode="rb")
+@open_file(0, mode='rb')
 @nx._dispatchable(graphs=None, returns_graph=True)
-def read_adjlist(
-    path,
-    comments="#",
-    delimiter=None,
-    create_using=None,
-    nodetype=None,
-    encoding="utf-8",
-):
+def read_adjlist(path, comments='#', delimiter=None, create_using=None, nodetype=None, encoding='utf-8'):
     """Read graph in adjacency list format from path.
 
     Parameters
@@ -300,11 +230,4 @@ def read_adjlist(
     --------
     write_adjlist
     """
-    lines = (line.decode(encoding) for line in path)
-    return parse_adjlist(
-        lines,
-        comments=comments,
-        delimiter=delimiter,
-        create_using=create_using,
-        nodetype=nodetype,
-    )
+    pass

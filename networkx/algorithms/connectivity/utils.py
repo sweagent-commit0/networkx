@@ -2,13 +2,11 @@
 Utilities for connectivity package
 """
 import networkx as nx
-
-__all__ = ["build_auxiliary_node_connectivity", "build_auxiliary_edge_connectivity"]
-
+__all__ = ['build_auxiliary_node_connectivity', 'build_auxiliary_edge_connectivity']
 
 @nx._dispatchable(returns_graph=True)
 def build_auxiliary_node_connectivity(G):
-    r"""Creates a directed graph D from an undirected graph G to compute flow
+    """Creates a directed graph D from an undirected graph G to compute flow
     based node connectivity.
 
     For an undirected graph G having `n` nodes and `m` edges we derive a
@@ -36,28 +34,7 @@ def build_auxiliary_node_connectivity(G):
         https://doi.org/10.1007/978-3-540-31955-9_7
 
     """
-    directed = G.is_directed()
-
-    mapping = {}
-    H = nx.DiGraph()
-
-    for i, node in enumerate(G):
-        mapping[node] = i
-        H.add_node(f"{i}A", id=node)
-        H.add_node(f"{i}B", id=node)
-        H.add_edge(f"{i}A", f"{i}B", capacity=1)
-
-    edges = []
-    for source, target in G.edges():
-        edges.append((f"{mapping[source]}B", f"{mapping[target]}A"))
-        if not directed:
-            edges.append((f"{mapping[target]}B", f"{mapping[source]}A"))
-    H.add_edges_from(edges, capacity=1)
-
-    # Store mapping as graph attribute
-    H.graph["mapping"] = mapping
-    return H
-
+    pass
 
 @nx._dispatchable(returns_graph=True)
 def build_auxiliary_edge_connectivity(G):
@@ -74,14 +51,4 @@ def build_auxiliary_edge_connectivity(G):
         chapter, look for the reference of the book).
         http://www.cse.msu.edu/~cse835/Papers/Graph_connectivity_revised.pdf
     """
-    if G.is_directed():
-        H = nx.DiGraph()
-        H.add_nodes_from(G.nodes())
-        H.add_edges_from(G.edges(), capacity=1)
-        return H
-    else:
-        H = nx.DiGraph()
-        H.add_nodes_from(G.nodes())
-        for source, target in G.edges():
-            H.add_edges_from([(source, target), (target, source)], capacity=1)
-        return H
+    pass

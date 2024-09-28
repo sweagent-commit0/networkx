@@ -1,18 +1,14 @@
 """Functions for computing rich-club coefficients."""
-
 from itertools import accumulate
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['rich_club_coefficient']
 
-__all__ = ["rich_club_coefficient"]
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def rich_club_coefficient(G, normalized=True, Q=100, seed=None):
-    r"""Returns the rich-club coefficient of the graph `G`.
+    """Returns the rich-club coefficient of the graph `G`.
 
     For each degree *k*, the *rich-club coefficient* is the ratio of the
     number of actual to the number of potential edges for nodes with
@@ -20,7 +16,7 @@ def rich_club_coefficient(G, normalized=True, Q=100, seed=None):
 
     .. math::
 
-        \phi(k) = \frac{2 E_k}{N_k (N_k - 1)}
+        \\phi(k) = \\frac{2 E_k}{N_k (N_k - 1)}
 
     where `N_k` is the number of nodes with degree larger than *k*, and
     `E_k` is the number of edges among those nodes.
@@ -84,21 +80,7 @@ def rich_club_coefficient(G, normalized=True, Q=100, seed=None):
        "Uniform generation of random graphs with arbitrary degree
        sequences", 2006. https://arxiv.org/abs/cond-mat/0312028
     """
-    if nx.number_of_selfloops(G) > 0:
-        raise Exception(
-            "rich_club_coefficient is not implemented for graphs with self loops."
-        )
-    rc = _compute_rc(G)
-    if normalized:
-        # make R a copy of G, randomize with Q*|E| double edge swaps
-        # and use rich_club coefficient of R to normalize
-        R = G.copy()
-        E = R.number_of_edges()
-        nx.double_edge_swap(R, Q * E, max_tries=Q * E * 10, seed=seed)
-        rcran = _compute_rc(R)
-        rc = {k: v / rcran[k] for k, v in rc.items()}
-    return rc
-
+    pass
 
 def _compute_rc(G):
     """Returns the rich-club coefficient for each degree in the graph
@@ -110,29 +92,4 @@ def _compute_rc(G):
     that degree.
 
     """
-    deghist = nx.degree_histogram(G)
-    total = sum(deghist)
-    # Compute the number of nodes with degree greater than `k`, for each
-    # degree `k` (omitting the last entry, which is zero).
-    nks = (total - cs for cs in accumulate(deghist) if total - cs > 1)
-    # Create a sorted list of pairs of edge endpoint degrees.
-    #
-    # The list is sorted in reverse order so that we can pop from the
-    # right side of the list later, instead of popping from the left
-    # side of the list, which would have a linear time cost.
-    edge_degrees = sorted((sorted(map(G.degree, e)) for e in G.edges()), reverse=True)
-    ek = G.number_of_edges()
-    if ek == 0:
-        return {}
-
-    k1, k2 = edge_degrees.pop()
-    rc = {}
-    for d, nk in enumerate(nks):
-        while k1 <= d:
-            if len(edge_degrees) == 0:
-                ek = 0
-                break
-            k1, k2 = edge_degrees.pop()
-            ek -= 1
-        rc[d] = 2 * ek / (nk * (nk - 1))
-    return rc
+    pass

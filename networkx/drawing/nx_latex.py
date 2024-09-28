@@ -1,4 +1,4 @@
-r"""
+"""
 *****
 LaTeX
 *****
@@ -14,7 +14,7 @@ To construct a figure with subfigures for each graph to be shown, provide
 ``to_latex`` or ``write_latex`` a list of graphs, a list of subcaptions,
 and a number of rows of subfigures inside the figure.
 
-To be able to refer to the figures or subfigures in latex using ``\\ref``,
+To be able to refer to the figures or subfigures in latex using ``\\\\ref``,
 the keyword ``latex_label`` is available for figures and `sub_labels` for
 a list of labels, one for each subfigure.
 
@@ -84,14 +84,14 @@ If you want **subfigures** each containing one graph, you can input a list of gr
 >>> pos = nx.circular_layout(H3)
 >>> latex_code = nx.to_latex(H3, pos, node_options=node_color, edge_options=edge_width)
 >>> print(latex_code)
-\documentclass{report}
-\usepackage{tikz}
-\usepackage{subcaption}
+\\documentclass{report}
+\\usepackage{tikz}
+\\usepackage{subcaption}
 <BLANKLINE>
-\begin{document}
-\begin{figure}
-  \begin{tikzpicture}
-      \draw
+\\begin{document}
+\\begin{figure}
+  \\begin{tikzpicture}
+      \\draw
         (1.0, 0.0) node[red] (0){0}
         (0.707, 0.707) node[orange] (1){1}
         (-0.0, 1.0) node[blue] (2){2}
@@ -100,18 +100,18 @@ If you want **subfigures** each containing one graph, you can input a list of gr
         (-0.707, -0.707) node (5){5}
         (0.0, -1.0) node (6){6}
         (0.707, -0.707) node (7){7};
-      \begin{scope}[-]
-        \draw[line width=1.5] (0) to (1);
-        \draw[line width=1.5] (1) to (2);
-        \draw[line width=1.5] (2) to (3);
-        \draw[line width=1.5] (3) to (4);
-        \draw[line width=1.5] (4) to (5);
-        \draw[line width=1.5] (5) to (6);
-        \draw[line width=1.5] (6) to (7);
-      \end{scope}
-    \end{tikzpicture}
-\end{figure}
-\end{document}
+      \\begin{scope}[-]
+        \\draw[line width=1.5] (0) to (1);
+        \\draw[line width=1.5] (1) to (2);
+        \\draw[line width=1.5] (2) to (3);
+        \\draw[line width=1.5] (3) to (4);
+        \\draw[line width=1.5] (4) to (5);
+        \\draw[line width=1.5] (5) to (6);
+        \\draw[line width=1.5] (6) to (7);
+      \\end{scope}
+    \\end{tikzpicture}
+\\end{figure}
+\\end{document}
 
 Notes
 -----
@@ -128,29 +128,11 @@ TikZ options details:   https://tikz.dev/tikz-actions
 """
 import numbers
 import os
-
 import networkx as nx
+__all__ = ['to_latex_raw', 'to_latex', 'write_latex']
 
-__all__ = [
-    "to_latex_raw",
-    "to_latex",
-    "write_latex",
-]
-
-
-@nx.utils.not_implemented_for("multigraph")
-def to_latex_raw(
-    G,
-    pos="pos",
-    tikz_options="",
-    default_node_options="",
-    node_options="node_options",
-    node_label="label",
-    default_edge_options="",
-    edge_options="edge_options",
-    edge_label="label",
-    edge_label_options="edge_label_options",
-):
+@nx.utils.not_implemented_for('multigraph')
+def to_latex_raw(G, pos='pos', tikz_options='', default_node_options='', node_options='node_options', node_label='label', default_edge_options='', edge_options='edge_options', edge_label='label', edge_label_options='edge_label_options'):
     """Return a string of the LaTeX/TikZ code to draw `G`
 
     This function produces just the code for the tikzpicture
@@ -209,127 +191,12 @@ def to_latex_raw(
     to_latex
     write_latex
     """
-    i4 = "\n    "
-    i8 = "\n        "
+    pass
+_DOC_WRAPPER_TIKZ = '\\documentclass{{report}}\n\\usepackage{{tikz}}\n\\usepackage{{subcaption}}\n\n\\begin{{document}}\n{content}\n\\end{{document}}'
+_FIG_WRAPPER = '\\begin{{figure}}\n{content}{caption}{label}\n\\end{{figure}}'
+_SUBFIG_WRAPPER = '  \\begin{{subfigure}}{{{size}\\textwidth}}\n{content}{caption}{label}\n  \\end{{subfigure}}'
 
-    # set up position dict
-    # TODO allow pos to be None and use a nice TikZ default
-    if not isinstance(pos, dict):
-        pos = nx.get_node_attributes(G, pos)
-    if not pos:
-        # circular layout with radius 2
-        pos = {n: f"({round(360.0 * i / len(G), 3)}:2)" for i, n in enumerate(G)}
-    for node in G:
-        if node not in pos:
-            raise nx.NetworkXError(f"node {node} has no specified pos {pos}")
-        posnode = pos[node]
-        if not isinstance(posnode, str):
-            try:
-                posx, posy = posnode
-                pos[node] = f"({round(posx, 3)}, {round(posy, 3)})"
-            except (TypeError, ValueError):
-                msg = f"position pos[{node}] is not 2-tuple or a string: {posnode}"
-                raise nx.NetworkXError(msg)
-
-    # set up all the dicts
-    if not isinstance(node_options, dict):
-        node_options = nx.get_node_attributes(G, node_options)
-    if not isinstance(node_label, dict):
-        node_label = nx.get_node_attributes(G, node_label)
-    if not isinstance(edge_options, dict):
-        edge_options = nx.get_edge_attributes(G, edge_options)
-    if not isinstance(edge_label, dict):
-        edge_label = nx.get_edge_attributes(G, edge_label)
-    if not isinstance(edge_label_options, dict):
-        edge_label_options = nx.get_edge_attributes(G, edge_label_options)
-
-    # process default options (add brackets or not)
-    topts = "" if tikz_options == "" else f"[{tikz_options.strip('[]')}]"
-    defn = "" if default_node_options == "" else f"[{default_node_options.strip('[]')}]"
-    linestyle = f"{'->' if G.is_directed() else '-'}"
-    if default_edge_options == "":
-        defe = "[" + linestyle + "]"
-    elif "-" in default_edge_options:
-        defe = default_edge_options
-    else:
-        defe = f"[{linestyle},{default_edge_options.strip('[]')}]"
-
-    # Construct the string line by line
-    result = "  \\begin{tikzpicture}" + topts
-    result += i4 + "  \\draw" + defn
-    # load the nodes
-    for n in G:
-        # node options goes inside square brackets
-        nopts = f"[{node_options[n].strip('[]')}]" if n in node_options else ""
-        # node text goes inside curly brackets {}
-        ntext = f"{{{node_label[n]}}}" if n in node_label else f"{{{n}}}"
-
-        result += i8 + f"{pos[n]} node{nopts} ({n}){ntext}"
-    result += ";\n"
-
-    # load the edges
-    result += "      \\begin{scope}" + defe
-    for edge in G.edges:
-        u, v = edge[:2]
-        e_opts = f"{edge_options[edge]}".strip("[]") if edge in edge_options else ""
-        # add loop options for selfloops if not present
-        if u == v and "loop" not in e_opts:
-            e_opts = "loop," + e_opts
-        e_opts = f"[{e_opts}]" if e_opts != "" else ""
-        # TODO -- handle bending of multiedges
-
-        els = edge_label_options[edge] if edge in edge_label_options else ""
-        # edge label options goes inside square brackets []
-        els = f"[{els.strip('[]')}]"
-        # edge text is drawn using the TikZ node command inside curly brackets {}
-        e_label = f" node{els} {{{edge_label[edge]}}}" if edge in edge_label else ""
-
-        result += i8 + f"\\draw{e_opts} ({u}) to{e_label} ({v});"
-
-    result += "\n      \\end{scope}\n    \\end{tikzpicture}\n"
-    return result
-
-
-_DOC_WRAPPER_TIKZ = r"""\documentclass{{report}}
-\usepackage{{tikz}}
-\usepackage{{subcaption}}
-
-\begin{{document}}
-{content}
-\end{{document}}"""
-
-
-_FIG_WRAPPER = r"""\begin{{figure}}
-{content}{caption}{label}
-\end{{figure}}"""
-
-
-_SUBFIG_WRAPPER = r"""  \begin{{subfigure}}{{{size}\textwidth}}
-{content}{caption}{label}
-  \end{{subfigure}}"""
-
-
-def to_latex(
-    Gbunch,
-    pos="pos",
-    tikz_options="",
-    default_node_options="",
-    node_options="node_options",
-    node_label="node_label",
-    default_edge_options="",
-    edge_options="edge_options",
-    edge_label="edge_label",
-    edge_label_options="edge_label_options",
-    caption="",
-    latex_label="",
-    sub_captions=None,
-    sub_labels=None,
-    n_rows=1,
-    as_document=True,
-    document_wrapper=_DOC_WRAPPER_TIKZ,
-    figure_wrapper=_FIG_WRAPPER,
-    subfigure_wrapper=_SUBFIG_WRAPPER,
-):
+def to_latex(Gbunch, pos='pos', tikz_options='', default_node_options='', node_options='node_options', node_label='node_label', default_edge_options='', edge_options='edge_options', edge_label='edge_label', edge_label_options='edge_label_options', caption='', latex_label='', sub_captions=None, sub_labels=None, n_rows=1, as_document=True, document_wrapper=_DOC_WRAPPER_TIKZ, figure_wrapper=_FIG_WRAPPER, subfigure_wrapper=_SUBFIG_WRAPPER):
     """Return latex code to draw the graph(s) in `Gbunch`
 
     The TikZ drawing utility in LaTeX is used to draw the graph(s).
@@ -421,65 +288,9 @@ def to_latex(
     write_latex
     to_latex_raw
     """
-    if hasattr(Gbunch, "adj"):
-        raw = to_latex_raw(
-            Gbunch,
-            pos,
-            tikz_options,
-            default_node_options,
-            node_options,
-            node_label,
-            default_edge_options,
-            edge_options,
-            edge_label,
-            edge_label_options,
-        )
-    else:  # iterator of graphs
-        sbf = subfigure_wrapper
-        size = 1 / n_rows
+    pass
 
-        N = len(Gbunch)
-        if isinstance(pos, str | dict):
-            pos = [pos] * N
-        if sub_captions is None:
-            sub_captions = [""] * N
-        if sub_labels is None:
-            sub_labels = [""] * N
-        if not (len(Gbunch) == len(pos) == len(sub_captions) == len(sub_labels)):
-            raise nx.NetworkXError(
-                "length of Gbunch, sub_captions and sub_figures must agree"
-            )
-
-        raw = ""
-        for G, pos, subcap, sublbl in zip(Gbunch, pos, sub_captions, sub_labels):
-            subraw = to_latex_raw(
-                G,
-                pos,
-                tikz_options,
-                default_node_options,
-                node_options,
-                node_label,
-                default_edge_options,
-                edge_options,
-                edge_label,
-                edge_label_options,
-            )
-            cap = f"    \\caption{{{subcap}}}" if subcap else ""
-            lbl = f"\\label{{{sublbl}}}" if sublbl else ""
-            raw += sbf.format(size=size, content=subraw, caption=cap, label=lbl)
-            raw += "\n"
-
-    # put raw latex code into a figure environment and optionally into a document
-    raw = raw[:-1]
-    cap = f"\n  \\caption{{{caption}}}" if caption else ""
-    lbl = f"\\label{{{latex_label}}}" if latex_label else ""
-    fig = figure_wrapper.format(content=raw, caption=cap, label=lbl)
-    if as_document:
-        return document_wrapper.format(content=fig)
-    return fig
-
-
-@nx.utils.open_file(1, mode="w")
+@nx.utils.open_file(1, mode='w')
 def write_latex(Gbunch, path, **options):
     """Write the latex code to draw the graph(s) onto `path`.
 
@@ -568,4 +379,4 @@ def write_latex(Gbunch, path, **options):
     ========
     to_latex
     """
-    path.write(to_latex(Gbunch, **options))
+    pass

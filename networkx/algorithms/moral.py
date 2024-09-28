@@ -1,17 +1,13 @@
-r"""Function for computing the moral graph of a directed graph."""
-
+"""Function for computing the moral graph of a directed graph."""
 import itertools
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['moral_graph']
 
-__all__ = ["moral_graph"]
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable(returns_graph=True)
 def moral_graph(G):
-    r"""Return the Moral Graph
+    """Return the Moral Graph
 
     Returns the moralized graph of a given directed graph.
 
@@ -52,8 +48,4 @@ def moral_graph(G):
            In Proceedings of the Eleventh conference on Uncertainty
            in artificial intelligence (UAI'95)
     """
-    H = G.to_undirected()
-    for preds in G.pred.values():
-        predecessors_combinations = itertools.combinations(preds, r=2)
-        H.add_edges_from(predecessors_combinations)
-    return H
+    pass

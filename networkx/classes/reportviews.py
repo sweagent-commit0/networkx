@@ -83,36 +83,9 @@ EdgeDataView
     The argument `nbunch` restricts edges to those incident to nodes in nbunch.
 """
 from collections.abc import Mapping, Set
-
 import networkx as nx
+__all__ = ['NodeView', 'NodeDataView', 'EdgeView', 'OutEdgeView', 'InEdgeView', 'EdgeDataView', 'OutEdgeDataView', 'InEdgeDataView', 'MultiEdgeView', 'OutMultiEdgeView', 'InMultiEdgeView', 'MultiEdgeDataView', 'OutMultiEdgeDataView', 'InMultiEdgeDataView', 'DegreeView', 'DiDegreeView', 'InDegreeView', 'OutDegreeView', 'MultiDegreeView', 'DiMultiDegreeView', 'InMultiDegreeView', 'OutMultiDegreeView']
 
-__all__ = [
-    "NodeView",
-    "NodeDataView",
-    "EdgeView",
-    "OutEdgeView",
-    "InEdgeView",
-    "EdgeDataView",
-    "OutEdgeDataView",
-    "InEdgeDataView",
-    "MultiEdgeView",
-    "OutMultiEdgeView",
-    "InMultiEdgeView",
-    "MultiEdgeDataView",
-    "OutMultiEdgeDataView",
-    "InMultiEdgeDataView",
-    "DegreeView",
-    "DiDegreeView",
-    "InDegreeView",
-    "OutDegreeView",
-    "MultiDegreeView",
-    "DiMultiDegreeView",
-    "InMultiDegreeView",
-    "OutMultiDegreeView",
-]
-
-
-# NodeViews
 class NodeView(Mapping, Set):
     """A NodeView class to act as G.nodes for a NetworkX Graph
 
@@ -166,19 +139,17 @@ class NodeView(Mapping, Set):
     >>> NVdata[2] == NV[2]  # NVdata gets 'color', NV gets datadict
     False
     """
-
-    __slots__ = ("_nodes",)
+    __slots__ = ('_nodes',)
 
     def __getstate__(self):
-        return {"_nodes": self._nodes}
+        return {'_nodes': self._nodes}
 
     def __setstate__(self, state):
-        self._nodes = state["_nodes"]
+        self._nodes = state['_nodes']
 
     def __init__(self, graph):
         self._nodes = graph._node
 
-    # Mapping methods
     def __len__(self):
         return len(self._nodes)
 
@@ -187,21 +158,12 @@ class NodeView(Mapping, Set):
 
     def __getitem__(self, n):
         if isinstance(n, slice):
-            raise nx.NetworkXError(
-                f"{type(self).__name__} does not support slicing, "
-                f"try list(G.nodes)[{n.start}:{n.stop}:{n.step}]"
-            )
+            raise nx.NetworkXError(f'{type(self).__name__} does not support slicing, try list(G.nodes)[{n.start}:{n.stop}:{n.step}]')
         return self._nodes[n]
 
-    # Set methods
     def __contains__(self, n):
         return n in self._nodes
 
-    @classmethod
-    def _from_iterable(cls, it):
-        return set(it)
-
-    # DataView method
     def __call__(self, data=False, default=None):
         if data is False:
             return self
@@ -271,16 +233,13 @@ class NodeView(Mapping, Set):
         >>> G.nodes.data("height")
         NodeDataView({0: None, 1: None, 2: None}, data='height')
         """
-        if data is False:
-            return self
-        return NodeDataView(self._nodes, data, default)
+        pass
 
     def __str__(self):
         return str(list(self))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({tuple(self)})"
-
+        return f'{self.__class__.__name__}({tuple(self)})'
 
 class NodeDataView(Set):
     """A DataView class for nodes of a NetworkX Graph
@@ -299,31 +258,20 @@ class NodeDataView(Set):
     data : bool or string (default=False)
     default : object (default=None)
     """
-
-    __slots__ = ("_nodes", "_data", "_default")
+    __slots__ = ('_nodes', '_data', '_default')
 
     def __getstate__(self):
-        return {"_nodes": self._nodes, "_data": self._data, "_default": self._default}
+        return {'_nodes': self._nodes, '_data': self._data, '_default': self._default}
 
     def __setstate__(self, state):
-        self._nodes = state["_nodes"]
-        self._data = state["_data"]
-        self._default = state["_default"]
+        self._nodes = state['_nodes']
+        self._data = state['_data']
+        self._default = state['_default']
 
     def __init__(self, nodedict, data=False, default=None):
         self._nodes = nodedict
         self._data = data
         self._default = default
-
-    @classmethod
-    def _from_iterable(cls, it):
-        try:
-            return set(it)
-        except TypeError as err:
-            if "unhashable" in str(err):
-                msg = " : Could be b/c data=True or your values are unhashable"
-                raise TypeError(str(err) + msg) from err
-            raise
 
     def __len__(self):
         return len(self._nodes)
@@ -334,10 +282,7 @@ class NodeDataView(Set):
             return iter(self._nodes)
         if data is True:
             return iter(self._nodes.items())
-        return (
-            (n, dd[data] if data in dd else self._default)
-            for n, dd in self._nodes.items()
-        )
+        return ((n, dd[data] if data in dd else self._default) for n, dd in self._nodes.items())
 
     def __contains__(self, n):
         try:
@@ -355,10 +300,7 @@ class NodeDataView(Set):
 
     def __getitem__(self, n):
         if isinstance(n, slice):
-            raise nx.NetworkXError(
-                f"{type(self).__name__} does not support slicing, "
-                f"try list(G.nodes.data())[{n.start}:{n.stop}:{n.step}]"
-            )
+            raise nx.NetworkXError(f'{type(self).__name__} does not support slicing, try list(G.nodes.data())[{n.start}:{n.stop}:{n.step}]')
         ddict = self._nodes[n]
         data = self._data
         if data is False or data is True:
@@ -371,13 +313,11 @@ class NodeDataView(Set):
     def __repr__(self):
         name = self.__class__.__name__
         if self._data is False:
-            return f"{name}({tuple(self)})"
+            return f'{name}({tuple(self)})'
         if self._data is True:
-            return f"{name}({dict(self)})"
-        return f"{name}({dict(self)}, data={self._data!r})"
+            return f'{name}({dict(self)})'
+        return f'{name}({dict(self)}, data={self._data!r})'
 
-
-# DegreeViews
 class DiDegreeView:
     """A View class for degree of nodes in a NetworkX Graph
 
@@ -418,8 +358,8 @@ class DiDegreeView:
 
     def __init__(self, G, nbunch=None, weight=None):
         self._graph = G
-        self._succ = G._succ if hasattr(G, "_succ") else G._adj
-        self._pred = G._pred if hasattr(G, "_pred") else G._adj
+        self._succ = G._succ if hasattr(G, '_succ') else G._adj
+        self._pred = G._pred if hasattr(G, '_pred') else G._adj
         self._nodes = self._succ if nbunch is None else list(G.nbunch_iter(nbunch))
         self._weight = weight
 
@@ -443,9 +383,7 @@ class DiDegreeView:
         preds = self._pred[n]
         if weight is None:
             return len(succs) + len(preds)
-        return sum(dd.get(weight, 1) for dd in succs.values()) + sum(
-            dd.get(weight, 1) for dd in preds.values()
-        )
+        return sum((dd.get(weight, 1) for dd in succs.values())) + sum((dd.get(weight, 1) for dd in preds.values()))
 
     def __iter__(self):
         weight = self._weight
@@ -458,9 +396,7 @@ class DiDegreeView:
             for n in self._nodes:
                 succs = self._succ[n]
                 preds = self._pred[n]
-                deg = sum(dd.get(weight, 1) for dd in succs.values()) + sum(
-                    dd.get(weight, 1) for dd in preds.values()
-                )
+                deg = sum((dd.get(weight, 1) for dd in succs.values())) + sum((dd.get(weight, 1) for dd in preds.values()))
                 yield (n, deg)
 
     def __len__(self):
@@ -470,8 +406,7 @@ class DiDegreeView:
         return str(list(self))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({dict(self)})"
-
+        return f'{self.__class__.__name__}({dict(self)})'
 
 class DegreeView(DiDegreeView):
     """A DegreeView class to act as G.degree for a NetworkX Graph
@@ -522,9 +457,7 @@ class DegreeView(DiDegreeView):
         nbrs = self._succ[n]
         if weight is None:
             return len(nbrs) + (n in nbrs)
-        return sum(dd.get(weight, 1) for dd in nbrs.values()) + (
-            n in nbrs and nbrs[n].get(weight, 1)
-        )
+        return sum((dd.get(weight, 1) for dd in nbrs.values())) + (n in nbrs and nbrs[n].get(weight, 1))
 
     def __iter__(self):
         weight = self._weight
@@ -535,11 +468,8 @@ class DegreeView(DiDegreeView):
         else:
             for n in self._nodes:
                 nbrs = self._succ[n]
-                deg = sum(dd.get(weight, 1) for dd in nbrs.values()) + (
-                    n in nbrs and nbrs[n].get(weight, 1)
-                )
+                deg = sum((dd.get(weight, 1) for dd in nbrs.values())) + (n in nbrs and nbrs[n].get(weight, 1))
                 yield (n, deg)
-
 
 class OutDegreeView(DiDegreeView):
     """A DegreeView class to report out_degree for a DiGraph; See DegreeView"""
@@ -549,7 +479,7 @@ class OutDegreeView(DiDegreeView):
         nbrs = self._succ[n]
         if self._weight is None:
             return len(nbrs)
-        return sum(dd.get(self._weight, 1) for dd in nbrs.values())
+        return sum((dd.get(self._weight, 1) for dd in nbrs.values()))
 
     def __iter__(self):
         weight = self._weight
@@ -560,9 +490,8 @@ class OutDegreeView(DiDegreeView):
         else:
             for n in self._nodes:
                 succs = self._succ[n]
-                deg = sum(dd.get(weight, 1) for dd in succs.values())
+                deg = sum((dd.get(weight, 1) for dd in succs.values()))
                 yield (n, deg)
-
 
 class InDegreeView(DiDegreeView):
     """A DegreeView class to report in_degree for a DiGraph; See DegreeView"""
@@ -572,7 +501,7 @@ class InDegreeView(DiDegreeView):
         nbrs = self._pred[n]
         if weight is None:
             return len(nbrs)
-        return sum(dd.get(weight, 1) for dd in nbrs.values())
+        return sum((dd.get(weight, 1) for dd in nbrs.values()))
 
     def __iter__(self):
         weight = self._weight
@@ -583,9 +512,8 @@ class InDegreeView(DiDegreeView):
         else:
             for n in self._nodes:
                 preds = self._pred[n]
-                deg = sum(dd.get(weight, 1) for dd in preds.values())
+                deg = sum((dd.get(weight, 1) for dd in preds.values()))
                 yield (n, deg)
-
 
 class MultiDegreeView(DiDegreeView):
     """A DegreeView class for undirected multigraphs; See DegreeView"""
@@ -594,15 +522,10 @@ class MultiDegreeView(DiDegreeView):
         weight = self._weight
         nbrs = self._succ[n]
         if weight is None:
-            return sum(len(keys) for keys in nbrs.values()) + (
-                n in nbrs and len(nbrs[n])
-            )
-        # edge weighted graph - degree is sum of nbr edge weights
-        deg = sum(
-            d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()
-        )
+            return sum((len(keys) for keys in nbrs.values())) + (n in nbrs and len(nbrs[n]))
+        deg = sum((d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()))
         if n in nbrs:
-            deg += sum(d.get(weight, 1) for d in nbrs[n].values())
+            deg += sum((d.get(weight, 1) for d in nbrs[n].values()))
         return deg
 
     def __iter__(self):
@@ -610,22 +533,15 @@ class MultiDegreeView(DiDegreeView):
         if weight is None:
             for n in self._nodes:
                 nbrs = self._succ[n]
-                deg = sum(len(keys) for keys in nbrs.values()) + (
-                    n in nbrs and len(nbrs[n])
-                )
+                deg = sum((len(keys) for keys in nbrs.values())) + (n in nbrs and len(nbrs[n]))
                 yield (n, deg)
         else:
             for n in self._nodes:
                 nbrs = self._succ[n]
-                deg = sum(
-                    d.get(weight, 1)
-                    for key_dict in nbrs.values()
-                    for d in key_dict.values()
-                )
+                deg = sum((d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()))
                 if n in nbrs:
-                    deg += sum(d.get(weight, 1) for d in nbrs[n].values())
+                    deg += sum((d.get(weight, 1) for d in nbrs[n].values()))
                 yield (n, deg)
-
 
 class DiMultiDegreeView(DiDegreeView):
     """A DegreeView class for MultiDiGraph; See DegreeView"""
@@ -635,15 +551,8 @@ class DiMultiDegreeView(DiDegreeView):
         succs = self._succ[n]
         preds = self._pred[n]
         if weight is None:
-            return sum(len(keys) for keys in succs.values()) + sum(
-                len(keys) for keys in preds.values()
-            )
-        # edge weighted graph - degree is sum of nbr edge weights
-        deg = sum(
-            d.get(weight, 1) for key_dict in succs.values() for d in key_dict.values()
-        ) + sum(
-            d.get(weight, 1) for key_dict in preds.values() for d in key_dict.values()
-        )
+            return sum((len(keys) for keys in succs.values())) + sum((len(keys) for keys in preds.values()))
+        deg = sum((d.get(weight, 1) for key_dict in succs.values() for d in key_dict.values())) + sum((d.get(weight, 1) for key_dict in preds.values() for d in key_dict.values()))
         return deg
 
     def __iter__(self):
@@ -652,25 +561,14 @@ class DiMultiDegreeView(DiDegreeView):
             for n in self._nodes:
                 succs = self._succ[n]
                 preds = self._pred[n]
-                deg = sum(len(keys) for keys in succs.values()) + sum(
-                    len(keys) for keys in preds.values()
-                )
+                deg = sum((len(keys) for keys in succs.values())) + sum((len(keys) for keys in preds.values()))
                 yield (n, deg)
         else:
             for n in self._nodes:
                 succs = self._succ[n]
                 preds = self._pred[n]
-                deg = sum(
-                    d.get(weight, 1)
-                    for key_dict in succs.values()
-                    for d in key_dict.values()
-                ) + sum(
-                    d.get(weight, 1)
-                    for key_dict in preds.values()
-                    for d in key_dict.values()
-                )
+                deg = sum((d.get(weight, 1) for key_dict in succs.values() for d in key_dict.values())) + sum((d.get(weight, 1) for key_dict in preds.values() for d in key_dict.values()))
                 yield (n, deg)
-
 
 class InMultiDegreeView(DiDegreeView):
     """A DegreeView class for inward degree of MultiDiGraph; See DegreeView"""
@@ -679,29 +577,21 @@ class InMultiDegreeView(DiDegreeView):
         weight = self._weight
         nbrs = self._pred[n]
         if weight is None:
-            return sum(len(data) for data in nbrs.values())
-        # edge weighted graph - degree is sum of nbr edge weights
-        return sum(
-            d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()
-        )
+            return sum((len(data) for data in nbrs.values()))
+        return sum((d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()))
 
     def __iter__(self):
         weight = self._weight
         if weight is None:
             for n in self._nodes:
                 nbrs = self._pred[n]
-                deg = sum(len(data) for data in nbrs.values())
+                deg = sum((len(data) for data in nbrs.values()))
                 yield (n, deg)
         else:
             for n in self._nodes:
                 nbrs = self._pred[n]
-                deg = sum(
-                    d.get(weight, 1)
-                    for key_dict in nbrs.values()
-                    for d in key_dict.values()
-                )
+                deg = sum((d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()))
                 yield (n, deg)
-
 
 class OutMultiDegreeView(DiDegreeView):
     """A DegreeView class for outward degree of MultiDiGraph; See DegreeView"""
@@ -710,51 +600,28 @@ class OutMultiDegreeView(DiDegreeView):
         weight = self._weight
         nbrs = self._succ[n]
         if weight is None:
-            return sum(len(data) for data in nbrs.values())
-        # edge weighted graph - degree is sum of nbr edge weights
-        return sum(
-            d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()
-        )
+            return sum((len(data) for data in nbrs.values()))
+        return sum((d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()))
 
     def __iter__(self):
         weight = self._weight
         if weight is None:
             for n in self._nodes:
                 nbrs = self._succ[n]
-                deg = sum(len(data) for data in nbrs.values())
+                deg = sum((len(data) for data in nbrs.values()))
                 yield (n, deg)
         else:
             for n in self._nodes:
                 nbrs = self._succ[n]
-                deg = sum(
-                    d.get(weight, 1)
-                    for key_dict in nbrs.values()
-                    for d in key_dict.values()
-                )
+                deg = sum((d.get(weight, 1) for key_dict in nbrs.values() for d in key_dict.values()))
                 yield (n, deg)
 
-
-# EdgeDataViews
 class OutEdgeDataView:
     """EdgeDataView for outward edges of DiGraph; See EdgeDataView"""
-
-    __slots__ = (
-        "_viewer",
-        "_nbunch",
-        "_data",
-        "_default",
-        "_adjdict",
-        "_nodes_nbrs",
-        "_report",
-    )
+    __slots__ = ('_viewer', '_nbunch', '_data', '_default', '_adjdict', '_nodes_nbrs', '_report')
 
     def __getstate__(self):
-        return {
-            "viewer": self._viewer,
-            "nbunch": self._nbunch,
-            "data": self._data,
-            "default": self._default,
-        }
+        return {'viewer': self._viewer, 'nbunch': self._nbunch, 'data': self._data, 'default': self._default}
 
     def __setstate__(self, state):
         self.__init__(**state)
@@ -765,38 +632,28 @@ class OutEdgeDataView:
         if nbunch is None:
             self._nodes_nbrs = adjdict.items
         else:
-            # dict retains order of nodes but acts like a set
             nbunch = dict.fromkeys(viewer._graph.nbunch_iter(nbunch))
             self._nodes_nbrs = lambda: [(n, adjdict[n]) for n in nbunch]
         self._nbunch = nbunch
         self._data = data
         self._default = default
-        # Set _report based on data and default
         if data is True:
             self._report = lambda n, nbr, dd: (n, nbr, dd)
         elif data is False:
             self._report = lambda n, nbr, dd: (n, nbr)
-        else:  # data is attribute name
-            self._report = (
-                lambda n, nbr, dd: (n, nbr, dd[data])
-                if data in dd
-                else (n, nbr, default)
-            )
+        else:
+            self._report = lambda n, nbr, dd: (n, nbr, dd[data]) if data in dd else (n, nbr, default)
 
     def __len__(self):
-        return sum(len(nbrs) for n, nbrs in self._nodes_nbrs())
+        return sum((len(nbrs) for n, nbrs in self._nodes_nbrs()))
 
     def __iter__(self):
-        return (
-            self._report(n, nbr, dd)
-            for n, nbrs in self._nodes_nbrs()
-            for nbr, dd in nbrs.items()
-        )
+        return (self._report(n, nbr, dd) for n, nbrs in self._nodes_nbrs() for nbr, dd in nbrs.items())
 
     def __contains__(self, e):
         u, v = e[:2]
         if self._nbunch is not None and u not in self._nbunch:
-            return False  # this edge doesn't start in nbunch
+            return False
         try:
             ddict = self._adjdict[u][v]
         except KeyError:
@@ -807,8 +664,7 @@ class OutEdgeDataView:
         return str(list(self))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({list(self)})"
-
+        return f'{self.__class__.__name__}({list(self)})'
 
 class EdgeDataView(OutEdgeDataView):
     """A EdgeDataView class for edges of Graph
@@ -838,11 +694,10 @@ class EdgeDataView(OutEdgeDataView):
     [(0, 1, 'biz'), (1, 2, 'bar')]
     >>> assert (0, 1, "biz") in G.edges(data="foo", default="biz")
     """
-
     __slots__ = ()
 
     def __len__(self):
-        return sum(1 for e in self)
+        return sum((1 for e in self))
 
     def __iter__(self):
         seen = {}
@@ -855,51 +710,37 @@ class EdgeDataView(OutEdgeDataView):
 
     def __contains__(self, e):
         u, v = e[:2]
-        if self._nbunch is not None and u not in self._nbunch and v not in self._nbunch:
-            return False  # this edge doesn't start and it doesn't end in nbunch
+        if self._nbunch is not None and u not in self._nbunch and (v not in self._nbunch):
+            return False
         try:
             ddict = self._adjdict[u][v]
         except KeyError:
             return False
         return e == self._report(u, v, ddict)
 
-
 class InEdgeDataView(OutEdgeDataView):
     """An EdgeDataView class for outward edges of DiGraph; See EdgeDataView"""
-
     __slots__ = ()
 
     def __iter__(self):
-        return (
-            self._report(nbr, n, dd)
-            for n, nbrs in self._nodes_nbrs()
-            for nbr, dd in nbrs.items()
-        )
+        return (self._report(nbr, n, dd) for n, nbrs in self._nodes_nbrs() for nbr, dd in nbrs.items())
 
     def __contains__(self, e):
         u, v = e[:2]
         if self._nbunch is not None and v not in self._nbunch:
-            return False  # this edge doesn't end in nbunch
+            return False
         try:
             ddict = self._adjdict[v][u]
         except KeyError:
             return False
         return e == self._report(u, v, ddict)
 
-
 class OutMultiEdgeDataView(OutEdgeDataView):
     """An EdgeDataView for outward edges of MultiDiGraph; See EdgeDataView"""
-
-    __slots__ = ("keys",)
+    __slots__ = ('keys',)
 
     def __getstate__(self):
-        return {
-            "viewer": self._viewer,
-            "nbunch": self._nbunch,
-            "keys": self.keys,
-            "data": self._data,
-            "default": self._default,
-        }
+        return {'viewer': self._viewer, 'nbunch': self._nbunch, 'keys': self.keys, 'data': self._data, 'default': self._default}
 
     def __setstate__(self, state):
         self.__init__(**state)
@@ -911,13 +752,11 @@ class OutMultiEdgeDataView(OutEdgeDataView):
         if nbunch is None:
             self._nodes_nbrs = adjdict.items
         else:
-            # dict retains order of nodes but acts like a set
             nbunch = dict.fromkeys(viewer._graph.nbunch_iter(nbunch))
             self._nodes_nbrs = lambda: [(n, adjdict[n]) for n in nbunch]
         self._nbunch = nbunch
         self._data = data
         self._default = default
-        # Set _report based on data and default
         if data is True:
             if keys is True:
                 self._report = lambda n, nbr, k, dd: (n, nbr, k, dd)
@@ -928,35 +767,21 @@ class OutMultiEdgeDataView(OutEdgeDataView):
                 self._report = lambda n, nbr, k, dd: (n, nbr, k)
             else:
                 self._report = lambda n, nbr, k, dd: (n, nbr)
-        else:  # data is attribute name
-            if keys is True:
-                self._report = (
-                    lambda n, nbr, k, dd: (n, nbr, k, dd[data])
-                    if data in dd
-                    else (n, nbr, k, default)
-                )
-            else:
-                self._report = (
-                    lambda n, nbr, k, dd: (n, nbr, dd[data])
-                    if data in dd
-                    else (n, nbr, default)
-                )
+        elif keys is True:
+            self._report = lambda n, nbr, k, dd: (n, nbr, k, dd[data]) if data in dd else (n, nbr, k, default)
+        else:
+            self._report = lambda n, nbr, k, dd: (n, nbr, dd[data]) if data in dd else (n, nbr, default)
 
     def __len__(self):
-        return sum(1 for e in self)
+        return sum((1 for e in self))
 
     def __iter__(self):
-        return (
-            self._report(n, nbr, k, dd)
-            for n, nbrs in self._nodes_nbrs()
-            for nbr, kd in nbrs.items()
-            for k, dd in kd.items()
-        )
+        return (self._report(n, nbr, k, dd) for n, nbrs in self._nodes_nbrs() for nbr, kd in nbrs.items() for k, dd in kd.items())
 
     def __contains__(self, e):
         u, v = e[:2]
         if self._nbunch is not None and u not in self._nbunch:
-            return False  # this edge doesn't start in nbunch
+            return False
         try:
             kdict = self._adjdict[u][v]
         except KeyError:
@@ -968,12 +793,10 @@ class OutMultiEdgeDataView(OutEdgeDataView):
             except KeyError:
                 return False
             return e == self._report(u, v, k, dd)
-        return any(e == self._report(u, v, k, dd) for k, dd in kdict.items())
-
+        return any((e == self._report(u, v, k, dd) for k, dd in kdict.items()))
 
 class MultiEdgeDataView(OutMultiEdgeDataView):
     """An EdgeDataView class for edges of MultiGraph; See EdgeDataView"""
-
     __slots__ = ()
 
     def __iter__(self):
@@ -988,8 +811,8 @@ class MultiEdgeDataView(OutMultiEdgeDataView):
 
     def __contains__(self, e):
         u, v = e[:2]
-        if self._nbunch is not None and u not in self._nbunch and v not in self._nbunch:
-            return False  # this edge doesn't start and doesn't end in nbunch
+        if self._nbunch is not None and u not in self._nbunch and (v not in self._nbunch):
+            return False
         try:
             kdict = self._adjdict[u][v]
         except KeyError:
@@ -1004,26 +827,19 @@ class MultiEdgeDataView(OutMultiEdgeDataView):
             except KeyError:
                 return False
             return e == self._report(u, v, k, dd)
-        return any(e == self._report(u, v, k, dd) for k, dd in kdict.items())
-
+        return any((e == self._report(u, v, k, dd) for k, dd in kdict.items()))
 
 class InMultiEdgeDataView(OutMultiEdgeDataView):
     """An EdgeDataView for inward edges of MultiDiGraph; See EdgeDataView"""
-
     __slots__ = ()
 
     def __iter__(self):
-        return (
-            self._report(nbr, n, k, dd)
-            for n, nbrs in self._nodes_nbrs()
-            for nbr, kd in nbrs.items()
-            for k, dd in kd.items()
-        )
+        return (self._report(nbr, n, k, dd) for n, nbrs in self._nodes_nbrs() for nbr, kd in nbrs.items() for k, dd in kd.items())
 
     def __contains__(self, e):
         u, v = e[:2]
         if self._nbunch is not None and v not in self._nbunch:
-            return False  # this edge doesn't end in nbunch
+            return False
         try:
             kdict = self._adjdict[v][u]
         except KeyError:
@@ -1032,37 +848,28 @@ class InMultiEdgeDataView(OutMultiEdgeDataView):
             k = e[2]
             dd = kdict[k]
             return e == self._report(u, v, k, dd)
-        return any(e == self._report(u, v, k, dd) for k, dd in kdict.items())
+        return any((e == self._report(u, v, k, dd) for k, dd in kdict.items()))
 
-
-# EdgeViews    have set operations and no data reported
 class OutEdgeView(Set, Mapping):
     """A EdgeView class for outward edges of a DiGraph"""
-
-    __slots__ = ("_adjdict", "_graph", "_nodes_nbrs")
+    __slots__ = ('_adjdict', '_graph', '_nodes_nbrs')
 
     def __getstate__(self):
-        return {"_graph": self._graph, "_adjdict": self._adjdict}
+        return {'_graph': self._graph, '_adjdict': self._adjdict}
 
     def __setstate__(self, state):
-        self._graph = state["_graph"]
-        self._adjdict = state["_adjdict"]
+        self._graph = state['_graph']
+        self._adjdict = state['_adjdict']
         self._nodes_nbrs = self._adjdict.items
-
-    @classmethod
-    def _from_iterable(cls, it):
-        return set(it)
-
     dataview = OutEdgeDataView
 
     def __init__(self, G):
         self._graph = G
-        self._adjdict = G._succ if hasattr(G, "succ") else G._adj
+        self._adjdict = G._succ if hasattr(G, 'succ') else G._adj
         self._nodes_nbrs = self._adjdict.items
 
-    # Set methods
     def __len__(self):
-        return sum(len(nbrs) for n, nbrs in self._nodes_nbrs())
+        return sum((len(nbrs) for n, nbrs in self._nodes_nbrs()))
 
     def __iter__(self):
         for n, nbrs in self._nodes_nbrs():
@@ -1076,20 +883,15 @@ class OutEdgeView(Set, Mapping):
         except KeyError:
             return False
 
-    # Mapping Methods
     def __getitem__(self, e):
         if isinstance(e, slice):
-            raise nx.NetworkXError(
-                f"{type(self).__name__} does not support slicing, "
-                f"try list(G.edges)[{e.start}:{e.stop}:{e.step}]"
-            )
+            raise nx.NetworkXError(f'{type(self).__name__} does not support slicing, try list(G.edges)[{e.start}:{e.stop}:{e.step}]')
         u, v = e
         try:
             return self._adjdict[u][v]
-        except KeyError as ex:  # Customize msg to indicate exception origin
-            raise KeyError(f"The edge {e} is not in the graph.")
+        except KeyError as ex:
+            raise KeyError(f'The edge {e} is not in the graph.')
 
-    # EdgeDataView methods
     def __call__(self, nbunch=None, data=False, *, default=None):
         if nbunch is None and data is False:
             return self
@@ -1171,17 +973,13 @@ class OutEdgeView(Set, Mapping):
         >>> G.edges.data("speed")
         EdgeDataView([(0, 1, None), (0, 2, None), (1, 2, None)])
         """
-        if nbunch is None and data is False:
-            return self
-        return self.dataview(self, nbunch, data, default=default)
+        pass
 
-    # String Methods
     def __str__(self):
         return str(list(self))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({list(self)})"
-
+        return f'{self.__class__.__name__}({list(self)})'
 
 class EdgeView(OutEdgeView):
     """A EdgeView class for edges of a Graph
@@ -1253,9 +1051,7 @@ class EdgeView(OutEdgeView):
     (2, 3, 0)
     (2, 3, 1)
     """
-
     __slots__ = ()
-
     dataview = EdgeDataView
 
     def __len__(self):
@@ -1278,22 +1074,19 @@ class EdgeView(OutEdgeView):
         except (KeyError, ValueError):
             return False
 
-
 class InEdgeView(OutEdgeView):
     """A EdgeView class for inward edges of a DiGraph"""
-
     __slots__ = ()
 
     def __setstate__(self, state):
-        self._graph = state["_graph"]
-        self._adjdict = state["_adjdict"]
+        self._graph = state['_graph']
+        self._adjdict = state['_adjdict']
         self._nodes_nbrs = self._adjdict.items
-
     dataview = InEdgeDataView
 
     def __init__(self, G):
         self._graph = G
-        self._adjdict = G._pred if hasattr(G, "pred") else G._adj
+        self._adjdict = G._pred if hasattr(G, 'pred') else G._adj
         self._nodes_nbrs = self._adjdict.items
 
     def __iter__(self):
@@ -1310,25 +1103,17 @@ class InEdgeView(OutEdgeView):
 
     def __getitem__(self, e):
         if isinstance(e, slice):
-            raise nx.NetworkXError(
-                f"{type(self).__name__} does not support slicing, "
-                f"try list(G.in_edges)[{e.start}:{e.stop}:{e.step}]"
-            )
+            raise nx.NetworkXError(f'{type(self).__name__} does not support slicing, try list(G.in_edges)[{e.start}:{e.stop}:{e.step}]')
         u, v = e
         return self._adjdict[v][u]
 
-
 class OutMultiEdgeView(OutEdgeView):
     """A EdgeView class for outward edges of a MultiDiGraph"""
-
     __slots__ = ()
-
     dataview = OutMultiEdgeDataView
 
     def __len__(self):
-        return sum(
-            len(kdict) for n, nbrs in self._nodes_nbrs() for nbr, kdict in nbrs.items()
-        )
+        return sum((len(kdict) for n, nbrs in self._nodes_nbrs() for nbr, kdict in nbrs.items()))
 
     def __iter__(self):
         for n, nbrs in self._nodes_nbrs():
@@ -1344,7 +1129,7 @@ class OutMultiEdgeView(OutEdgeView):
             u, v = e
             k = 0
         else:
-            raise ValueError("MultiEdge must have length 2 or 3")
+            raise ValueError('MultiEdge must have length 2 or 3')
         try:
             return k in self._adjdict[u][v]
         except KeyError:
@@ -1352,33 +1137,22 @@ class OutMultiEdgeView(OutEdgeView):
 
     def __getitem__(self, e):
         if isinstance(e, slice):
-            raise nx.NetworkXError(
-                f"{type(self).__name__} does not support slicing, "
-                f"try list(G.edges)[{e.start}:{e.stop}:{e.step}]"
-            )
+            raise nx.NetworkXError(f'{type(self).__name__} does not support slicing, try list(G.edges)[{e.start}:{e.stop}:{e.step}]')
         u, v, k = e
         return self._adjdict[u][v][k]
 
     def __call__(self, nbunch=None, data=False, *, default=None, keys=False):
-        if nbunch is None and data is False and keys is True:
+        if nbunch is None and data is False and (keys is True):
             return self
         return self.dataview(self, nbunch, data, default=default, keys=keys)
-
-    def data(self, data=True, default=None, nbunch=None, keys=False):
-        if nbunch is None and data is False and keys is True:
-            return self
-        return self.dataview(self, nbunch, data, default=default, keys=keys)
-
 
 class MultiEdgeView(OutMultiEdgeView):
     """A EdgeView class for edges of a MultiGraph"""
-
     __slots__ = ()
-
     dataview = MultiEdgeDataView
 
     def __len__(self):
-        return sum(1 for e in self)
+        return sum((1 for e in self))
 
     def __iter__(self):
         seen = {}
@@ -1390,22 +1164,19 @@ class MultiEdgeView(OutMultiEdgeView):
             seen[n] = 1
         del seen
 
-
 class InMultiEdgeView(OutMultiEdgeView):
     """A EdgeView class for inward edges of a MultiDiGraph"""
-
     __slots__ = ()
 
     def __setstate__(self, state):
-        self._graph = state["_graph"]
-        self._adjdict = state["_adjdict"]
+        self._graph = state['_graph']
+        self._adjdict = state['_adjdict']
         self._nodes_nbrs = self._adjdict.items
-
     dataview = InMultiEdgeDataView
 
     def __init__(self, G):
         self._graph = G
-        self._adjdict = G._pred if hasattr(G, "pred") else G._adj
+        self._adjdict = G._pred if hasattr(G, 'pred') else G._adj
         self._nodes_nbrs = self._adjdict.items
 
     def __iter__(self):
@@ -1422,7 +1193,7 @@ class InMultiEdgeView(OutMultiEdgeView):
             u, v = e
             k = 0
         else:
-            raise ValueError("MultiEdge must have length 2 or 3")
+            raise ValueError('MultiEdge must have length 2 or 3')
         try:
             return k in self._adjdict[v][u]
         except KeyError:
@@ -1430,9 +1201,6 @@ class InMultiEdgeView(OutMultiEdgeView):
 
     def __getitem__(self, e):
         if isinstance(e, slice):
-            raise nx.NetworkXError(
-                f"{type(self).__name__} does not support slicing, "
-                f"try list(G.in_edges)[{e.start}:{e.stop}:{e.step}]"
-            )
+            raise nx.NetworkXError(f'{type(self).__name__} does not support slicing, try list(G.in_edges)[{e.start}:{e.stop}:{e.step}]')
         u, v, k = e
         return self._adjdict[v][u][k]

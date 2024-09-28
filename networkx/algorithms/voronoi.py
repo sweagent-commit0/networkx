@@ -1,12 +1,10 @@
 """Functions for computing the Voronoi cells of a graph."""
 import networkx as nx
 from networkx.utils import groups
+__all__ = ['voronoi_cells']
 
-__all__ = ["voronoi_cells"]
-
-
-@nx._dispatchable(edge_attrs="weight")
-def voronoi_cells(G, center_nodes, weight="weight"):
+@nx._dispatchable(edge_attrs='weight')
+def voronoi_cells(G, center_nodes, weight='weight'):
     """Returns the Voronoi cells centered at `center_nodes` with respect
     to the shortest-path distance metric.
 
@@ -68,18 +66,4 @@ def voronoi_cells(G, center_nodes, weight="weight"):
         https://doi.org/10.1002/1097-0037(200010)36:3<156::AID-NET2>3.0.CO;2-L
 
     """
-    # Determine the shortest paths from any one of the center nodes to
-    # every node in the graph.
-    #
-    # This raises `ValueError` if `center_nodes` is an empty set.
-    paths = nx.multi_source_dijkstra_path(G, center_nodes, weight=weight)
-    # Determine the center node from which the shortest path originates.
-    nearest = {v: p[0] for v, p in paths.items()}
-    # Get the mapping from center node to all nodes closer to it than to
-    # any other center node.
-    cells = groups(nearest)
-    # We collect all unreachable nodes under a special key, if there are any.
-    unreachable = set(G) - set(nearest)
-    if unreachable:
-        cells["unreachable"] = unreachable
-    return cells
+    pass

@@ -1,35 +1,24 @@
 """Betweenness centrality measures for subsets of nodes."""
 import networkx as nx
-from networkx.algorithms.centrality.betweenness import (
-    _add_edge_keys,
-)
-from networkx.algorithms.centrality.betweenness import (
-    _single_source_dijkstra_path_basic as dijkstra,
-)
-from networkx.algorithms.centrality.betweenness import (
-    _single_source_shortest_path_basic as shortest_path,
-)
+from networkx.algorithms.centrality.betweenness import _add_edge_keys
+from networkx.algorithms.centrality.betweenness import _single_source_dijkstra_path_basic as dijkstra
+from networkx.algorithms.centrality.betweenness import _single_source_shortest_path_basic as shortest_path
+__all__ = ['betweenness_centrality_subset', 'edge_betweenness_centrality_subset']
 
-__all__ = [
-    "betweenness_centrality_subset",
-    "edge_betweenness_centrality_subset",
-]
-
-
-@nx._dispatchable(edge_attrs="weight")
+@nx._dispatchable(edge_attrs='weight')
 def betweenness_centrality_subset(G, sources, targets, normalized=False, weight=None):
-    r"""Compute betweenness centrality for a subset of nodes.
+    """Compute betweenness centrality for a subset of nodes.
 
     .. math::
 
-       c_B(v) =\sum_{s\in S, t \in T} \frac{\sigma(s, t|v)}{\sigma(s, t)}
+       c_B(v) =\\sum_{s\\in S, t \\in T} \\frac{\\sigma(s, t|v)}{\\sigma(s, t)}
 
     where $S$ is the set of sources, $T$ is the set of targets,
-    $\sigma(s, t)$ is the number of shortest $(s, t)$-paths,
-    and $\sigma(s, t|v)$ is the number of those paths
+    $\\sigma(s, t)$ is the number of shortest $(s, t)$-paths,
+    and $\\sigma(s, t|v)$ is the number of those paths
     passing through some  node $v$ other than $s, t$.
-    If $s = t$, $\sigma(s, t) = 1$,
-    and if $v \in {s, t}$, $\sigma(s, t|v) = 0$ [2]_.
+    If $s = t$, $\\sigma(s, t) = 1$,
+    and if $v \\in {s, t}$, $\\sigma(s, t|v) = 0$ [2]_.
 
 
     Parameters
@@ -102,31 +91,19 @@ def betweenness_centrality_subset(G, sources, targets, normalized=False, weight=
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    b = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-    for s in sources:
-        # single source shortest paths
-        if weight is None:  # use BFS
-            S, P, sigma, _ = shortest_path(G, s)
-        else:  # use Dijkstra's algorithm
-            S, P, sigma, _ = dijkstra(G, s, weight)
-        b = _accumulate_subset(b, S, P, sigma, s, targets)
-    b = _rescale(b, len(G), normalized=normalized, directed=G.is_directed())
-    return b
+    pass
 
-
-@nx._dispatchable(edge_attrs="weight")
-def edge_betweenness_centrality_subset(
-    G, sources, targets, normalized=False, weight=None
-):
-    r"""Compute betweenness centrality for edges for a subset of nodes.
+@nx._dispatchable(edge_attrs='weight')
+def edge_betweenness_centrality_subset(G, sources, targets, normalized=False, weight=None):
+    """Compute betweenness centrality for edges for a subset of nodes.
 
     .. math::
 
-       c_B(v) =\sum_{s\in S,t \in T} \frac{\sigma(s, t|e)}{\sigma(s, t)}
+       c_B(v) =\\sum_{s\\in S,t \\in T} \\frac{\\sigma(s, t|e)}{\\sigma(s, t)}
 
     where $S$ is the set of sources, $T$ is the set of targets,
-    $\sigma(s, t)$ is the number of shortest $(s, t)$-paths,
-    and $\sigma(s, t|e)$ is the number of those paths
+    $\\sigma(s, t)$ is the number of shortest $(s, t)$-paths,
+    and $\\sigma(s, t|e)$ is the number of those paths
     passing through edge $e$ [2]_.
 
     Parameters
@@ -184,91 +161,16 @@ def edge_betweenness_centrality_subset(
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    b = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-    b.update(dict.fromkeys(G.edges(), 0.0))  # b[e] for e in G.edges()
-    for s in sources:
-        # single source shortest paths
-        if weight is None:  # use BFS
-            S, P, sigma, _ = shortest_path(G, s)
-        else:  # use Dijkstra's algorithm
-            S, P, sigma, _ = dijkstra(G, s, weight)
-        b = _accumulate_edges_subset(b, S, P, sigma, s, targets)
-    for n in G:  # remove nodes to only return edges
-        del b[n]
-    b = _rescale_e(b, len(G), normalized=normalized, directed=G.is_directed())
-    if G.is_multigraph():
-        b = _add_edge_keys(G, b, weight=weight)
-    return b
-
-
-def _accumulate_subset(betweenness, S, P, sigma, s, targets):
-    delta = dict.fromkeys(S, 0.0)
-    target_set = set(targets) - {s}
-    while S:
-        w = S.pop()
-        if w in target_set:
-            coeff = (delta[w] + 1.0) / sigma[w]
-        else:
-            coeff = delta[w] / sigma[w]
-        for v in P[w]:
-            delta[v] += sigma[v] * coeff
-        if w != s:
-            betweenness[w] += delta[w]
-    return betweenness
-
+    pass
 
 def _accumulate_edges_subset(betweenness, S, P, sigma, s, targets):
     """edge_betweenness_centrality_subset helper."""
-    delta = dict.fromkeys(S, 0)
-    target_set = set(targets)
-    while S:
-        w = S.pop()
-        for v in P[w]:
-            if w in target_set:
-                c = (sigma[v] / sigma[w]) * (1.0 + delta[w])
-            else:
-                c = delta[w] / len(P[w])
-            if (v, w) not in betweenness:
-                betweenness[(w, v)] += c
-            else:
-                betweenness[(v, w)] += c
-            delta[v] += c
-        if w != s:
-            betweenness[w] += delta[w]
-    return betweenness
-
+    pass
 
 def _rescale(betweenness, n, normalized, directed=False):
     """betweenness_centrality_subset helper."""
-    if normalized:
-        if n <= 2:
-            scale = None  # no normalization b=0 for all nodes
-        else:
-            scale = 1.0 / ((n - 1) * (n - 2))
-    else:  # rescale by 2 for undirected graphs
-        if not directed:
-            scale = 0.5
-        else:
-            scale = None
-    if scale is not None:
-        for v in betweenness:
-            betweenness[v] *= scale
-    return betweenness
-
+    pass
 
 def _rescale_e(betweenness, n, normalized, directed=False):
     """edge_betweenness_centrality_subset helper."""
-    if normalized:
-        if n <= 1:
-            scale = None  # no normalization b=0 for all nodes
-        else:
-            scale = 1.0 / (n * (n - 1))
-    else:  # rescale by 2 for undirected graphs
-        if not directed:
-            scale = 0.5
-        else:
-            scale = None
-    if scale is not None:
-        for v in betweenness:
-            betweenness[v] *= scale
-    return betweenness
+    pass

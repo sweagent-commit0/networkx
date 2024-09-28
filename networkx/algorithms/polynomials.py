@@ -22,17 +22,14 @@ x**4 - 6*x**2 - 8*x - 3
    "Graph Polynomials"
 """
 from collections import deque
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['tutte_polynomial', 'chromatic_polynomial']
 
-__all__ = ["tutte_polynomial", "chromatic_polynomial"]
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def tutte_polynomial(G):
-    r"""Returns the Tutte polynomial of `G`
+    """Returns the Tutte polynomial of `G`
 
     This function computes the Tutte polynomial via an iterative version of
     the deletion-contraction algorithm.
@@ -53,25 +50,25 @@ def tutte_polynomial(G):
 
     .. math::
 
-        T_G(x, y) = \sum_{A \in E} (x-1)^{c(A) - c(E)} (y-1)^{c(A) + |A| - n(G)}
+        T_G(x, y) = \\sum_{A \\in E} (x-1)^{c(A) - c(E)} (y-1)^{c(A) + |A| - n(G)}
 
     Def 2 (spanning tree expansion): Let `G` be an undirected graph, `T` a spanning
     tree of `G`, and `E` the edge set of `G`. Let `E` have an arbitrary strict
     linear order `L`. Let `B_e` be the unique minimal nonempty edge cut of
-    $E \setminus T \cup {e}$. An edge `e` is internally active with respect to
+    $E \\setminus T \\cup {e}$. An edge `e` is internally active with respect to
     `T` and `L` if `e` is the least edge in `B_e` according to the linear order
     `L`. The internal activity of `T` (denoted `i(T)`) is the number of edges
-    in $E \setminus T$ that are internally active with respect to `T` and `L`.
-    Let `P_e` be the unique path in $T \cup {e}$ whose source and target vertex
+    in $E \\setminus T$ that are internally active with respect to `T` and `L`.
+    Let `P_e` be the unique path in $T \\cup {e}$ whose source and target vertex
     are the same. An edge `e` is externally active with respect to `T` and `L`
     if `e` is the least edge in `P_e` according to the linear order `L`. The
     external activity of `T` (denoted `e(T)`) is the number of edges in
-    $E \setminus T$ that are externally active with respect to `T` and `L`.
+    $E \\setminus T$ that are externally active with respect to `T` and `L`.
     Then [4]_ [5]_:
 
     .. math::
 
-        T_G(x, y) = \sum_{T \text{ a spanning tree of } G} x^{i(T)} y^{e(T)}
+        T_G(x, y) = \\sum_{T \\text{ a spanning tree of } G} x^{i(T)} y^{e(T)}
 
     Def 3 (deletion-contraction recurrence): For `G` an undirected graph, `G-e`
     the graph obtained from `G` by deleting edge `e`, `G/e` the graph obtained
@@ -79,10 +76,10 @@ def tutte_polynomial(G):
     and `l(G)` the number of self-loops of `G`:
 
     .. math::
-        T_G(x, y) = \begin{cases}
-    	   x^{k(G)} y^{l(G)}, & \text{if all edges are cut-edges or self-loops} \\
-           T_{G-e}(x, y) + T_{G/e}(x, y), & \text{otherwise, for an arbitrary edge $e$ not a cut-edge or loop}
-        \end{cases}
+        T_G(x, y) = \\begin{cases}
+    	   x^{k(G)} y^{l(G)}, & \\text{if all edges are cut-edges or self-loops} \\\\
+           T_{G-e}(x, y) + T_{G/e}(x, y), & \\text{otherwise, for an arbitrary edge $e$ not a cut-edge or loop}
+        \\end{cases}
 
     Parameters
     ----------
@@ -149,40 +146,12 @@ def tutte_polynomial(G):
        Structural Analysis of Complex Networks, 2011
        https://arxiv.org/pdf/0803.3079.pdf
     """
-    import sympy
+    pass
 
-    x = sympy.Symbol("x")
-    y = sympy.Symbol("y")
-    stack = deque()
-    stack.append(nx.MultiGraph(G))
-
-    polynomial = 0
-    while stack:
-        G = stack.pop()
-        bridges = set(nx.bridges(G))
-
-        e = None
-        for i in G.edges:
-            if (i[0], i[1]) not in bridges and i[0] != i[1]:
-                e = i
-                break
-        if not e:
-            loops = list(nx.selfloop_edges(G, keys=True))
-            polynomial += x ** len(bridges) * y ** len(loops)
-        else:
-            # deletion-contraction
-            C = nx.contracted_edge(G, e, self_loops=True)
-            C.remove_edge(e[0], e[0])
-            G.remove_edge(*e)
-            stack.append(G)
-            stack.append(C)
-    return sympy.simplify(polynomial)
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def chromatic_polynomial(G):
-    r"""Returns the chromatic polynomial of `G`
+    """Returns the chromatic polynomial of `G`
 
     This function computes the chromatic polynomial via an iterative version of
     the deletion-contraction algorithm.
@@ -200,7 +169,7 @@ def chromatic_polynomial(G):
 
     .. math::
 
-        X_G(x) = \sum_{S \subseteq E} (-1)^{|S|} x^{c(G(S))}
+        X_G(x) = \\sum_{S \\subseteq E} (-1)^{|S|} x^{c(G(S))}
 
 
     Def 2 (interpolating polynomial):
@@ -208,7 +177,7 @@ def chromatic_polynomial(G):
     and `k_i` the number of distinct ways to color the vertices of `G` with `i`
     unique colors (for `i` a natural number at most `n(G)`), `X_G(x)` is the
     unique Lagrange interpolating polynomial of degree `n(G)` through the points
-    `(0, k_0), (1, k_1), \dots, (n(G), k_{n(G)})` [2]_.
+    `(0, k_0), (1, k_1), \\dots, (n(G), k_{n(G)})` [2]_.
 
 
     Def 3 (chromatic recurrence):
@@ -217,10 +186,10 @@ def chromatic_polynomial(G):
     the number of vertices of `G`, and `e(G)` the number of edges of `G` [3]_:
 
     .. math::
-        X_G(x) = \begin{cases}
-    	   x^{n(G)}, & \text{if $e(G)=0$} \\
-           X_{G-e}(x) - X_{G/e}(x), & \text{otherwise, for an arbitrary edge $e$}
-        \end{cases}
+        X_G(x) = \\begin{cases}
+    	   x^{n(G)}, & \\text{if $e(G)=0$} \\\\
+           X_{G-e}(x) - X_{G/e}(x), & \\text{otherwise, for an arbitrary edge $e$}
+        \\end{cases}
 
     This formulation is also known as the Fundamental Reduction Theorem [4]_.
 
@@ -282,24 +251,4 @@ def chromatic_polynomial(G):
        Discrete Mathematics, 2006
        https://math.mit.edu/~rstan/pubs/pubfiles/18.pdf
     """
-    import sympy
-
-    x = sympy.Symbol("x")
-    stack = deque()
-    stack.append(nx.MultiGraph(G, contraction_idx=0))
-
-    polynomial = 0
-    while stack:
-        G = stack.pop()
-        edges = list(G.edges)
-        if not edges:
-            polynomial += (-1) ** G.graph["contraction_idx"] * x ** len(G)
-        else:
-            e = edges[0]
-            C = nx.contracted_edge(G, e, self_loops=True)
-            C.graph["contraction_idx"] = G.graph["contraction_idx"] + 1
-            C.remove_edge(e[0], e[0])
-            G.remove_edge(*e)
-            stack.append(G)
-            stack.append(C)
-    return polynomial
+    pass

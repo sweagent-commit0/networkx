@@ -30,45 +30,12 @@
     So, all of the edge attribute dictionaries are passed to edge_match, and
     it must determine if there is an isomorphism between the two sets of edges.
 """
-
 from . import isomorphvf2 as vf2
-
-__all__ = ["GraphMatcher", "DiGraphMatcher", "MultiGraphMatcher", "MultiDiGraphMatcher"]
-
+__all__ = ['GraphMatcher', 'DiGraphMatcher', 'MultiGraphMatcher', 'MultiDiGraphMatcher']
 
 def _semantic_feasibility(self, G1_node, G2_node):
     """Returns True if mapping G1_node to G2_node is semantically feasible."""
-    # Make sure the nodes match
-    if self.node_match is not None:
-        nm = self.node_match(self.G1.nodes[G1_node], self.G2.nodes[G2_node])
-        if not nm:
-            return False
-
-    # Make sure the edges match
-    if self.edge_match is not None:
-        # Cached lookups
-        G1nbrs = self.G1_adj[G1_node]
-        G2nbrs = self.G2_adj[G2_node]
-        core_1 = self.core_1
-        edge_match = self.edge_match
-
-        for neighbor in G1nbrs:
-            # G1_node is not in core_1, so we must handle R_self separately
-            if neighbor == G1_node:
-                if G2_node in G2nbrs and not edge_match(
-                    G1nbrs[G1_node], G2nbrs[G2_node]
-                ):
-                    return False
-            elif neighbor in core_1:
-                G2_nbr = core_1[neighbor]
-                if G2_nbr in G2nbrs and not edge_match(
-                    G1nbrs[neighbor], G2nbrs[G2_nbr]
-                ):
-                    return False
-        # syntactic check has already verified that neighbors are symmetric
-
-    return True
-
+    pass
 
 class GraphMatcher(vf2.GraphMatcher):
     """VF2 isomorphism checker for undirected graphs."""
@@ -106,16 +73,11 @@ class GraphMatcher(vf2.GraphMatcher):
 
         """
         vf2.GraphMatcher.__init__(self, G1, G2)
-
         self.node_match = node_match
         self.edge_match = edge_match
-
-        # These will be modified during checks to minimize code repeat.
         self.G1_adj = self.G1.adj
         self.G2_adj = self.G2.adj
-
     semantic_feasibility = _semantic_feasibility
-
 
 class DiGraphMatcher(vf2.DiGraphMatcher):
     """VF2 isomorphism checker for directed graphs."""
@@ -153,40 +115,17 @@ class DiGraphMatcher(vf2.DiGraphMatcher):
 
         """
         vf2.DiGraphMatcher.__init__(self, G1, G2)
-
         self.node_match = node_match
         self.edge_match = edge_match
-
-        # These will be modified during checks to minimize code repeat.
         self.G1_adj = self.G1.adj
         self.G2_adj = self.G2.adj
 
     def semantic_feasibility(self, G1_node, G2_node):
         """Returns True if mapping G1_node to G2_node is semantically feasible."""
-
-        # Test node_match and also test edge_match on successors
-        feasible = _semantic_feasibility(self, G1_node, G2_node)
-        if not feasible:
-            return False
-
-        # Test edge_match on predecessors
-        self.G1_adj = self.G1.pred
-        self.G2_adj = self.G2.pred
-        feasible = _semantic_feasibility(self, G1_node, G2_node)
-        self.G1_adj = self.G1.adj
-        self.G2_adj = self.G2.adj
-
-        return feasible
-
-
-# The "semantics" of edge_match are different for multi(di)graphs, but
-# the implementation is the same.  So, technically we do not need to
-# provide "multi" versions, but we do so to match NetworkX's base classes.
-
+        pass
 
 class MultiGraphMatcher(GraphMatcher):
     """VF2 isomorphism checker for undirected multigraphs."""
-
 
 class MultiDiGraphMatcher(DiGraphMatcher):
     """VF2 isomorphism checker for directed multigraphs."""

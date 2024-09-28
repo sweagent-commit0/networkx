@@ -21,20 +21,10 @@ To access the functions in this module, you must access them through the
 
 """
 from itertools import combinations
-
 import networkx as nx
 from networkx.algorithms.simple_paths import is_simple_path as is_path
 from networkx.utils import arbitrary_element, not_implemented_for, py_random_state
-
-__all__ = [
-    "hamiltonian_path",
-    "is_reachable",
-    "is_strongly_connected",
-    "is_tournament",
-    "random_tournament",
-    "score_sequence",
-]
-
+__all__ = ['hamiltonian_path', 'is_reachable', 'is_strongly_connected', 'is_tournament', 'random_tournament', 'score_sequence']
 
 def index_satisfying(iterable, condition):
     """Returns the index of the first element in `iterable` that
@@ -48,23 +38,10 @@ def index_satisfying(iterable, condition):
     function raises :exc:`ValueError`.
 
     """
-    # Pre-condition: iterable must not be empty.
-    for i, x in enumerate(iterable):
-        if condition(x):
-            return i
-    # If we reach the end of the iterable without finding an element
-    # that satisfies the condition, return the length of the iterable,
-    # which is one greater than the index of its last element. If the
-    # iterable was empty, `i` will not be defined, so we raise an
-    # exception.
-    try:
-        return i + 1
-    except NameError as err:
-        raise ValueError("iterable must be non-empty") from err
+    pass
 
-
-@not_implemented_for("undirected")
-@not_implemented_for("multigraph")
+@not_implemented_for('undirected')
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def is_tournament(G):
     """Returns True if and only if `G` is a tournament.
@@ -95,15 +72,10 @@ def is_tournament(G):
     the convention used here.
 
     """
-    # In a tournament, there is exactly one directed edge joining each pair.
-    return (
-        all((v in G[u]) ^ (u in G[v]) for u, v in combinations(G, 2))
-        and nx.number_of_selfloops(G) == 0
-    )
+    pass
 
-
-@not_implemented_for("undirected")
-@not_implemented_for("multigraph")
+@not_implemented_for('undirected')
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def hamiltonian_path(G):
     """Returns a Hamiltonian path in the given tournament graph.
@@ -137,23 +109,12 @@ def hamiltonian_path(G):
     $n$ is the number of nodes in the graph.
 
     """
-    if len(G) == 0:
-        return []
-    if len(G) == 1:
-        return [arbitrary_element(G)]
-    v = arbitrary_element(G)
-    hampath = hamiltonian_path(G.subgraph(set(G) - {v}))
-    # Get the index of the first node in the path that does *not* have
-    # an edge to `v`, then insert `v` before that node.
-    index = index_satisfying(hampath, lambda u: v not in G[u])
-    hampath.insert(index, v)
-    return hampath
-
+    pass
 
 @py_random_state(1)
 @nx._dispatchable(graphs=None, returns_graph=True)
 def random_tournament(n, seed=None):
-    r"""Returns a random tournament graph on `n` nodes.
+    """Returns a random tournament graph on `n` nodes.
 
     Parameters
     ----------
@@ -172,20 +133,15 @@ def random_tournament(n, seed=None):
     Notes
     -----
     This algorithm adds, for each pair of distinct nodes, an edge with
-    uniformly random orientation. In other words, `\binom{n}{2}` flips
+    uniformly random orientation. In other words, `\\binom{n}{2}` flips
     of an unbiased coin decide the orientations of the edges in the
     graph.
 
     """
-    # Flip an unbiased coin for each pair of distinct nodes.
-    coins = (seed.random() for i in range((n * (n - 1)) // 2))
-    pairs = combinations(range(n), 2)
-    edges = ((u, v) if r < 0.5 else (v, u) for (u, v), r in zip(pairs, coins))
-    return nx.DiGraph(edges)
+    pass
 
-
-@not_implemented_for("undirected")
-@not_implemented_for("multigraph")
+@not_implemented_for('undirected')
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def score_sequence(G):
     """Returns the score sequence for the given tournament graph.
@@ -212,14 +168,13 @@ def score_sequence(G):
     [1, 1, 2, 2]
 
     """
-    return sorted(d for v, d in G.out_degree())
+    pass
 
-
-@not_implemented_for("undirected")
-@not_implemented_for("multigraph")
-@nx._dispatchable(preserve_edge_attrs={"G": {"weight": 1}})
+@not_implemented_for('undirected')
+@not_implemented_for('multigraph')
+@nx._dispatchable(preserve_edge_attrs={'G': {'weight': 1}})
 def tournament_matrix(G):
-    r"""Returns the tournament matrix for the given tournament graph.
+    """Returns the tournament matrix for the given tournament graph.
 
     This function requires SciPy.
 
@@ -229,11 +184,11 @@ def tournament_matrix(G):
     .. math::
 
        T_{i j} =
-       \begin{cases}
-       +1 & \text{if } (i, j) \in E \\
-       -1 & \text{if } (j, i) \in E \\
-       0 & \text{if } i == j.
-       \end{cases}
+       \\begin{cases}
+       +1 & \\text{if } (i, j) \\in E \\\\
+       -1 & \\text{if } (j, i) \\in E \\\\
+       0 & \\text{if } i == j.
+       \\end{cases}
 
     An equivalent definition is `T = A - A^T`, where *A* is the
     adjacency matrix of the graph `G`.
@@ -254,12 +209,10 @@ def tournament_matrix(G):
         If SciPy is not available.
 
     """
-    A = nx.adjacency_matrix(G)
-    return A - A.T
+    pass
 
-
-@not_implemented_for("undirected")
-@not_implemented_for("multigraph")
+@not_implemented_for('undirected')
+@not_implemented_for('multigraph')
 @nx._dispatchable
 def is_reachable(G, s, t):
     """Decides whether there is a path from `s` to `t` in the
@@ -315,41 +268,11 @@ def is_reachable(G, s, t):
            *Electronic Colloquium on Computational Complexity*. 2001.
            <http://eccc.hpi-web.de/report/2001/092/>
     """
+    pass
 
-    def two_neighborhood(G, v):
-        """Returns the set of nodes at distance at most two from `v`.
-
-        `G` must be a graph and `v` a node in that graph.
-
-        The returned set includes the nodes at distance zero (that is,
-        the node `v` itself), the nodes at distance one (that is, the
-        out-neighbors of `v`), and the nodes at distance two.
-
-        """
-        # TODO This is trivially parallelizable.
-        return {
-            x for x in G if x == v or x in G[v] or any(is_path(G, [v, z, x]) for z in G)
-        }
-
-    def is_closed(G, nodes):
-        """Decides whether the given set of nodes is closed.
-
-        A set *S* of nodes is *closed* if for each node *u* in the graph
-        not in *S* and for each node *v* in *S*, there is an edge from
-        *u* to *v*.
-
-        """
-        # TODO This is trivially parallelizable.
-        return all(v in G[u] for u in set(G) - nodes for v in nodes)
-
-    # TODO This is trivially parallelizable.
-    neighborhoods = [two_neighborhood(G, v) for v in G]
-    return all(not (is_closed(G, S) and s in S and t not in S) for S in neighborhoods)
-
-
-@not_implemented_for("undirected")
-@not_implemented_for("multigraph")
-@nx._dispatchable(name="tournament_is_strongly_connected")
+@not_implemented_for('undirected')
+@not_implemented_for('multigraph')
+@nx._dispatchable(name='tournament_is_strongly_connected')
 def is_strongly_connected(G):
     """Decides whether the given tournament is strongly connected.
 
@@ -402,5 +325,4 @@ def is_strongly_connected(G):
            <http://eccc.hpi-web.de/report/2001/092/>
 
     """
-    # TODO This is trivially parallelizable.
-    return all(is_reachable(G, u, v) for u in G for v in G)
+    pass

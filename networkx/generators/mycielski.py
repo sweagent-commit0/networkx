@@ -2,18 +2,15 @@
 of graphs.
 
 """
-
 import networkx as nx
 from networkx.utils import not_implemented_for
+__all__ = ['mycielskian', 'mycielski_graph']
 
-__all__ = ["mycielskian", "mycielski_graph"]
-
-
-@not_implemented_for("directed")
-@not_implemented_for("multigraph")
+@not_implemented_for('directed')
+@not_implemented_for('multigraph')
 @nx._dispatchable(returns_graph=True)
 def mycielskian(G, iterations=1):
-    r"""Returns the Mycielskian of a simple, undirected graph G
+    """Returns the Mycielskian of a simple, undirected graph G
 
     The Mycielskian of graph preserves a graph's triangle free
     property while increasing the chromatic number by 1.
@@ -25,9 +22,9 @@ def mycielskian(G, iterations=1):
 
     Let :math:`V = {0, ..., n-1}`. Construct another vertex set
     :math:`U = {n, ..., 2n}` and a vertex, `w`.
-    Construct a new graph, `M`, with vertices :math:`U \bigcup V \bigcup w`.
-    For edges, :math:`(u, v) \in E` add edges :math:`(u, v), (u, v + n)`, and
-    :math:`(u + n, v)` to M. Finally, for all vertices :math:`u \in U`, add
+    Construct a new graph, `M`, with vertices :math:`U \\bigcup V \\bigcup w`.
+    For edges, :math:`(u, v) \\in E` add edges :math:`(u, v), (u, v + n)`, and
+    :math:`(u + n, v)` to M. Finally, for all vertices :math:`u \\in U`, add
     edge :math:`(u, w)` to M.
 
     The Mycielski Operation can be done multiple times by repeating the above
@@ -53,20 +50,7 @@ def mycielskian(G, iterations=1):
     Graph, node, and edge data are not necessarily propagated to the new graph.
 
     """
-
-    M = nx.convert_node_labels_to_integers(G)
-
-    for i in range(iterations):
-        n = M.number_of_nodes()
-        M.add_nodes_from(range(n, 2 * n))
-        old_edges = list(M.edges())
-        M.add_edges_from((u, v + n) for u, v in old_edges)
-        M.add_edges_from((u + n, v) for u, v in old_edges)
-        M.add_node(2 * n)
-        M.add_edges_from((u + n, 2 * n) for u in range(n))
-
-    return M
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def mycielski_graph(n):
@@ -99,12 +83,4 @@ def mycielski_graph(n):
     The remaining graphs are generated using the Mycielski operation.
 
     """
-
-    if n < 1:
-        raise nx.NetworkXError("must satisfy n >= 1")
-
-    if n == 1:
-        return nx.empty_graph(1)
-
-    else:
-        return mycielskian(nx.path_graph(2), n - 2)
+    pass

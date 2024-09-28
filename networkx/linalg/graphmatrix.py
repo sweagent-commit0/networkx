@@ -2,14 +2,10 @@
 Adjacency matrix and incidence matrix of graphs.
 """
 import networkx as nx
+__all__ = ['incidence_matrix', 'adjacency_matrix']
 
-__all__ = ["incidence_matrix", "adjacency_matrix"]
-
-
-@nx._dispatchable(edge_attrs="weight")
-def incidence_matrix(
-    G, nodelist=None, edgelist=None, oriented=False, weight=None, *, dtype=None
-):
+@nx._dispatchable(edge_attrs='weight')
+def incidence_matrix(G, nodelist=None, edgelist=None, oriented=False, weight=None, *, dtype=None):
     """Returns incidence matrix of G.
 
     The incidence matrix assigns each row to a node and each column to an edge.
@@ -65,47 +61,10 @@ def incidence_matrix(
     .. [1] Gil Strang, Network applications: A = incidence matrix,
        http://videolectures.net/mit18085f07_strang_lec03/
     """
-    import scipy as sp
+    pass
 
-    if nodelist is None:
-        nodelist = list(G)
-    if edgelist is None:
-        if G.is_multigraph():
-            edgelist = list(G.edges(keys=True))
-        else:
-            edgelist = list(G.edges())
-    A = sp.sparse.lil_array((len(nodelist), len(edgelist)), dtype=dtype)
-    node_index = {node: i for i, node in enumerate(nodelist)}
-    for ei, e in enumerate(edgelist):
-        (u, v) = e[:2]
-        if u == v:
-            continue  # self loops give zero column
-        try:
-            ui = node_index[u]
-            vi = node_index[v]
-        except KeyError as err:
-            raise nx.NetworkXError(
-                f"node {u} or {v} in edgelist but not in nodelist"
-            ) from err
-        if weight is None:
-            wt = 1
-        else:
-            if G.is_multigraph():
-                ekey = e[2]
-                wt = G[u][v][ekey].get(weight, 1)
-            else:
-                wt = G[u][v].get(weight, 1)
-        if oriented:
-            A[ui, ei] = -wt
-            A[vi, ei] = wt
-        else:
-            A[ui, ei] = wt
-            A[vi, ei] = wt
-    return A.asformat("csc")
-
-
-@nx._dispatchable(edge_attrs="weight")
-def adjacency_matrix(G, nodelist=None, dtype=None, weight="weight"):
+@nx._dispatchable(edge_attrs='weight')
+def adjacency_matrix(G, nodelist=None, dtype=None, weight='weight'):
     """Returns adjacency matrix of G.
 
     Parameters
@@ -163,4 +122,4 @@ def adjacency_matrix(G, nodelist=None, dtype=None, weight="weight"):
     to_dict_of_dicts
     adjacency_spectrum
     """
-    return nx.to_scipy_sparse_array(G, nodelist=nodelist, dtype=dtype, weight=weight)
+    pass

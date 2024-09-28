@@ -2,18 +2,10 @@
 Eigenvalue spectrum of graphs.
 """
 import networkx as nx
+__all__ = ['laplacian_spectrum', 'adjacency_spectrum', 'modularity_spectrum', 'normalized_laplacian_spectrum', 'bethe_hessian_spectrum']
 
-__all__ = [
-    "laplacian_spectrum",
-    "adjacency_spectrum",
-    "modularity_spectrum",
-    "normalized_laplacian_spectrum",
-    "bethe_hessian_spectrum",
-]
-
-
-@nx._dispatchable(edge_attrs="weight")
-def laplacian_spectrum(G, weight="weight"):
+@nx._dispatchable(edge_attrs='weight')
+def laplacian_spectrum(G, weight='weight'):
     """Returns eigenvalues of the Laplacian of G
 
     Parameters
@@ -51,13 +43,10 @@ def laplacian_spectrum(G, weight="weight"):
     array([0., 0., 0., 2., 2.])
 
     """
-    import scipy as sp
+    pass
 
-    return sp.linalg.eigvalsh(nx.laplacian_matrix(G, weight=weight).todense())
-
-
-@nx._dispatchable(edge_attrs="weight")
-def normalized_laplacian_spectrum(G, weight="weight"):
+@nx._dispatchable(edge_attrs='weight')
+def normalized_laplacian_spectrum(G, weight='weight'):
     """Return eigenvalues of the normalized Laplacian of G
 
     Parameters
@@ -83,15 +72,10 @@ def normalized_laplacian_spectrum(G, weight="weight"):
     --------
     normalized_laplacian_matrix
     """
-    import scipy as sp
+    pass
 
-    return sp.linalg.eigvalsh(
-        nx.normalized_laplacian_matrix(G, weight=weight).todense()
-    )
-
-
-@nx._dispatchable(edge_attrs="weight")
-def adjacency_spectrum(G, weight="weight"):
+@nx._dispatchable(edge_attrs='weight')
+def adjacency_spectrum(G, weight='weight'):
     """Returns eigenvalues of the adjacency matrix of G.
 
     Parameters
@@ -117,10 +101,7 @@ def adjacency_spectrum(G, weight="weight"):
     --------
     adjacency_matrix
     """
-    import scipy as sp
-
-    return sp.linalg.eigvals(nx.adjacency_matrix(G, weight=weight).todense())
-
+    pass
 
 @nx._dispatchable
 def modularity_spectrum(G):
@@ -145,13 +126,7 @@ def modularity_spectrum(G):
     .. [1] M. E. J. Newman, "Modularity and community structure in networks",
        Proc. Natl. Acad. Sci. USA, vol. 103, pp. 8577-8582, 2006.
     """
-    import scipy as sp
-
-    if G.is_directed():
-        return sp.linalg.eigvals(nx.directed_modularity_matrix(G))
-    else:
-        return sp.linalg.eigvals(nx.modularity_matrix(G))
-
+    pass
 
 @nx._dispatchable
 def bethe_hessian_spectrum(G, r=None):
@@ -180,6 +155,4 @@ def bethe_hessian_spectrum(G, r=None):
        "Spectral clustering of graphs with the bethe hessian",
        Advances in Neural Information Processing Systems. 2014.
     """
-    import scipy as sp
-
-    return sp.linalg.eigvalsh(nx.bethe_hessian_matrix(G, r).todense())
+    pass

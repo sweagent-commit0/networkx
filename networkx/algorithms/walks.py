@@ -1,10 +1,7 @@
 """Function for computing walks in a graph.
 """
-
 import networkx as nx
-
-__all__ = ["number_of_walks"]
-
+__all__ = ['number_of_walks']
 
 @nx._dispatchable
 def number_of_walks(G, walk_length):
@@ -64,17 +61,4 @@ def number_of_walks(G, walk_length):
     1
 
     """
-    import numpy as np
-
-    if walk_length < 0:
-        raise ValueError(f"`walk_length` cannot be negative: {walk_length}")
-
-    A = nx.adjacency_matrix(G, weight=None)
-    # TODO: Use matrix_power from scipy.sparse when available
-    # power = sp.sparse.linalg.matrix_power(A, walk_length)
-    power = np.linalg.matrix_power(A.toarray(), walk_length)
-    result = {
-        u: {v: power.item(u_idx, v_idx) for v_idx, v in enumerate(G)}
-        for u_idx, u in enumerate(G)
-    }
-    return result
+    pass

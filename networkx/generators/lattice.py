@@ -12,25 +12,15 @@ be found about `Triangular Tiling`_, and `Square, Hex and Triangle Grids`_
 .. _Triangular Tiling: https://en.wikipedia.org/wiki/Triangular_tiling
 
 """
-
 from itertools import repeat
 from math import sqrt
-
 import networkx as nx
 from networkx.classes import set_node_attributes
 from networkx.exception import NetworkXError
 from networkx.generators.classic import cycle_graph, empty_graph, path_graph
 from networkx.relabel import relabel_nodes
 from networkx.utils import flatten, nodes_or_number, pairwise
-
-__all__ = [
-    "grid_2d_graph",
-    "grid_graph",
-    "hypercube_graph",
-    "triangular_lattice_graph",
-    "hexagonal_lattice_graph",
-]
-
+__all__ = ['grid_2d_graph', 'grid_graph', 'hypercube_graph', 'triangular_lattice_graph', 'hexagonal_lattice_graph']
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 @nodes_or_number([0, 1])
@@ -60,31 +50,7 @@ def grid_2d_graph(m, n, periodic=False, create_using=None):
         The (possibly periodic) grid graph of the specified dimensions.
 
     """
-    G = empty_graph(0, create_using)
-    row_name, rows = m
-    col_name, cols = n
-    G.add_nodes_from((i, j) for i in rows for j in cols)
-    G.add_edges_from(((i, j), (pi, j)) for pi, i in pairwise(rows) for j in cols)
-    G.add_edges_from(((i, j), (i, pj)) for i in rows for pj, j in pairwise(cols))
-
-    try:
-        periodic_r, periodic_c = periodic
-    except TypeError:
-        periodic_r = periodic_c = periodic
-
-    if periodic_r and len(rows) > 2:
-        first = rows[0]
-        last = rows[-1]
-        G.add_edges_from(((first, j), (last, j)) for j in cols)
-    if periodic_c and len(cols) > 2:
-        first = cols[0]
-        last = cols[-1]
-        G.add_edges_from(((i, first), (i, last)) for i in rows)
-    # both directions for directed
-    if G.is_directed():
-        G.add_edges_from((v, u) for u, v in G.edges())
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def grid_graph(dim, periodic=False):
@@ -124,24 +90,7 @@ def grid_graph(dim, periodic=False):
     >>> len(G)
     6
     """
-    from networkx.algorithms.operators.product import cartesian_product
-
-    if not dim:
-        return empty_graph(0)
-
-    try:
-        func = (cycle_graph if p else path_graph for p in periodic)
-    except TypeError:
-        func = repeat(cycle_graph if periodic else path_graph)
-
-    G = next(func)(dim[0])
-    for current_dim in dim[1:]:
-        Gnew = next(func)(current_dim)
-        G = cartesian_product(Gnew, G)
-    # graph G is done but has labels of the form (1, (2, (3, 1))) so relabel
-    H = relabel_nodes(G, flatten)
-    return H
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def hypercube_graph(n):
@@ -165,16 +114,11 @@ def hypercube_graph(n):
     NetworkX graph
         The hypercube graph of dimension *n*.
     """
-    dim = n * [2]
-    G = grid_graph(dim)
-    return G
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
-def triangular_lattice_graph(
-    m, n, periodic=False, with_positions=True, create_using=None
-):
-    r"""Returns the $m$ by $n$ triangular lattice graph.
+def triangular_lattice_graph(m, n, periodic=False, with_positions=True, create_using=None):
+    """Returns the $m$ by $n$ triangular lattice graph.
 
     The `triangular lattice graph`_ is a two-dimensional `grid graph`_ in
     which each square unit has a diagonal edge (each grid unit has a chord).
@@ -191,7 +135,7 @@ def triangular_lattice_graph(
     Positions of nodes are computed by default or `with_positions is True`.
     The position of each node (embedded in a euclidean plane) is stored in
     the graph using equilateral triangles with sidelength 1.
-    The height between rows of nodes is thus $\sqrt(3)/2$.
+    The height between rows of nodes is thus $\\sqrt(3)/2$.
     Nodes lie in the first quadrant with the node $(0, 0)$ at the origin.
 
     .. _triangular lattice graph: http://mathworld.wolfram.com/TriangularGrid.html
@@ -227,54 +171,10 @@ def triangular_lattice_graph(
     NetworkX graph
         The *m* by *n* triangular lattice graph.
     """
-    H = empty_graph(0, create_using)
-    if n == 0 or m == 0:
-        return H
-    if periodic:
-        if n < 5 or m < 3:
-            msg = f"m > 2 and n > 4 required for periodic. m={m}, n={n}"
-            raise NetworkXError(msg)
-
-    N = (n + 1) // 2  # number of nodes in row
-    rows = range(m + 1)
-    cols = range(N + 1)
-    # Make grid
-    H.add_edges_from(((i, j), (i + 1, j)) for j in rows for i in cols[:N])
-    H.add_edges_from(((i, j), (i, j + 1)) for j in rows[:m] for i in cols)
-    # add diagonals
-    H.add_edges_from(((i, j), (i + 1, j + 1)) for j in rows[1:m:2] for i in cols[:N])
-    H.add_edges_from(((i + 1, j), (i, j + 1)) for j in rows[:m:2] for i in cols[:N])
-    # identify boundary nodes if periodic
-    from networkx.algorithms.minors import contracted_nodes
-
-    if periodic is True:
-        for i in cols:
-            H = contracted_nodes(H, (i, 0), (i, m))
-        for j in rows[:m]:
-            H = contracted_nodes(H, (0, j), (N, j))
-    elif n % 2:
-        # remove extra nodes
-        H.remove_nodes_from((N, j) for j in rows[1::2])
-
-    # Add position node attributes
-    if with_positions:
-        ii = (i for i in cols for j in rows)
-        jj = (j for i in cols for j in rows)
-        xx = (0.5 * (j % 2) + i for i in cols for j in rows)
-        h = sqrt(3) / 2
-        if periodic:
-            yy = (h * j + 0.01 * i * i for i in cols for j in rows)
-        else:
-            yy = (h * j for i in cols for j in rows)
-        pos = {(i, j): (x, y) for i, j, x, y in zip(ii, jj, xx, yy) if (i, j) in H}
-        set_node_attributes(H, pos, "pos")
-    return H
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
-def hexagonal_lattice_graph(
-    m, n, periodic=False, with_positions=True, create_using=None
-):
+def hexagonal_lattice_graph(m, n, periodic=False, with_positions=True, create_using=None):
     """Returns an `m` by `n` hexagonal lattice graph.
 
     The *hexagonal lattice graph* is a graph whose nodes and edges are
@@ -321,47 +221,4 @@ def hexagonal_lattice_graph(
     NetworkX graph
         The *m* by *n* hexagonal lattice graph.
     """
-    G = empty_graph(0, create_using)
-    if m == 0 or n == 0:
-        return G
-    if periodic and (n % 2 == 1 or m < 2 or n < 2):
-        msg = "periodic hexagonal lattice needs m > 1, n > 1 and even n"
-        raise NetworkXError(msg)
-
-    M = 2 * m  # twice as many nodes as hexagons vertically
-    rows = range(M + 2)
-    cols = range(n + 1)
-    # make lattice
-    col_edges = (((i, j), (i, j + 1)) for i in cols for j in rows[: M + 1])
-    row_edges = (((i, j), (i + 1, j)) for i in cols[:n] for j in rows if i % 2 == j % 2)
-    G.add_edges_from(col_edges)
-    G.add_edges_from(row_edges)
-    # Remove corner nodes with one edge
-    G.remove_node((0, M + 1))
-    G.remove_node((n, (M + 1) * (n % 2)))
-
-    # identify boundary nodes if periodic
-    from networkx.algorithms.minors import contracted_nodes
-
-    if periodic:
-        for i in cols[:n]:
-            G = contracted_nodes(G, (i, 0), (i, M))
-        for i in cols[1:]:
-            G = contracted_nodes(G, (i, 1), (i, M + 1))
-        for j in rows[1:M]:
-            G = contracted_nodes(G, (0, j), (n, j))
-        G.remove_node((n, M))
-
-    # calc position in embedded space
-    ii = (i for i in cols for j in rows)
-    jj = (j for i in cols for j in rows)
-    xx = (0.5 + i + i // 2 + (j % 2) * ((i % 2) - 0.5) for i in cols for j in rows)
-    h = sqrt(3) / 2
-    if periodic:
-        yy = (h * j + 0.01 * i * i for i in cols for j in rows)
-    else:
-        yy = (h * j for i in cols for j in rows)
-    # exclude nodes not in G
-    pos = {(i, j): (x, y) for i, j, x, y in zip(ii, jj, xx, yy) if (i, j) in G}
-    set_node_attributes(G, pos, "pos")
-    return G
+    pass

@@ -1,11 +1,8 @@
 from itertools import chain
-
 import networkx as nx
+__all__ = ['tree_data', 'tree_graph']
 
-__all__ = ["tree_data", "tree_graph"]
-
-
-def tree_data(G, root, ident="id", children="children"):
+def tree_data(G, root, ident='id', children='children'):
     """Returns data in tree format that is suitable for JSON serialization
     and use in JavaScript documents.
 
@@ -57,34 +54,10 @@ def tree_data(G, root, ident="id", children="children"):
     --------
     tree_graph, node_link_data, adjacency_data
     """
-    if G.number_of_nodes() != G.number_of_edges() + 1:
-        raise TypeError("G is not a tree.")
-    if not G.is_directed():
-        raise TypeError("G is not directed.")
-    if not nx.is_weakly_connected(G):
-        raise TypeError("G is not weakly connected.")
-
-    if ident == children:
-        raise nx.NetworkXError("The values for `id` and `children` must be different.")
-
-    def add_children(n, G):
-        nbrs = G[n]
-        if len(nbrs) == 0:
-            return []
-        children_ = []
-        for child in nbrs:
-            d = {**G.nodes[child], ident: child}
-            c = add_children(child, G)
-            if c:
-                d[children] = c
-            children_.append(d)
-        return children_
-
-    return {**G.nodes[root], ident: root, children: add_children(root, G)}
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
-def tree_graph(data, ident="id", children="children"):
+def tree_graph(data, ident='id', children='children'):
     """Returns graph from tree data format.
 
     Parameters
@@ -115,23 +88,4 @@ def tree_graph(data, ident="id", children="children"):
     --------
     tree_data, node_link_data, adjacency_data
     """
-    graph = nx.DiGraph()
-
-    def add_children(parent, children_):
-        for data in children_:
-            child = data[ident]
-            graph.add_edge(parent, child)
-            grandchildren = data.get(children, [])
-            if grandchildren:
-                add_children(child, grandchildren)
-            nodedata = {
-                str(k): v for k, v in data.items() if k != ident and k != children
-            }
-            graph.add_node(child, **nodedata)
-
-    root = data[ident]
-    children_ = data.get(children, [])
-    nodedata = {str(k): v for k, v in data.items() if k != ident and k != children}
-    graph.add_node(root, **nodedata)
-    add_children(root, children_)
-    return graph
+    pass

@@ -1,23 +1,14 @@
 """Base class for MultiDiGraph."""
 from copy import deepcopy
 from functools import cached_property
-
 import networkx as nx
 from networkx import convert
 from networkx.classes.coreviews import MultiAdjacencyView
 from networkx.classes.digraph import DiGraph
 from networkx.classes.multigraph import MultiGraph
-from networkx.classes.reportviews import (
-    DiMultiDegreeView,
-    InMultiDegreeView,
-    InMultiEdgeView,
-    OutMultiDegreeView,
-    OutMultiEdgeView,
-)
+from networkx.classes.reportviews import DiMultiDegreeView, InMultiDegreeView, InMultiEdgeView, OutMultiDegreeView, OutMultiEdgeView
 from networkx.exception import NetworkXError
-
-__all__ = ["MultiDiGraph"]
-
+__all__ = ['MultiDiGraph']
 
 class MultiDiGraph(MultiGraph, DiGraph):
     """A directed graph class that can store multiedges.
@@ -291,12 +282,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
     >>> G[2][1] is G[2][2]
     True
     """
-
-    # node_dict_factory = dict    # already assigned in Graph
-    # adjlist_outer_dict_factory = dict
-    # adjlist_inner_dict_factory = dict
     edge_key_dict_factory = dict
-    # edge_attr_dict_factory = dict
 
     def __init__(self, incoming_graph_data=None, multigraph_input=None, **attr):
         """Initialize a graph with edges, name, or graph attributes.
@@ -344,19 +330,14 @@ class MultiDiGraph(MultiGraph, DiGraph):
         {'day': 'Friday'}
 
         """
-        # multigraph_input can be None/True/False. So check "is not False"
         if isinstance(incoming_graph_data, dict) and multigraph_input is not False:
             DiGraph.__init__(self)
             try:
-                convert.from_dict_of_dicts(
-                    incoming_graph_data, create_using=self, multigraph_input=True
-                )
+                convert.from_dict_of_dicts(incoming_graph_data, create_using=self, multigraph_input=True)
                 self.graph.update(attr)
             except Exception as err:
                 if multigraph_input is True:
-                    raise nx.NetworkXError(
-                        f"converting multigraph_input raised:\n{type(err)}: {err}"
-                    )
+                    raise nx.NetworkXError(f'converting multigraph_input raised:\n{type(err)}: {err}')
                 DiGraph.__init__(self, incoming_graph_data, **attr)
         else:
             DiGraph.__init__(self, incoming_graph_data, **attr)
@@ -378,7 +359,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
 
         For directed graphs, `G.adj` holds outgoing (successor) info.
         """
-        return MultiAdjacencyView(self._succ)
+        pass
 
     @cached_property
     def succ(self):
@@ -397,7 +378,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
 
         For directed graphs, `G.succ` is identical to `G.adj`.
         """
-        return MultiAdjacencyView(self._succ)
+        pass
 
     @cached_property
     def pred(self):
@@ -411,7 +392,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         Iterating over G.adj behaves like a dict. Useful idioms include
         `for nbr, datadict in G.adj[n].items():`.
         """
-        return MultiAdjacencyView(self._pred)
+        pass
 
     def add_edge(self, u_for_edge, v_for_edge, key=None, **attr):
         """Add an edge between u and v.
@@ -479,37 +460,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         >>> G[1][2][0].update({0: 5})
         >>> G.edges[1, 2, 0].update({0: 5})
         """
-        u, v = u_for_edge, v_for_edge
-        # add nodes
-        if u not in self._succ:
-            if u is None:
-                raise ValueError("None cannot be a node")
-            self._succ[u] = self.adjlist_inner_dict_factory()
-            self._pred[u] = self.adjlist_inner_dict_factory()
-            self._node[u] = self.node_attr_dict_factory()
-        if v not in self._succ:
-            if v is None:
-                raise ValueError("None cannot be a node")
-            self._succ[v] = self.adjlist_inner_dict_factory()
-            self._pred[v] = self.adjlist_inner_dict_factory()
-            self._node[v] = self.node_attr_dict_factory()
-        if key is None:
-            key = self.new_edge_key(u, v)
-        if v in self._succ[u]:
-            keydict = self._adj[u][v]
-            datadict = keydict.get(key, self.edge_attr_dict_factory())
-            datadict.update(attr)
-            keydict[key] = datadict
-        else:
-            # selfloops work this way without special treatment
-            datadict = self.edge_attr_dict_factory()
-            datadict.update(attr)
-            keydict = self.edge_key_dict_factory()
-            keydict[key] = datadict
-            self._succ[u][v] = keydict
-            self._pred[v][u] = keydict
-        nx._clear_cache(self)
-        return key
+        pass
 
     def remove_edge(self, u, v, key=None):
         """Remove an edge between u and v.
@@ -567,24 +518,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         OutMultiEdgeView([(1, 2, 'second')])
 
         """
-        try:
-            d = self._adj[u][v]
-        except KeyError as err:
-            raise NetworkXError(f"The edge {u}-{v} is not in the graph.") from err
-        # remove the edge with specified data
-        if key is None:
-            d.popitem()
-        else:
-            try:
-                del d[key]
-            except KeyError as err:
-                msg = f"The edge {u}-{v} with key {key} is not in the graph."
-                raise NetworkXError(msg) from err
-        if len(d) == 0:
-            # remove the key entries if last edge
-            del self._succ[u][v]
-            del self._pred[v][u]
-        nx._clear_cache(self)
+        pass
 
     @cached_property
     def edges(self):
@@ -665,13 +599,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         --------
         in_edges, out_edges
         """
-        return OutMultiEdgeView(self)
-
-    # alias out_edges to edges
-    @cached_property
-    def out_edges(self):
-        return OutMultiEdgeView(self)
-
+        pass
     out_edges.__doc__ = edges.__doc__
 
     @cached_property
@@ -706,7 +634,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         --------
         edges
         """
-        return InMultiEdgeView(self)
+        pass
 
     @cached_property
     def degree(self):
@@ -754,7 +682,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         [(0, 2), (1, 3), (2, 2)]
 
         """
-        return DiMultiDegreeView(self)
+        pass
 
     @cached_property
     def in_degree(self):
@@ -805,7 +733,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         [(0, 0), (1, 2), (2, 1)]
 
         """
-        return InMultiDegreeView(self)
+        pass
 
     @cached_property
     def out_degree(self):
@@ -855,15 +783,15 @@ class MultiDiGraph(MultiGraph, DiGraph):
         [(0, 2), (1, 1), (2, 1)]
 
         """
-        return OutMultiDegreeView(self)
+        pass
 
     def is_multigraph(self):
         """Returns True if graph is a multigraph, False otherwise."""
-        return True
+        pass
 
     def is_directed(self):
         """Returns True if graph is directed, False otherwise."""
-        return True
+        pass
 
     def to_undirected(self, reciprocal=False, as_view=False):
         """Returns an undirected representation of the digraph.
@@ -916,29 +844,7 @@ class MultiDiGraph(MultiGraph, DiGraph):
         >>> list(G2.edges)
         [(0, 1)]
         """
-        graph_class = self.to_undirected_class()
-        if as_view is True:
-            return nx.graphviews.generic_graph_view(self, graph_class)
-        # deepcopy when not a view
-        G = graph_class()
-        G.graph.update(deepcopy(self.graph))
-        G.add_nodes_from((n, deepcopy(d)) for n, d in self._node.items())
-        if reciprocal is True:
-            G.add_edges_from(
-                (u, v, key, deepcopy(data))
-                for u, nbrs in self._adj.items()
-                for v, keydict in nbrs.items()
-                for key, data in keydict.items()
-                if v in self._pred[u] and key in self._pred[u][v]
-            )
-        else:
-            G.add_edges_from(
-                (u, v, key, deepcopy(data))
-                for u, nbrs in self._adj.items()
-                for v, keydict in nbrs.items()
-                for key, data in keydict.items()
-            )
-        return G
+        pass
 
     def reverse(self, copy=True):
         """Returns the reverse of the graph.
@@ -953,13 +859,4 @@ class MultiDiGraph(MultiGraph, DiGraph):
             If False, the reverse graph is created using a view of
             the original graph.
         """
-        if copy:
-            H = self.__class__()
-            H.graph.update(deepcopy(self.graph))
-            H.add_nodes_from((n, deepcopy(d)) for n, d in self._node.items())
-            H.add_edges_from(
-                (v, u, k, deepcopy(d))
-                for u, v, k, d in self.edges(keys=True, data=True)
-            )
-            return H
-        return nx.reverse_view(self)
+        pass

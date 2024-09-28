@@ -3,19 +3,15 @@ Gomory-Hu tree of undirected Graphs.
 """
 import networkx as nx
 from networkx.utils import not_implemented_for
-
 from .edmondskarp import edmonds_karp
 from .utils import build_residual_network
-
 default_flow_func = edmonds_karp
+__all__ = ['gomory_hu_tree']
 
-__all__ = ["gomory_hu_tree"]
-
-
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs={"capacity": float("inf")}, returns_graph=True)
-def gomory_hu_tree(G, capacity="capacity", flow_func=None):
-    r"""Returns the Gomory-Hu tree of an undirected graph G.
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs={'capacity': float('inf')}, returns_graph=True)
+def gomory_hu_tree(G, capacity='capacity', flow_func=None):
+    """Returns the Gomory-Hu tree of an undirected graph G.
 
     A Gomory-Hu tree of an undirected graph with capacities is a
     weighted tree that represents the minimum s-t cuts for all s-t
@@ -130,48 +126,4 @@ def gomory_hu_tree(G, capacity="capacity", flow_func=None):
            SIAM J Comput 19(1):143-155, 1990.
 
     """
-    if flow_func is None:
-        flow_func = default_flow_func
-
-    if len(G) == 0:  # empty graph
-        msg = "Empty Graph does not have a Gomory-Hu tree representation"
-        raise nx.NetworkXError(msg)
-
-    # Start the tree as a star graph with an arbitrary node at the center
-    tree = {}
-    labels = {}
-    iter_nodes = iter(G)
-    root = next(iter_nodes)
-    for n in iter_nodes:
-        tree[n] = root
-
-    # Reuse residual network
-    R = build_residual_network(G, capacity)
-
-    # For all the leaves in the star graph tree (that is n-1 nodes).
-    for source in tree:
-        # Find neighbor in the tree
-        target = tree[source]
-        # compute minimum cut
-        cut_value, partition = nx.minimum_cut(
-            G, source, target, capacity=capacity, flow_func=flow_func, residual=R
-        )
-        labels[(source, target)] = cut_value
-        # Update the tree
-        # Source will always be in partition[0] and target in partition[1]
-        for node in partition[0]:
-            if node != source and node in tree and tree[node] == target:
-                tree[node] = source
-                labels[node, source] = labels.get((node, target), cut_value)
-        #
-        if target != root and tree[target] in partition[0]:
-            labels[source, tree[target]] = labels[target, tree[target]]
-            labels[target, source] = cut_value
-            tree[source] = tree[target]
-            tree[target] = source
-
-    # Build the tree
-    T = nx.Graph()
-    T.add_nodes_from(G)
-    T.add_weighted_edges_from(((u, v, labels[u, v]) for u, v in tree.items()))
-    return T
+    pass

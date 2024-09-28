@@ -9,13 +9,10 @@ nodes in *S* that are outside *S*.
 
 """
 from itertools import chain
-
 import networkx as nx
+__all__ = ['edge_boundary', 'node_boundary']
 
-__all__ = ["edge_boundary", "node_boundary"]
-
-
-@nx._dispatchable(edge_attrs={"data": "default"}, preserve_edge_attrs="data")
+@nx._dispatchable(edge_attrs={'data': 'default'}, preserve_edge_attrs='data')
 def edge_boundary(G, nbunch1, nbunch2=None, data=False, keys=False, default=None):
     """Returns the edge boundary of `nbunch1`.
 
@@ -82,29 +79,7 @@ def edge_boundary(G, nbunch1, nbunch2=None, data=False, keys=False, default=None
     the interest of speed and generality, that is not required here.
 
     """
-    nset1 = {n for n in nbunch1 if n in G}
-    # Here we create an iterator over edges incident to nodes in the set
-    # `nset1`. The `Graph.edges()` method does not provide a guarantee
-    # on the orientation of the edges, so our algorithm below must
-    # handle the case in which exactly one orientation, either (u, v) or
-    # (v, u), appears in this iterable.
-    if G.is_multigraph():
-        edges = G.edges(nset1, data=data, keys=keys, default=default)
-    else:
-        edges = G.edges(nset1, data=data, default=default)
-    # If `nbunch2` is not provided, then it is assumed to be the set
-    # complement of `nbunch1`. For the sake of efficiency, this is
-    # implemented by using the `not in` operator, instead of by creating
-    # an additional set and using the `in` operator.
-    if nbunch2 is None:
-        return (e for e in edges if (e[0] in nset1) ^ (e[1] in nset1))
-    nset2 = set(nbunch2)
-    return (
-        e
-        for e in edges
-        if (e[0] in nset1 and e[1] in nset2) or (e[1] in nset1 and e[0] in nset2)
-    )
-
+    pass
 
 @nx._dispatchable
 def node_boundary(G, nbunch1, nbunch2=None):
@@ -158,10 +133,4 @@ def node_boundary(G, nbunch1, nbunch2=None):
     the interest of speed and generality, that is not required here.
 
     """
-    nset1 = {n for n in nbunch1 if n in G}
-    bdy = set(chain.from_iterable(G[v] for v in nset1)) - nset1
-    # If `nbunch2` is not specified, it is assumed to be the set
-    # complement of `nbunch1`.
-    if nbunch2 is not None:
-        bdy &= set(nbunch2)
-    return bdy
+    pass

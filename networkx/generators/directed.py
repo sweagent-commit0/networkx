@@ -3,22 +3,12 @@ Generators for some directed graphs, including growing network (GN) graphs and
 scale-free graphs.
 
 """
-
 import numbers
 from collections import Counter
-
 import networkx as nx
 from networkx.generators.classic import empty_graph
 from networkx.utils import discrete_sequence, py_random_state, weighted_choice
-
-__all__ = [
-    "gn_graph",
-    "gnc_graph",
-    "gnr_graph",
-    "random_k_out_graph",
-    "scale_free_graph",
-]
-
+__all__ = ['gn_graph', 'gnc_graph', 'gnr_graph', 'random_k_out_graph', 'scale_free_graph']
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -62,31 +52,7 @@ def gn_graph(n, kernel=None, create_using=None, seed=None):
            Organization of Growing Random Networks,
            Phys. Rev. E, 63, 066123, 2001.
     """
-    G = empty_graph(1, create_using, default=nx.DiGraph)
-    if not G.is_directed():
-        raise nx.NetworkXError("create_using must indicate a Directed Graph")
-
-    if kernel is None:
-
-        def kernel(x):
-            return x
-
-    if n == 1:
-        return G
-
-    G.add_edge(1, 0)  # get started
-    ds = [1, 1]  # degree sequence
-
-    for source in range(2, n):
-        # compute distribution from kernel and degree
-        dist = [kernel(d) for d in ds]
-        # choose target from discrete distribution
-        target = discrete_sequence(1, distribution=dist, seed=seed)[0]
-        G.add_edge(source, target)
-        ds.append(1)  # the source has only one link (degree one)
-        ds[target] += 1  # add one to the target link degree
-    return G
-
+    pass
 
 @py_random_state(3)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -127,20 +93,7 @@ def gnr_graph(n, p, create_using=None, seed=None):
            Organization of Growing Random Networks,
            Phys. Rev. E, 63, 066123, 2001.
     """
-    G = empty_graph(1, create_using, default=nx.DiGraph)
-    if not G.is_directed():
-        raise nx.NetworkXError("create_using must indicate a Directed Graph")
-
-    if n == 1:
-        return G
-
-    for source in range(1, n):
-        target = seed.randrange(0, source)
-        if seed.random() < p and target != 0:
-            target = next(G.successors(target))
-        G.add_edge(source, target)
-    return G
-
+    pass
 
 @py_random_state(2)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -167,33 +120,11 @@ def gnc_graph(n, create_using=None, seed=None):
            Network Growth by Copying,
            Phys. Rev. E, 71, 036118, 2005k.},
     """
-    G = empty_graph(1, create_using, default=nx.DiGraph)
-    if not G.is_directed():
-        raise nx.NetworkXError("create_using must indicate a Directed Graph")
-
-    if n == 1:
-        return G
-
-    for source in range(1, n):
-        target = seed.randrange(0, source)
-        for succ in G.successors(target):
-            G.add_edge(source, succ)
-        G.add_edge(source, target)
-    return G
-
+    pass
 
 @py_random_state(6)
 @nx._dispatchable(graphs=None, returns_graph=True)
-def scale_free_graph(
-    n,
-    alpha=0.41,
-    beta=0.54,
-    gamma=0.05,
-    delta_in=0.2,
-    delta_out=0,
-    seed=None,
-    initial_graph=None,
-):
+def scale_free_graph(n, alpha=0.41, beta=0.54, gamma=0.05, delta_in=0.2, delta_out=0, seed=None, initial_graph=None):
     """Returns a scale-free directed graph.
 
     Parameters
@@ -243,95 +174,7 @@ def scale_free_graph(
            Proceedings of the fourteenth annual ACM-SIAM Symposium on
            Discrete Algorithms, 132--139, 2003.
     """
-
-    def _choose_node(candidates, node_list, delta):
-        if delta > 0:
-            bias_sum = len(node_list) * delta
-            p_delta = bias_sum / (bias_sum + len(candidates))
-            if seed.random() < p_delta:
-                return seed.choice(node_list)
-        return seed.choice(candidates)
-
-    if initial_graph is not None and hasattr(initial_graph, "_adj"):
-        if not isinstance(initial_graph, nx.MultiDiGraph):
-            raise nx.NetworkXError("initial_graph must be a MultiDiGraph.")
-        G = initial_graph
-    else:
-        # Start with 3-cycle
-        G = nx.MultiDiGraph([(0, 1), (1, 2), (2, 0)])
-
-    if alpha <= 0:
-        raise ValueError("alpha must be > 0.")
-    if beta <= 0:
-        raise ValueError("beta must be > 0.")
-    if gamma <= 0:
-        raise ValueError("gamma must be > 0.")
-
-    if abs(alpha + beta + gamma - 1.0) >= 1e-9:
-        raise ValueError("alpha+beta+gamma must equal 1.")
-
-    if delta_in < 0:
-        raise ValueError("delta_in must be >= 0.")
-
-    if delta_out < 0:
-        raise ValueError("delta_out must be >= 0.")
-
-    # pre-populate degree states
-    vs = sum((count * [idx] for idx, count in G.out_degree()), [])
-    ws = sum((count * [idx] for idx, count in G.in_degree()), [])
-
-    # pre-populate node state
-    node_list = list(G.nodes())
-
-    # see if there already are number-based nodes
-    numeric_nodes = [n for n in node_list if isinstance(n, numbers.Number)]
-    if len(numeric_nodes) > 0:
-        # set cursor for new nodes appropriately
-        cursor = max(int(n.real) for n in numeric_nodes) + 1
-    else:
-        # or start at zero
-        cursor = 0
-
-    while len(G) < n:
-        r = seed.random()
-
-        # random choice in alpha,beta,gamma ranges
-        if r < alpha:
-            # alpha
-            # add new node v
-            v = cursor
-            cursor += 1
-            # also add to node state
-            node_list.append(v)
-            # choose w according to in-degree and delta_in
-            w = _choose_node(ws, node_list, delta_in)
-
-        elif r < alpha + beta:
-            # beta
-            # choose v according to out-degree and delta_out
-            v = _choose_node(vs, node_list, delta_out)
-            # choose w according to in-degree and delta_in
-            w = _choose_node(ws, node_list, delta_in)
-
-        else:
-            # gamma
-            # choose v according to out-degree and delta_out
-            v = _choose_node(vs, node_list, delta_out)
-            # add new node w
-            w = cursor
-            cursor += 1
-            # also add to node state
-            node_list.append(w)
-
-        # add edge to graph
-        G.add_edge(v, w)
-
-        # update degree states
-        vs.append(v)
-        ws.append(w)
-
-    return G
-
+    pass
 
 @py_random_state(4)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -391,28 +234,7 @@ def random_uniform_k_out_graph(n, k, self_loops=True, with_replacement=True, see
     set to positive infinity.
 
     """
-    if with_replacement:
-        create_using = nx.MultiDiGraph()
-
-        def sample(v, nodes):
-            if not self_loops:
-                nodes = nodes - {v}
-            return (seed.choice(list(nodes)) for i in range(k))
-
-    else:
-        create_using = nx.DiGraph()
-
-        def sample(v, nodes):
-            if not self_loops:
-                nodes = nodes - {v}
-            return seed.sample(list(nodes), k)
-
-    G = nx.empty_graph(n, create_using)
-    nodes = set(G)
-    for u in G:
-        G.add_edges_from((u, v) for v in sample(u, nodes))
-    return G
-
+    pass
 
 @py_random_state(4)
 @nx._dispatchable(graphs=None, returns_graph=True)
@@ -483,19 +305,4 @@ def random_k_out_graph(n, k, alpha, self_loops=True, seed=None):
          <https://arxiv.org/abs/1311.5961>
 
     """
-    if alpha < 0:
-        raise ValueError("alpha must be positive")
-    G = nx.empty_graph(n, create_using=nx.MultiDiGraph)
-    weights = Counter({v: alpha for v in G})
-    for i in range(k * n):
-        u = seed.choice([v for v, d in G.out_degree() if d < k])
-        # If self-loops are not allowed, make the source node `u` have
-        # weight zero.
-        if not self_loops:
-            adjustment = Counter({u: weights[u]})
-        else:
-            adjustment = Counter()
-        v = weighted_choice(weights - adjustment, seed=seed)
-        G.add_edge(u, v)
-        weights[v] += 1
-    return G
+    pass

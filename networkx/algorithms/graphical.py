@@ -1,21 +1,11 @@
 """Test sequences for graphiness.
 """
 import heapq
-
 import networkx as nx
-
-__all__ = [
-    "is_graphical",
-    "is_multigraphical",
-    "is_pseudographical",
-    "is_digraphical",
-    "is_valid_degree_sequence_erdos_gallai",
-    "is_valid_degree_sequence_havel_hakimi",
-]
-
+__all__ = ['is_graphical', 'is_multigraphical', 'is_pseudographical', 'is_digraphical', 'is_valid_degree_sequence_erdos_gallai', 'is_valid_degree_sequence_havel_hakimi']
 
 @nx._dispatchable(graphs=None)
-def is_graphical(sequence, method="eg"):
+def is_graphical(sequence, method='eg'):
     """Returns True if sequence is a valid degree sequence.
 
     A degree sequence is valid if some graph can realize it.
@@ -63,39 +53,11 @@ def is_graphical(sequence, method="eg"):
     .. [CL1996] G. Chartrand and L. Lesniak, "Graphs and Digraphs",
        Chapman and Hall/CRC, 1996.
     """
-    if method == "eg":
-        valid = is_valid_degree_sequence_erdos_gallai(list(sequence))
-    elif method == "hh":
-        valid = is_valid_degree_sequence_havel_hakimi(list(sequence))
-    else:
-        msg = "`method` must be 'eg' or 'hh'"
-        raise nx.NetworkXException(msg)
-    return valid
-
-
-def _basic_graphical_tests(deg_sequence):
-    # Sort and perform some simple tests on the sequence
-    deg_sequence = nx.utils.make_list_of_ints(deg_sequence)
-    p = len(deg_sequence)
-    num_degs = [0] * p
-    dmax, dmin, dsum, n = 0, p, 0, 0
-    for d in deg_sequence:
-        # Reject if degree is negative or larger than the sequence length
-        if d < 0 or d >= p:
-            raise nx.NetworkXUnfeasible
-        # Process only the non-zero integers
-        elif d > 0:
-            dmax, dmin, dsum, n = max(dmax, d), min(dmin, d), dsum + d, n + 1
-            num_degs[d] += 1
-    # Reject sequence if it has odd sum or is oversaturated
-    if dsum % 2 or dsum > n * (n - 1):
-        raise nx.NetworkXUnfeasible
-    return dmax, dmin, dsum, n, num_degs
-
+    pass
 
 @nx._dispatchable(graphs=None)
 def is_valid_degree_sequence_havel_hakimi(deg_sequence):
-    r"""Returns True if deg_sequence can be realized by a simple graph.
+    """Returns True if deg_sequence can be realized by a simple graph.
 
     The validation proceeds using the Havel-Hakimi theorem
     [havel1955]_, [hakimi1962]_, [CL1996]_.
@@ -130,7 +92,7 @@ def is_valid_degree_sequence_havel_hakimi(deg_sequence):
     The ZZ condition says that for the sequence d if
 
     .. math::
-        |d| >= \frac{(\max(d) + \min(d) + 1)^2}{4*\min(d)}
+        |d| >= \\frac{(\\max(d) + \\min(d) + 1)^2}{4*\\min(d)}
 
     then d is graphical.  This was shown in Theorem 6 in [1]_.
 
@@ -145,47 +107,11 @@ def is_valid_degree_sequence_havel_hakimi(deg_sequence):
     .. [CL1996] G. Chartrand and L. Lesniak, "Graphs and Digraphs",
        Chapman and Hall/CRC, 1996.
     """
-    try:
-        dmax, dmin, dsum, n, num_degs = _basic_graphical_tests(deg_sequence)
-    except nx.NetworkXUnfeasible:
-        return False
-    # Accept if sequence has no non-zero degrees or passes the ZZ condition
-    if n == 0 or 4 * dmin * n >= (dmax + dmin + 1) * (dmax + dmin + 1):
-        return True
-
-    modstubs = [0] * (dmax + 1)
-    # Successively reduce degree sequence by removing the maximum degree
-    while n > 0:
-        # Retrieve the maximum degree in the sequence
-        while num_degs[dmax] == 0:
-            dmax -= 1
-        # If there are not enough stubs to connect to, then the sequence is
-        # not graphical
-        if dmax > n - 1:
-            return False
-
-        # Remove largest stub in list
-        num_degs[dmax], n = num_degs[dmax] - 1, n - 1
-        # Reduce the next dmax largest stubs
-        mslen = 0
-        k = dmax
-        for i in range(dmax):
-            while num_degs[k] == 0:
-                k -= 1
-            num_degs[k], n = num_degs[k] - 1, n - 1
-            if k > 1:
-                modstubs[mslen] = k - 1
-                mslen += 1
-        # Add back to the list any non-zero stubs that were removed
-        for i in range(mslen):
-            stub = modstubs[i]
-            num_degs[stub], n = num_degs[stub] + 1, n + 1
-    return True
-
+    pass
 
 @nx._dispatchable(graphs=None)
 def is_valid_degree_sequence_erdos_gallai(deg_sequence):
-    r"""Returns True if deg_sequence can be realized by a simple graph.
+    """Returns True if deg_sequence can be realized by a simple graph.
 
     The validation is done using the Erdős-Gallai theorem [EG1960]_.
 
@@ -223,8 +149,8 @@ def is_valid_degree_sequence_erdos_gallai(deg_sequence):
 
      .. math::
 
-       \sum_{i=1}^{k} d_i \leq k(k-1) + \sum_{j=k+1}^{n} \min(d_i,k)
-             = k(n-1) - ( k \sum_{j=0}^{k-1} n_j - \sum_{j=0}^{k-1} j n_j )
+       \\sum_{i=1}^{k} d_i \\leq k(k-1) + \\sum_{j=k+1}^{n} \\min(d_i,k)
+             = k(n-1) - ( k \\sum_{j=0}^{k-1} n_j - \\sum_{j=0}^{k-1} j n_j )
 
     A strong index k is any index where d_k >= k and the value n_j is the
     number of occurrences of j in d.  The maximal strong index is called the
@@ -235,7 +161,7 @@ def is_valid_degree_sequence_erdos_gallai(deg_sequence):
     The ZZ condition says that for the sequence d if
 
     .. math::
-        |d| >= \frac{(\max(d) + \min(d) + 1)^2}{4*\min(d)}
+        |d| >= \\frac{(\\max(d) + \\min(d) + 1)^2}{4*\\min(d)}
 
     then d is graphical.  This was shown in Theorem 6 in [2]_.
 
@@ -247,32 +173,7 @@ def is_valid_degree_sequence_erdos_gallai(deg_sequence):
        of graphic sequences", Discrete Mathematics, 105, pp. 292-303 (1992).
     .. [EG1960] Erdős and Gallai, Mat. Lapok 11 264, 1960.
     """
-    try:
-        dmax, dmin, dsum, n, num_degs = _basic_graphical_tests(deg_sequence)
-    except nx.NetworkXUnfeasible:
-        return False
-    # Accept if sequence has no non-zero degrees or passes the ZZ condition
-    if n == 0 or 4 * dmin * n >= (dmax + dmin + 1) * (dmax + dmin + 1):
-        return True
-
-    # Perform the EG checks using the reformulation of Zverovich and Zverovich
-    k, sum_deg, sum_nj, sum_jnj = 0, 0, 0, 0
-    for dk in range(dmax, dmin - 1, -1):
-        if dk < k + 1:  # Check if already past Durfee index
-            return True
-        if num_degs[dk] > 0:
-            run_size = num_degs[dk]  # Process a run of identical-valued degrees
-            if dk < k + run_size:  # Check if end of run is past Durfee index
-                run_size = dk - k  # Adjust back to Durfee index
-            sum_deg += run_size * dk
-            for v in range(run_size):
-                sum_nj += num_degs[k + v]
-                sum_jnj += (k + v) * num_degs[k + v]
-            k += run_size
-            if sum_deg > k * (n - 1) - k * sum_nj + sum_jnj:
-                return False
-    return True
-
+    pass
 
 @nx._dispatchable(graphs=None)
 def is_multigraphical(sequence):
@@ -311,19 +212,7 @@ def is_multigraphical(sequence):
        degrees of the vertices of a linear graph", J. SIAM, 10, pp. 496-506
        (1962).
     """
-    try:
-        deg_sequence = nx.utils.make_list_of_ints(sequence)
-    except nx.NetworkXError:
-        return False
-    dsum, dmax = 0, 0
-    for d in deg_sequence:
-        if d < 0:
-            return False
-        dsum, dmax = dsum + d, max(dmax, d)
-    if dsum % 2 or dsum < 2 * dmax:
-        return False
-    return True
-
+    pass
 
 @nx._dispatchable(graphs=None)
 def is_pseudographical(sequence):
@@ -365,16 +254,11 @@ def is_pseudographical(sequence):
        and their degree lists", IEEE Trans. Circuits and Systems, CAS-23(12),
        pp. 778-782 (1976).
     """
-    try:
-        deg_sequence = nx.utils.make_list_of_ints(sequence)
-    except nx.NetworkXError:
-        return False
-    return sum(deg_sequence) % 2 == 0 and min(deg_sequence) >= 0
-
+    pass
 
 @nx._dispatchable(graphs=None)
 def is_digraphical(in_sequence, out_sequence):
-    r"""Returns True if some directed graph can realize the in- and out-degree
+    """Returns True if some directed graph can realize the in- and out-degree
     sequences.
 
     Parameters
@@ -407,7 +291,7 @@ def is_digraphical(in_sequence, out_sequence):
     Notes
     -----
     This algorithm is from Kleitman and Wang [1]_.
-    The worst case runtime is $O(s \times \log n)$ where $s$ and $n$ are the
+    The worst case runtime is $O(s \\times \\log n)$ where $s$ and $n$ are the
     sum and length of the sequences respectively.
 
     References
@@ -416,68 +300,4 @@ def is_digraphical(in_sequence, out_sequence):
        Algorithms for Constructing Graphs and Digraphs with Given Valences
        and Factors, Discrete Mathematics, 6(1), pp. 79-88 (1973)
     """
-    try:
-        in_deg_sequence = nx.utils.make_list_of_ints(in_sequence)
-        out_deg_sequence = nx.utils.make_list_of_ints(out_sequence)
-    except nx.NetworkXError:
-        return False
-    # Process the sequences and form two heaps to store degree pairs with
-    # either zero or non-zero out degrees
-    sumin, sumout, nin, nout = 0, 0, len(in_deg_sequence), len(out_deg_sequence)
-    maxn = max(nin, nout)
-    maxin = 0
-    if maxn == 0:
-        return True
-    stubheap, zeroheap = [], []
-    for n in range(maxn):
-        in_deg, out_deg = 0, 0
-        if n < nout:
-            out_deg = out_deg_sequence[n]
-        if n < nin:
-            in_deg = in_deg_sequence[n]
-        if in_deg < 0 or out_deg < 0:
-            return False
-        sumin, sumout, maxin = sumin + in_deg, sumout + out_deg, max(maxin, in_deg)
-        if in_deg > 0:
-            stubheap.append((-1 * out_deg, -1 * in_deg))
-        elif out_deg > 0:
-            zeroheap.append(-1 * out_deg)
-    if sumin != sumout:
-        return False
-    heapq.heapify(stubheap)
-    heapq.heapify(zeroheap)
-
-    modstubs = [(0, 0)] * (maxin + 1)
-    # Successively reduce degree sequence by removing the maximum out degree
-    while stubheap:
-        # Take the first value in the sequence with non-zero in degree
-        (freeout, freein) = heapq.heappop(stubheap)
-        freein *= -1
-        if freein > len(stubheap) + len(zeroheap):
-            return False
-
-        # Attach out stubs to the nodes with the most in stubs
-        mslen = 0
-        for i in range(freein):
-            if zeroheap and (not stubheap or stubheap[0][0] > zeroheap[0]):
-                stubout = heapq.heappop(zeroheap)
-                stubin = 0
-            else:
-                (stubout, stubin) = heapq.heappop(stubheap)
-            if stubout == 0:
-                return False
-            # Check if target is now totally connected
-            if stubout + 1 < 0 or stubin < 0:
-                modstubs[mslen] = (stubout + 1, stubin)
-                mslen += 1
-
-        # Add back the nodes to the heap that still have available stubs
-        for i in range(mslen):
-            stub = modstubs[i]
-            if stub[1] < 0:
-                heapq.heappush(stubheap, stub)
-            else:
-                heapq.heappush(zeroheap, stub[0])
-        if freeout < 0:
-            heapq.heappush(zeroheap, freeout)
-    return True
+    pass

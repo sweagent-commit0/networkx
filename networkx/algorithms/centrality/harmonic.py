@@ -1,21 +1,18 @@
 """Functions for computing the harmonic centrality of a graph."""
 from functools import partial
-
 import networkx as nx
+__all__ = ['harmonic_centrality']
 
-__all__ = ["harmonic_centrality"]
-
-
-@nx._dispatchable(edge_attrs="distance")
+@nx._dispatchable(edge_attrs='distance')
 def harmonic_centrality(G, nbunch=None, distance=None, sources=None):
-    r"""Compute harmonic centrality for nodes.
+    """Compute harmonic centrality for nodes.
 
     Harmonic centrality [1]_ of a node `u` is the sum of the reciprocal
     of the shortest path distances from all other nodes to `u`
 
     .. math::
 
-        C(u) = \sum_{v \neq u} \frac{1}{d(v, u)}
+        C(u) = \\sum_{v \\neq u} \\frac{1}{d(v, u)}
 
     where `d(v, u)` is the shortest-path distance between `v` and `u`.
 
@@ -63,18 +60,4 @@ def harmonic_centrality(G, nbunch=None, distance=None, sources=None):
     .. [1] Boldi, Paolo, and Sebastiano Vigna. "Axioms for centrality."
            Internet Mathematics 10.3-4 (2014): 222-262.
     """
-
-    nbunch = set(G.nbunch_iter(nbunch)) if nbunch is not None else set(G.nodes)
-    sources = set(G.nbunch_iter(sources)) if sources is not None else G.nodes
-
-    spl = partial(nx.shortest_path_length, G, weight=distance)
-    centrality = {u: 0 for u in nbunch}
-    for v in sources:
-        dist = spl(v)
-        for u in nbunch.intersection(dist):
-            d = dist[u]
-            if d == 0:  # handle u == v and edges with 0 weight
-                continue
-            centrality[u] += 1 / d
-
-    return centrality
+    pass

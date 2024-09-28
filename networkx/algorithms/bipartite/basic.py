@@ -6,16 +6,7 @@ Bipartite Graph Algorithms
 import networkx as nx
 from networkx.algorithms.components import connected_components
 from networkx.exception import AmbiguousSolution
-
-__all__ = [
-    "is_bipartite",
-    "is_bipartite_node_set",
-    "color",
-    "sets",
-    "density",
-    "degrees",
-]
-
+__all__ = ['is_bipartite', 'is_bipartite_node_set', 'color', 'sets', 'density', 'degrees']
 
 @nx._dispatchable
 def color(G):
@@ -53,35 +44,7 @@ def color(G):
     >>> print(G.nodes[1]["bipartite"])
     0
     """
-    if G.is_directed():
-        import itertools
-
-        def neighbors(v):
-            return itertools.chain.from_iterable([G.predecessors(v), G.successors(v)])
-
-    else:
-        neighbors = G.neighbors
-
-    color = {}
-    for n in G:  # handle disconnected graphs
-        if n in color or len(G[n]) == 0:  # skip isolates
-            continue
-        queue = [n]
-        color[n] = 1  # nodes seen with color (1 or 0)
-        while queue:
-            v = queue.pop()
-            c = 1 - color[v]  # opposite color of node v
-            for w in neighbors(v):
-                if w in color:
-                    if color[w] == color[v]:
-                        raise nx.NetworkXError("Graph is not bipartite.")
-                else:
-                    color[w] = c
-                    queue.append(w)
-    # color isolates with 0
-    color.update(dict.fromkeys(nx.isolates(G), 0))
-    return color
-
+    pass
 
 @nx._dispatchable
 def is_bipartite(G):
@@ -102,12 +65,7 @@ def is_bipartite(G):
     --------
     color, is_bipartite_node_set
     """
-    try:
-        color(G)
-        return True
-    except nx.NetworkXError:
-        return False
-
+    pass
 
 @nx._dispatchable
 def is_bipartite_node_set(G, nodes):
@@ -135,24 +93,7 @@ def is_bipartite_node_set(G, nodes):
     For connected graphs the bipartite sets are unique.  This function handles
     disconnected graphs.
     """
-    S = set(nodes)
-
-    if len(S) < len(nodes):
-        # this should maybe just return False?
-        raise AmbiguousSolution(
-            "The input node set contains duplicates.\n"
-            "This may lead to incorrect results when using it in bipartite algorithms.\n"
-            "Consider using set(nodes) as the input"
-        )
-
-    for CC in (G.subgraph(c).copy() for c in connected_components(G)):
-        X, Y = sets(CC)
-        if not (
-            (X.issubset(S) and Y.isdisjoint(S)) or (Y.issubset(S) and X.isdisjoint(S))
-        ):
-            return False
-    return True
-
+    pass
 
 @nx._dispatchable
 def sets(G, top_nodes=None):
@@ -204,24 +145,9 @@ def sets(G, top_nodes=None):
     color
 
     """
-    if G.is_directed():
-        is_connected = nx.is_weakly_connected
-    else:
-        is_connected = nx.is_connected
-    if top_nodes is not None:
-        X = set(top_nodes)
-        Y = set(G) - X
-    else:
-        if not is_connected(G):
-            msg = "Disconnected graph: Ambiguous solution for bipartite sets."
-            raise nx.AmbiguousSolution(msg)
-        c = color(G)
-        X = {n for n, is_top in c.items() if is_top}
-        Y = {n for n, is_top in c.items() if not is_top}
-    return (X, Y)
+    pass
 
-
-@nx._dispatchable(graphs="B")
+@nx._dispatchable(graphs='B')
 def density(B, nodes):
     """Returns density of bipartite graph B.
 
@@ -260,21 +186,9 @@ def density(B, nodes):
     --------
     color
     """
-    n = len(B)
-    m = nx.number_of_edges(B)
-    nb = len(nodes)
-    nt = n - nb
-    if m == 0:  # includes cases n==0 and n==1
-        d = 0.0
-    else:
-        if B.is_directed():
-            d = m / (2 * nb * nt)
-        else:
-            d = m / (nb * nt)
-    return d
+    pass
 
-
-@nx._dispatchable(graphs="B", edge_attrs="weight")
+@nx._dispatchable(graphs='B', edge_attrs='weight')
 def degrees(B, nodes, weight=None):
     """Returns the degrees of the two node sets in the bipartite graph B.
 
@@ -316,6 +230,4 @@ def degrees(B, nodes, weight=None):
     --------
     color, density
     """
-    bottom = set(nodes)
-    top = set(B) - bottom
-    return (B.degree(top, weight), B.degree(bottom, weight))
+    pass

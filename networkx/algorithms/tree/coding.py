@@ -10,18 +10,9 @@ sequences to labeled trees.
 """
 from collections import Counter
 from itertools import chain
-
 import networkx as nx
 from networkx.utils import not_implemented_for
-
-__all__ = [
-    "from_nested_tuple",
-    "from_prufer_sequence",
-    "NotATree",
-    "to_nested_tuple",
-    "to_prufer_sequence",
-]
-
+__all__ = ['from_nested_tuple', 'from_prufer_sequence', 'NotATree', 'to_nested_tuple', 'to_prufer_sequence']
 
 class NotATree(nx.NetworkXException):
     """Raised when a function expects a tree (that is, a connected
@@ -30,9 +21,8 @@ class NotATree(nx.NetworkXException):
 
     """
 
-
-@not_implemented_for("directed")
-@nx._dispatchable(graphs="T")
+@not_implemented_for('directed')
+@nx._dispatchable(graphs='T')
 def to_nested_tuple(T, root, canonical_form=False):
     """Returns a nested tuple representation of the given tree.
 
@@ -98,35 +88,7 @@ def to_nested_tuple(T, root, canonical_form=False):
         ((((),),),)
 
     """
-
-    def _make_tuple(T, root, _parent):
-        """Recursively compute the nested tuple representation of the
-        given rooted tree.
-
-        ``_parent`` is the parent node of ``root`` in the supertree in
-        which ``T`` is a subtree, or ``None`` if ``root`` is the root of
-        the supertree. This argument is used to determine which
-        neighbors of ``root`` are children and which is the parent.
-
-        """
-        # Get the neighbors of `root` that are not the parent node. We
-        # are guaranteed that `root` is always in `T` by construction.
-        children = set(T[root]) - {_parent}
-        if len(children) == 0:
-            return ()
-        nested = (_make_tuple(T, v, root) for v in children)
-        if canonical_form:
-            nested = sorted(nested)
-        return tuple(nested)
-
-    # Do some sanity checks on the input.
-    if not nx.is_tree(T):
-        raise nx.NotATree("provided graph is not a tree")
-    if root not in T:
-        raise nx.NodeNotFound(f"Graph {T} contains no node {root}")
-
-    return _make_tuple(T, root, None)
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def from_nested_tuple(sequence, sensible_relabeling=False):
@@ -178,44 +140,12 @@ def from_nested_tuple(sequence, sensible_relabeling=False):
         True
 
     """
+    pass
 
-    def _make_tree(sequence):
-        """Recursively creates a tree from the given sequence of nested
-        tuples.
-
-        This function employs the :func:`~networkx.tree.join` function
-        to recursively join subtrees into a larger tree.
-
-        """
-        # The empty sequence represents the empty tree, which is the
-        # (unique) graph with a single node. We mark the single node
-        # with an attribute that indicates that it is the root of the
-        # graph.
-        if len(sequence) == 0:
-            return nx.empty_graph(1)
-        # For a nonempty sequence, get the subtrees for each child
-        # sequence and join all the subtrees at their roots. After
-        # joining the subtrees, the root is node 0.
-        return nx.tree.join_trees([(_make_tree(child), 0) for child in sequence])
-
-    # Make the tree and remove the `is_root` node attribute added by the
-    # helper function.
-    T = _make_tree(sequence)
-    if sensible_relabeling:
-        # Relabel the nodes according to their breadth-first search
-        # order, starting from the root node (that is, the node 0).
-        bfs_nodes = chain([0], (v for u, v in nx.bfs_edges(T, 0)))
-        labels = {v: i for i, v in enumerate(bfs_nodes)}
-        # We would like to use `copy=False`, but `relabel_nodes` doesn't
-        # allow a relabel mapping that can't be topologically sorted.
-        T = nx.relabel_nodes(T, labels)
-    return T
-
-
-@not_implemented_for("directed")
-@nx._dispatchable(graphs="T")
+@not_implemented_for('directed')
+@nx._dispatchable(graphs='T')
 def to_prufer_sequence(T):
-    r"""Returns the Prüfer sequence of the given tree.
+    """Returns the Prüfer sequence of the given tree.
 
     A *Prüfer sequence* is a list of *n* - 2 numbers between 0 and
     *n* - 1, inclusive. The tree corresponding to a given Prüfer
@@ -286,37 +216,11 @@ def to_prufer_sequence(T):
     True
 
     """
-    # Perform some sanity checks on the input.
-    n = len(T)
-    if n < 2:
-        msg = "Prüfer sequence undefined for trees with fewer than two nodes"
-        raise nx.NetworkXPointlessConcept(msg)
-    if not nx.is_tree(T):
-        raise nx.NotATree("provided graph is not a tree")
-    if set(T) != set(range(n)):
-        raise KeyError("tree must have node labels {0, ..., n - 1}")
-
-    degree = dict(T.degree())
-
-    def parents(u):
-        return next(v for v in T[u] if degree[v] > 1)
-
-    index = u = next(k for k in range(n) if degree[k] == 1)
-    result = []
-    for i in range(n - 2):
-        v = parents(u)
-        result.append(v)
-        degree[v] -= 1
-        if v < index and degree[v] == 1:
-            u = v
-        else:
-            index = u = next(k for k in range(index + 1, n) if degree[k] == 1)
-    return result
-
+    pass
 
 @nx._dispatchable(graphs=None, returns_graph=True)
 def from_prufer_sequence(sequence):
-    r"""Returns the tree corresponding to the given Prüfer sequence.
+    """Returns the tree corresponding to the given Prüfer sequence.
 
     A *Prüfer sequence* is a list of *n* - 2 numbers between 0 and
     *n* - 1, inclusive. The tree corresponding to a given Prüfer
@@ -381,32 +285,4 @@ def from_prufer_sequence(sequence):
     True
 
     """
-    n = len(sequence) + 2
-    # `degree` stores the remaining degree (plus one) for each node. The
-    # degree of a node in the decoded tree is one more than the number
-    # of times it appears in the code.
-    degree = Counter(chain(sequence, range(n)))
-    T = nx.empty_graph(n)
-    # `not_orphaned` is the set of nodes that have a parent in the
-    # tree. After the loop, there should be exactly two nodes that are
-    # not in this set.
-    not_orphaned = set()
-    index = u = next(k for k in range(n) if degree[k] == 1)
-    for v in sequence:
-        # check the validity of the prufer sequence
-        if v < 0 or v > n - 1:
-            raise nx.NetworkXError(
-                f"Invalid Prufer sequence: Values must be between 0 and {n-1}, got {v}"
-            )
-        T.add_edge(u, v)
-        not_orphaned.add(u)
-        degree[v] -= 1
-        if v < index and degree[v] == 1:
-            u = v
-        else:
-            index = u = next(k for k in range(index + 1, n) if degree[k] == 1)
-    # At this point, there must be exactly two orphaned nodes; join them.
-    orphans = set(T) - not_orphaned
-    u, v = orphans
-    T.add_edge(u, v)
-    return T
+    pass

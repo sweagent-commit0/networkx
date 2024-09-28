@@ -1,15 +1,9 @@
 """Attracting components."""
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for
+__all__ = ['number_attracting_components', 'attracting_components', 'is_attracting_component']
 
-__all__ = [
-    "number_attracting_components",
-    "attracting_components",
-    "is_attracting_component",
-]
-
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def attracting_components(G):
     """Generates the attracting components in `G`.
@@ -46,14 +40,9 @@ def attracting_components(G):
     is_attracting_component
 
     """
-    scc = list(nx.strongly_connected_components(G))
-    cG = nx.condensation(G, scc)
-    for n in cG:
-        if cG.out_degree(n) == 0:
-            yield scc[n]
+    pass
 
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def number_attracting_components(G):
     """Returns the number of attracting components in `G`.
@@ -79,10 +68,9 @@ def number_attracting_components(G):
     is_attracting_component
 
     """
-    return sum(1 for ac in attracting_components(G))
+    pass
 
-
-@not_implemented_for("undirected")
+@not_implemented_for('undirected')
 @nx._dispatchable
 def is_attracting_component(G):
     """Returns True if `G` consists of a single attracting component.
@@ -108,7 +96,4 @@ def is_attracting_component(G):
     number_attracting_components
 
     """
-    ac = list(attracting_components(G))
-    if len(ac) == 1:
-        return len(ac[0]) == len(G)
-    return False
+    pass

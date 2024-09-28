@@ -1,14 +1,10 @@
 """Provides functions for computing the efficiency of nodes and graphs."""
-
 import networkx as nx
 from networkx.exception import NetworkXNoPath
-
 from ..utils import not_implemented_for
+__all__ = ['efficiency', 'local_efficiency', 'global_efficiency']
 
-__all__ = ["efficiency", "local_efficiency", "global_efficiency"]
-
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def efficiency(G, u, v):
     """Returns the efficiency of a pair of nodes in a graph.
@@ -52,14 +48,9 @@ def efficiency(G, u, v):
            <https://doi.org/10.1103/PhysRevLett.87.198701>
 
     """
-    try:
-        eff = 1 / nx.shortest_path_length(G, u, v)
-    except NetworkXNoPath:
-        eff = 0
-    return eff
+    pass
 
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def global_efficiency(G):
     """Returns the average global efficiency of the graph.
@@ -101,26 +92,9 @@ def global_efficiency(G):
            <https://doi.org/10.1103/PhysRevLett.87.198701>
 
     """
-    n = len(G)
-    denom = n * (n - 1)
-    if denom != 0:
-        lengths = nx.all_pairs_shortest_path_length(G)
-        g_eff = 0
-        for source, targets in lengths:
-            for target, distance in targets.items():
-                if distance > 0:
-                    g_eff += 1 / distance
-        g_eff /= denom
-        # g_eff = sum(1 / d for s, tgts in lengths
-        #                   for t, d in tgts.items() if d > 0) / denom
-    else:
-        g_eff = 0
-    # TODO This can be made more efficient by computing all pairs shortest
-    # path lengths in parallel.
-    return g_eff
+    pass
 
-
-@not_implemented_for("directed")
+@not_implemented_for('directed')
 @nx._dispatchable
 def local_efficiency(G):
     """Returns the average local efficiency of the graph.
@@ -163,6 +137,4 @@ def local_efficiency(G):
            <https://doi.org/10.1103/PhysRevLett.87.198701>
 
     """
-    # TODO This summation can be trivially parallelized.
-    efficiency_list = (global_efficiency(G.subgraph(G[v])) for v in G)
-    return sum(efficiency_list) / len(G)
+    pass

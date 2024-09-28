@@ -9,13 +9,11 @@ edges; that is, no two edges share a common vertex.
 `Wikipedia: Matching <https://en.wikipedia.org/wiki/Matching_(graph_theory)>`_
 """
 import networkx as nx
-
-__all__ = ["min_maximal_matching"]
-
+__all__ = ['min_maximal_matching']
 
 @nx._dispatchable
 def min_maximal_matching(G):
-    r"""Returns the minimum maximal matching of G. That is, out of all maximal
+    """Returns the minimum maximal matching of G. That is, out of all maximal
     matchings of the graph G, the smallest is returned.
 
     Parameters
@@ -40,4 +38,4 @@ def min_maximal_matching(G):
     ----------
     .. [1] Vazirani, Vijay Approximation Algorithms (2001)
     """
-    return nx.maximal_matching(G)
+    pass

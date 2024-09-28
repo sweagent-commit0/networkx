@@ -1,18 +1,12 @@
 """Current-flow closeness centrality measures."""
 import networkx as nx
-from networkx.algorithms.centrality.flow_matrix import (
-    CGInverseLaplacian,
-    FullInverseLaplacian,
-    SuperLUInverseLaplacian,
-)
+from networkx.algorithms.centrality.flow_matrix import CGInverseLaplacian, FullInverseLaplacian, SuperLUInverseLaplacian
 from networkx.utils import not_implemented_for, reverse_cuthill_mckee_ordering
+__all__ = ['current_flow_closeness_centrality', 'information_centrality']
 
-__all__ = ["current_flow_closeness_centrality", "information_centrality"]
-
-
-@not_implemented_for("directed")
-@nx._dispatchable(edge_attrs="weight")
-def current_flow_closeness_centrality(G, weight=None, dtype=float, solver="lu"):
+@not_implemented_for('directed')
+@nx._dispatchable(edge_attrs='weight')
+def current_flow_closeness_centrality(G, weight=None, dtype=float, solver='lu'):
     """Compute current-flow closeness centrality for nodes.
 
     Current-flow closeness centrality is variant of closeness
@@ -67,29 +61,5 @@ def current_flow_closeness_centrality(G, weight=None, dtype=float, solver="lu"):
        Social Networks 11(1):1-37, 1989.
        https://doi.org/10.1016/0378-8733(89)90016-6
     """
-    if not nx.is_connected(G):
-        raise nx.NetworkXError("Graph not connected.")
-    solvername = {
-        "full": FullInverseLaplacian,
-        "lu": SuperLUInverseLaplacian,
-        "cg": CGInverseLaplacian,
-    }
-    N = G.number_of_nodes()
-    ordering = list(reverse_cuthill_mckee_ordering(G))
-    # make a copy with integer labels according to rcm ordering
-    # this could be done without a copy if we really wanted to
-    H = nx.relabel_nodes(G, dict(zip(ordering, range(N))))
-    betweenness = dict.fromkeys(H, 0.0)  # b[n]=0 for n in H
-    N = H.number_of_nodes()
-    L = nx.laplacian_matrix(H, nodelist=range(N), weight=weight).asformat("csc")
-    L = L.astype(dtype)
-    C2 = solvername[solver](L, width=1, dtype=dtype)  # initialize solver
-    for v in H:
-        col = C2.get_row(v)
-        for w in H:
-            betweenness[v] += col.item(v) - 2 * col.item(w)
-            betweenness[w] += col.item(v)
-    return {ordering[node]: 1 / value for node, value in betweenness.items()}
-
-
+    pass
 information_centrality = current_flow_closeness_centrality

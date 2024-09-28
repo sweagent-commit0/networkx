@@ -2,15 +2,11 @@
 Laplacian centrality measures.
 """
 import networkx as nx
+__all__ = ['laplacian_centrality']
 
-__all__ = ["laplacian_centrality"]
-
-
-@nx._dispatchable(edge_attrs="weight")
-def laplacian_centrality(
-    G, normalized=True, nodelist=None, weight="weight", walk_type=None, alpha=0.95
-):
-    r"""Compute the Laplacian centrality for nodes in the graph `G`.
+@nx._dispatchable(edge_attrs='weight')
+def laplacian_centrality(G, normalized=True, nodelist=None, weight='weight', walk_type=None, alpha=0.95):
+    """Compute the Laplacian centrality for nodes in the graph `G`.
 
     The Laplacian Centrality of a node ``i`` is measured by the drop in the
     Laplacian Energy after deleting node ``i`` from the graph. The Laplacian Energy
@@ -18,13 +14,13 @@ def laplacian_centrality(
 
     .. math::
 
-        C_L(u_i,G) = \frac{(\Delta E)_i}{E_L (G)} = \frac{E_L (G)-E_L (G_i)}{E_L (G)}
+        C_L(u_i,G) = \\frac{(\\Delta E)_i}{E_L (G)} = \\frac{E_L (G)-E_L (G_i)}{E_L (G)}
 
-        E_L (G) = \sum_{i=0}^n \lambda_i^2
+        E_L (G) = \\sum_{i=0}^n \\lambda_i^2
 
     Where $E_L (G)$ is the Laplacian energy of graph `G`,
     E_L (G_i) is the Laplacian energy of graph `G` after deleting node ``i``
-    and $\lambda_i$ are the eigenvalues of `G`'s Laplacian matrix.
+    and $\\lambda_i$ are the eigenvalues of `G`'s Laplacian matrix.
     This formula shows the normalized value. Without normalization,
     the numerator on the right side is returned.
 
@@ -98,52 +94,4 @@ def laplacian_centrality(
     :func:`~networkx.linalg.laplacianmatrix.directed_laplacian_matrix`
     :func:`~networkx.linalg.laplacianmatrix.laplacian_matrix`
     """
-    import numpy as np
-    import scipy as sp
-
-    if len(G) == 0:
-        raise nx.NetworkXPointlessConcept("null graph has no centrality defined")
-    if G.size(weight=weight) == 0:
-        if normalized:
-            raise ZeroDivisionError("graph with no edges has zero full energy")
-        return {n: 0 for n in G}
-
-    if nodelist is not None:
-        nodeset = set(G.nbunch_iter(nodelist))
-        if len(nodeset) != len(nodelist):
-            raise nx.NetworkXError("nodelist has duplicate nodes or nodes not in G")
-        nodes = nodelist + [n for n in G if n not in nodeset]
-    else:
-        nodelist = nodes = list(G)
-
-    if G.is_directed():
-        lap_matrix = nx.directed_laplacian_matrix(G, nodes, weight, walk_type, alpha)
-    else:
-        lap_matrix = nx.laplacian_matrix(G, nodes, weight).toarray()
-
-    full_energy = np.power(sp.linalg.eigh(lap_matrix, eigvals_only=True), 2).sum()
-
-    # calculate laplacian centrality
-    laplace_centralities_dict = {}
-    for i, node in enumerate(nodelist):
-        # remove row and col i from lap_matrix
-        all_but_i = list(np.arange(lap_matrix.shape[0]))
-        all_but_i.remove(i)
-        A_2 = lap_matrix[all_but_i, :][:, all_but_i]
-
-        # Adjust diagonal for removed row
-        new_diag = lap_matrix.diagonal() - abs(lap_matrix[:, i])
-        np.fill_diagonal(A_2, new_diag[all_but_i])
-
-        if len(all_but_i) > 0:  # catches degenerate case of single node
-            new_energy = np.power(sp.linalg.eigh(A_2, eigvals_only=True), 2).sum()
-        else:
-            new_energy = 0.0
-
-        lapl_cent = full_energy - new_energy
-        if normalized:
-            lapl_cent = lapl_cent / full_energy
-
-        laplace_centralities_dict[node] = float(lapl_cent)
-
-    return laplace_centralities_dict
+    pass
